@@ -3,4 +3,4 @@
 /docker_account
 /js
 /packages
-/__pycache__/*
+/utils/__pycache__/*

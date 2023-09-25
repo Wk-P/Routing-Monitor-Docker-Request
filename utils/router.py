@@ -6,6 +6,7 @@ from monitor import start_monitor, create_monitor
 import threading
 import logging
 import queue
+import time
 
 route_table = [
         {
@@ -48,6 +49,7 @@ class RoutingHandler(BaseHTTPRequestHandler):
         # get request and put into request queue
         request_queue.put(self.__parse())
 
+        time.sleep(2)
         for node in route_table:
             # select node
             if node['status'] == 'Y':
@@ -67,7 +69,9 @@ class RoutingHandler(BaseHTTPRequestHandler):
                 try:
                     if not request_queue.empty():
                         # print(request_queue.qsize())
-                        response_from_server = requests.get(url, json=request_queue.get())
+                        request_data = request_queue.get()
+                        # print(url)
+                        response_from_server = requests.get(url, json=request_data)
 
                         response_content = response_from_server.text
 
@@ -113,7 +117,7 @@ def monitor_run(logger):
         #
         msg = next(generator)
         logger.debug(msg)
-        logger.debug(route_table)
+        # logger.debug(route_table)
 
         if msg is not None:
             for m in msg:
