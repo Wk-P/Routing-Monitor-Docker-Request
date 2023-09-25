@@ -55,6 +55,8 @@ def get_container_of_service(nodes_info, service_name):
 
 # def update_data(client, container, manager_client, service_name, scaled):
 def monitor_node(nodes_info):
+    resources = []
+    cpu_percent_limit = 5
     for node in nodes_info:
         client = node['client']
 
@@ -82,11 +84,11 @@ def monitor_node(nodes_info):
             print(f"Node {node['name']} Container {container.name.split('.')[0]} CPU Percent is {cpu_percent: .2f} %")
             
             # scale
-            if cpu_percent >= 10:
+            if cpu_percent >= cpu_percent_limit:
                 # route_table change
-                return {'node': node['name'], 'status': 'running', 'request': 'HS'}
+                resources.append({'node': node['name'], 'status': 'running', 'request': 'HS'})
 
-
+    return resources  
 
 def create_monitor():
     default_client = docker.from_env()
@@ -112,4 +114,4 @@ def start_monitor(nodes_info):
         yield monitor_node(nodes_info=nodes_info)
 
 if __name__ == "__main__":
-    start_monitor()
+    pass

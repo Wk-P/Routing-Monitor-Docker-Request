@@ -49,7 +49,6 @@ class RoutingHandler(BaseHTTPRequestHandler):
         request_queue.put(self.__parse())
 
         for node in route_table:
-
             # select node
             if node['status'] == 'Y':
                 target_address = f"{node['ip']}:{node['port']}" 
@@ -66,17 +65,17 @@ class RoutingHandler(BaseHTTPRequestHandler):
 
                 # for selected node address send 
                 try:
-                    response_from_server = requests.get(url, json=request_queue.get())
+                    if not request_queue.empty():
+                        # print(request_queue.qsize())
+                        response_from_server = requests.get(url, json=request_queue.get())
 
-                    response_content = response_from_server.text
+                        response_content = response_from_server.text
 
-                    print(response_content)
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.end_headers()
 
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json')
-                    self.end_headers()
-
-                    self.wfile.write(response_content.encode('utf-8'))
+                        self.wfile.write(response_content.encode('utf-8'))
 
                 except:
                     response_content = json.dumps(error_response)
@@ -116,12 +115,15 @@ def monitor_run(logger):
         logger.debug(msg)
         logger.debug(route_table)
 
-        if msg is not None and msg['request'] == 'HS':
-            change_node_status(route_table=route_table)
+        if msg is not None:
+            for m in msg:
+                logger.debug(m)
+                if m is not None and m['request'] == 'HS':
+                    change_node_status(m['node'])
 
 
 
-def change_node_status(route_table):
+def change_node_status(node):
 
     ret = {
         'node': "",
@@ -132,7 +134,7 @@ def change_node_status(route_table):
     for node_obj in route_table:
         # start node to run
         ret['node'] = node_obj['node']
-        if node_obj['status'] == 'N':
+        if node_obj['node'] == node:
             node_obj['status'] = 'Y'
             ret['result'] = 'success'
         else:
