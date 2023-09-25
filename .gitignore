@@ -1,0 +1,6 @@
+/.dockerignore
+/Dockerfile
+/docker_account
+/js
+/packages
+/.c*
