@@ -49,7 +49,6 @@ class RoutingHandler(BaseHTTPRequestHandler):
         # get request and put into request queue
         request_queue.put(self.__parse())
 
-        time.sleep(2)
         for node in route_table:
             # select node
             if node['status'] == 'Y':
@@ -80,7 +79,7 @@ class RoutingHandler(BaseHTTPRequestHandler):
                         self.end_headers()
 
                         self.wfile.write(response_content.encode('utf-8'))
-
+                        
                 except:
                     response_content = json.dumps(error_response)
                     print('Response Error!')
@@ -159,6 +158,9 @@ def main():
     server_thread.start()
     monitor_thread.start()
 
+    server_thread.join()
+    monitor_thread.join()
+    
 if __name__ == "__main__":
     
     try:
