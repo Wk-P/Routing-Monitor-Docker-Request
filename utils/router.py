@@ -70,7 +70,7 @@ class RoutingHandler(BaseHTTPRequestHandler):
 
                     response_content = response_from_server.text
 
-
+                    print(response_content)
 
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/json')
