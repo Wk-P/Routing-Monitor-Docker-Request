@@ -5,6 +5,7 @@ import traceback
 from monitor import start_monitor, create_monitor
 import threading
 import logging
+import queue
 
 route_table = [
         {
@@ -21,6 +22,8 @@ route_table = [
         }
     ]
 
+
+request_queue = queue.Queue()
 
 class RoutingHandler(BaseHTTPRequestHandler):
     
@@ -42,42 +45,43 @@ class RoutingHandler(BaseHTTPRequestHandler):
         return data
 
     def do_GET(self):
-        target_address = None
+        # get request and put into request queue
+        request_queue.put(self.__parse())
 
         for node in route_table:
+
+            # select node
             if node['status'] == 'Y':
                 target_address = f"{node['ip']}:{node['port']}" 
-                break
+
+                url = f"http://{target_address}"
+
+                response_content = ""
+
+                error_response = {
+                    'code': 500,
+                    'status': 'failed'
+                }
+                
+
+                # for selected node address send 
+                try:
+                    response_from_server = requests.get(url, json=request_queue.get())
+
+                    response_content = response_from_server.text
 
 
-        if target_address is not None:
-            url = f"http://{target_address}"
 
-            response_content = ""
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
 
-            error_response = {
-                'code': 500,
-                'status': 'failed'
-            }
+                    self.wfile.write(response_content.encode('utf-8'))
 
+                except:
+                    response_content = json.dumps(error_response)
+                    print('Response Error!')
 
-            try:
-                response_from_server = requests.get(url, json=self.__parse())
-
-                response_content = response_from_server.text
-
-            except:
-                response_content = json.dumps(error_response)
-                print('Response Error!')
-
-        else:
-            response_content = json.dumps(error_response)
-
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
-
-        self.wfile.write(response_content.encode('utf-8'))
 
 
 def create_logger(name):
@@ -109,11 +113,12 @@ def monitor_run(logger):
         #   {'node': node['name'], 'status': 'running', 'request': 'HS'}
         #
         msg = next(generator)
-        if msg['request'] == 'HS':
-            change_node_status(route_table=route_table)
-
         logger.debug(msg)
         logger.debug(route_table)
+
+        if msg is not None and msg['request'] == 'HS':
+            change_node_status(route_table=route_table)
+
 
 
 def change_node_status(route_table):
