@@ -1,170 +1,100 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import json
-import requests
-import traceback
-from monitor import start_monitor, create_monitor
-import threading
-import logging
-import queue
-import time
+# round robin production
+
+import aiohttp
+import asyncio
+from aiohttp import web
+from monitor import start_monitor, create_monitor, active_node
+import multiprocessing
+import os
 
 route_table = [
-        {
-            'node': 'ubuntuDockerWorker', 
-            'ip': '192.168.56.103', 
-            'port': 8080,
-            'status': 'N'
-        },
-        {
-            'node': 'ubuntuDockerWorker1',
-            'ip': '192.168.56.104', 
-            'port': 8080,
-            'status': 'Y'
-        }
-    ]
-
-
-request_queue = queue.Queue()
-
-class RoutingHandler(BaseHTTPRequestHandler):
-    
-    def __init__(self, request, client_address, server):
-        self.route_table = route_table
-        super().__init__(request, client_address, server)
-
-    def log_message(self, format, *args):
-        # print(self.headers['Host'])
-        pass
-    
-
-    def __parse(self):
-        content_length = int(self.headers['Content-Length'])
-        get_data = self.rfile.read(content_length)
-
-        # parse to json
-        data = json.loads(get_data)
-        return data
-
-    def do_GET(self):
-        # get request and put into request queue
-        request_queue.put(self.__parse())
-
-        for node in route_table:
-            # select node
-            if node['status'] == 'Y':
-                target_address = f"{node['ip']}:{node['port']}" 
-
-                url = f"http://{target_address}"
-
-                response_content = ""
-
-                error_response = {
-                    'code': 500,
-                    'status': 'failed'
-                }
-                
-
-                # for selected node address send 
-                try:
-                    if not request_queue.empty():
-                        # print(request_queue.qsize())
-                        request_data = request_queue.get()
-                        # print(url)
-                        response_from_server = requests.get(url, json=request_data)
-
-                        response_content = response_from_server.text
-
-                        self.send_response(200)
-                        self.send_header('Content-Type', 'application/json')
-                        self.end_headers()
-
-                        self.wfile.write(response_content.encode('utf-8'))
-                        
-                except:
-                    response_content = json.dumps(error_response)
-                    print('Response Error!')
-
-
-
-def create_logger(name):
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    console_handler = logging.StreamHandler()
-    logger.addHandler(console_handler)
-    return logger
-
-
-def server_run(logger):
-
-    try:
-        router_address = ('192.168.56.102', 8080)
-        httpd = HTTPServer(router_address, RoutingHandler)
-
-        logger.debug("Router Started...")
-        httpd.serve_forever()
-    except:
-        traceback.print_exc()
-        logger.debug("Router stopped")
-
-
-def monitor_run(logger):
-    # with yield in <start_monitor>
-    generator = start_monitor(nodes_info=create_monitor())
-    while True:
-        # msg content style:
-        #   {'node': node['name'], 'status': 'running', 'request': 'HS'}
-        #
-        msg = next(generator)
-        logger.debug(msg)
-        # logger.debug(route_table)
-
-        if msg is not None:
-            for m in msg:
-                logger.debug(m)
-                if m is not None and m['request'] == 'HS':
-                    change_node_status(m['node'])
-
-
-
-def change_node_status(node):
-
-    ret = {
-        'node': "",
-        'operation': 'status change',
-        'result': 'None'
+    {   
+        "address": "http://192.168.56.103:8080",
+        'status': "N"
+    },
+    {
+        "address": "http://192.168.56.104:8080",
+        'status': "Y"
     }
+]
 
-    for node_obj in route_table:
-        # start node to run
-        ret['node'] = node_obj['node']
-        if node_obj['node'] == node:
-            node_obj['status'] = 'Y'
-            ret['result'] = 'success'
-        else:
-            ret['result'] = 'failed'
+nodes_info = create_monitor()
 
-    return ret
+server_index = 0
 
+async def handle_request(request):
+    # get request from client 
+    global server_index
+    server_url = None
 
-def main():
-    server_logger = create_logger("ServerLogger")
-    monitor_logger = create_logger("MonitorLogger")
-
-    server_thread = threading.Thread(target=server_run, args=((server_logger, )))
-    monitor_thread = threading.Thread(target=monitor_run, args=((monitor_logger, )))
-
-    monitor_thread.daemon = True
-
-    server_thread.start()
-    monitor_thread.start()
-
-    server_thread.join()
-    monitor_thread.join()
+    while True:
+        if route_table[server_index]['status'] == 'Y':
+            server_url = route_table[server_index]['address']
+            break
+        server_index = (server_index + 1) % len(route_table)
     
+    server_index = (server_index + 1) % len(route_table)
+
+    # print(server_url)
+    async with aiohttp.ClientSession() as session:
+        
+        # request transform to target server and get response from this server
+        async with session.request(
+            method=request.method,
+            url=server_url,
+            headers=request.headers,
+            data=await request.read()
+        ) as response:
+            
+            # send request to client
+            response_data = await response.read()
+
+            response_data = {
+                "data": response_data.decode('utf-8'),
+                "server": server_url
+            }
+
+            forwarded_response = web.json_response(response_data)
+
+
+
+            return forwarded_response
+
+
+
+
+def active_one_node(nodes_info):
+
+    node_address = None
+    for node in route_table:
+        if node['status'] == 'N':
+            node_address = node['address'][7:-1]
+    
+    # if unactive node actived
+    if node_address is not None:
+        for node in nodes_info:
+            if node['address'] == node_address and active_node(node['name']):
+                node['status'] = 'Y'
+                return {'name': node['name'], 'status': 'Start running success'}
+
+        return {'type': 'text', 'msg': {'name': node['name'], 'status': 'Start running failed'}}
+    else:
+        return {'type': 'error', 'msg': "No mathcing node or node has been started"}
+
+
 if __name__ == "__main__":
-    
-    try:
-        main()
-    except:
-        print("Router stopped")
+
+
+    app = web.Application()
+    app.router.add_get('/', handle_request)
+
+    web.run_app(app, host='192.168.56.102', port=8080)
+
+
+    # start monitor
+    generator = start_monitor(nodes_info=nodes_info)
+    while True:
+        values = next(generator)
+        for value in values:
+            print(value)
     

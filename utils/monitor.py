@@ -1,7 +1,7 @@
-import docker, time, json
+import docker, time, json, os
 
-# get address
-def get_all_worker_node_address(nodes):
+# NODE name, address, client instance
+def generate_nodes_info_pool(nodes, service_name):
     nodes_info_pool = []
     for node in nodes:
         if node.attrs['Spec']['Role'] == "worker":
@@ -11,45 +11,35 @@ def get_all_worker_node_address(nodes):
             ip = node.attrs['Status']['Addr']
             port = 2375
 
+            node_address = f'{ip}:{port}'
+
             node_info = {
                 "name": node.attrs['Description']['Hostname'],
-                "address": f'{ip}:{port}'
+                "address": node_address,
+                "client": docker.DockerClient(base_url=f"tcp://{node_address}")
             }
 
-            nodes_info_pool.append(node_info)
+            # append single node info into information pool
 
+            node_info['containers'] = []
+            
+            containers = node_info['client'].containers.list()
+
+            # get the containers for every node
+            
+            # find container by node_name and service name
+            for c in containers:
+                container_name = c.name
+                if container_name.split('.')[0] == service_name:
+                    try:
+                        # add container object in nodes_info
+                        node_info['containers'].append(c)
+                    except:
+                        print(c)
+                        exit(1)
+
+        nodes_info_pool.append(node_info)
     return nodes_info_pool
-
-
-
-# get client
-def get_all_nodes_client(nodes_info):
-
-    for node in nodes_info:
-        node["client"] = docker.DockerClient(base_url=f"tcp://{node['address']}")
-
-    return nodes_info
-
-
-# find container by node_name and service name
-def get_container_of_service(nodes_info, service_name):
-    for node in nodes_info:
-        node['containers'] = list()
-        containers = node['client'].containers.list()
-
-        # get the container we want
-        
-        for c in containers:
-            container_name = c.name
-            if container_name.split('.')[0] == service_name:
-                try:
-                    # add container object in nodes_info
-                    node['containers'].append(c)
-                except:
-                    print(c)
-                    exit(1)
-    return None
-
 
 
 
@@ -83,35 +73,56 @@ def monitor_node(nodes_info):
 
             print(f"Node {node['name']} Container {container.name.split('.')[0]} CPU Percent is {cpu_percent: .2f} %")
             
-            # scale
+            # scaling up
+            data = {}
             if cpu_percent >= cpu_percent_limit:
                 # route_table change
-                resources.append({'node': node['name'], 'status': 'running', 'request': 'HS'})
+                data = {
+                    'node': node['name'],
+                    'status': 'running',
+                    'HS': 'up',
+                    'VS': None
+                }
+            else:
+                data = {
+                    'node': node['name'],
+                    'status': 'running',
+                    'HS': None,
+                    'VS': None
+                }
 
-    return resources  
+            resources.append(data)
+
+    return resources
+
+
+def active_node(node_name):
+    client = docker.from_env()
+
+    # pause_cmd = f'sudo docker node update --availability pause {node_name}'
+    active_cmd = f'sudo docker node update --availability active {node_name}'
+
+    if os.system(active_cmd) == 0:
+        return True
+    else:
+        return False
+
+
 
 def create_monitor():
     default_client = docker.from_env()
     service_name = "node-service"
     nodes = default_client.nodes.list()
 
-    # get node requests url and port (json list : NAME, ADDRESS)
-    nodes_info = get_all_worker_node_address(nodes)
-
-    # get client for every node (json list: NAME, ADDRESS, CLIENT)
-    nodes_info = get_all_nodes_client(nodes_info)
-
-    get_container_of_service(nodes_info=nodes_info, service_name=service_name)
+    # get node requests url and port (json list : NAME, ADDRESS, CLIENT, CONTAINERS)
+    nodes_info = generate_nodes_info_pool(nodes, service_name)
 
     return nodes_info
 
 def start_monitor(nodes_info):
-   
     while True:
-        # print nodes CPU percent
-        # get router table change request
-        # ret == node name
         yield monitor_node(nodes_info=nodes_info)
+
 
 if __name__ == "__main__":
     pass
