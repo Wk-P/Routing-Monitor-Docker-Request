@@ -6,7 +6,7 @@ def generate_nodes_info_pool(nodes, service_name):
     for node in nodes:
         if node.attrs['Spec']['Role'] == "worker":
             # test
-            print(f"{node.attrs['Description']['Hostname']}: {node.attrs['Status']['Addr']}")
+            # print(f"{node.attrs['Description']['Hostname']}: {node.attrs['Status']['Addr']}")
 
             ip = node.attrs['Status']['Addr']
             port = 2375
@@ -38,7 +38,7 @@ def generate_nodes_info_pool(nodes, service_name):
                         print(c)
                         exit(1)
 
-        nodes_info_pool.append(node_info)
+            nodes_info_pool.append(node_info)
     return nodes_info_pool
 
 
@@ -97,9 +97,6 @@ def monitor_node(nodes_info):
 
 
 def active_node(node_name):
-    client = docker.from_env()
-
-    # pause_cmd = f'sudo docker node update --availability pause {node_name}'
     active_cmd = f'sudo docker node update --availability active {node_name}'
 
     if os.system(active_cmd) == 0:

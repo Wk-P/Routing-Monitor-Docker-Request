@@ -68,13 +68,14 @@ def active_one_node(nodes_info):
     node_address = None
     for node in route_table:
         if node['status'] == 'N':
-            node_address = node['address'][7:-1]
+            node_address = node['address'][7:-5]
+            node['status'] = 'Y'
+
     
     # if unactive node actived
     if node_address is not None:
         for node in nodes_info:
-            if node['address'] == node_address and active_node(node['name']):
-                node['status'] = 'Y'
+            if node['address'][:-5] == node_address and active_node(node['name']):
                 return {'name': node['name'], 'status': 'Start running success'}
 
         return {'type': 'text', 'msg': {'name': node['name'], 'status': 'Start running failed'}}
@@ -86,19 +87,23 @@ def process_for_monitor(nodes_info):
     # start monitor
     generator = start_monitor(nodes_info=nodes_info)
     while True:
+        print(route_table)
         values = next(generator)
         for value in values:
-            print(value)
-
+            if value['HS'] == 'up':
+                retvalue = active_one_node(nodes_info=nodes_info)
+                print(retvalue)
+            else:
+                pass
 
 if __name__ == "__main__":
 
+    monitor_process = multiprocessing.Process(target=process_for_monitor, args=((nodes_info,)))
+    monitor_process.start()
 
     app = web.Application()
     app.router.add_get('/', handle_request)
 
     web.run_app(app, host='192.168.56.102', port=8080)
 
-    monitor_process = multiprocessing.Process(target=process_for_monitor, args=((nodes_info,)))
-    monitor_process.start()
     
