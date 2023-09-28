@@ -30,12 +30,12 @@ async def handle_request(request):
     while True:
         if route_table[server_index]['status'] == 'Y':
             server_url = route_table[server_index]['address']
+            server_index = (server_index + 1) % len(route_table)
             break
         server_index = (server_index + 1) % len(route_table)
     
-    server_index = (server_index + 1) % len(route_table)
-
-    # print(server_url)
+    print(server_index)
+    print(server_url)
     async with aiohttp.ClientSession() as session:
         
         # request transform to target server and get response from this server
@@ -73,7 +73,9 @@ def active_one_node(nodes_info):
 
     
     # if unactive node actived
+    print("out", node_address)
     if node_address is not None:
+        print("in", node_address)
         for node in nodes_info:
             if node['address'][:-5] == node_address and active_node(node['name']):
                 return {'name': node['name'], 'status': 'Start running success'}
