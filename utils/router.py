@@ -82,6 +82,15 @@ def active_one_node(nodes_info):
         return {'type': 'error', 'msg': "No mathcing node or node has been started"}
 
 
+def process_for_monitor(nodes_info):
+    # start monitor
+    generator = start_monitor(nodes_info=nodes_info)
+    while True:
+        values = next(generator)
+        for value in values:
+            print(value)
+
+
 if __name__ == "__main__":
 
 
@@ -90,11 +99,6 @@ if __name__ == "__main__":
 
     web.run_app(app, host='192.168.56.102', port=8080)
 
-
-    # start monitor
-    generator = start_monitor(nodes_info=nodes_info)
-    while True:
-        values = next(generator)
-        for value in values:
-            print(value)
+    monitor_process = multiprocessing.Process(target=process_for_monitor, args=((nodes_info,)))
+    monitor_process.start()
     
