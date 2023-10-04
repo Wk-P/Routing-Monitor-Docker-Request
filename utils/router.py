@@ -3,7 +3,7 @@
 import aiohttp
 import asyncio
 from aiohttp import web
-from monitor import start_monitor, create_monitor, active_node
+from monitor import create_monitor, active_node, monitor_node
 import multiprocessing
 import os
 
@@ -30,17 +30,16 @@ async def handle_request(request):
     while True:
         if route_table[server_index]['status'] == 'Y':
             server_url = route_table[server_index]['address']
-            server_index = (server_index + 1) % len(route_table)
+            # server_index = (server_index + 1) % len(route_table)
             break
         server_index = (server_index + 1) % len(route_table)
     
-    print(server_index)
-    print(server_url)
+
     async with aiohttp.ClientSession() as session:
         
         # request transform to target server and get response from this server
         async with session.request(
-            method=request.method,
+            method="GET",
             url=server_url,
             headers=request.headers,
             data=await request.read()
@@ -53,10 +52,8 @@ async def handle_request(request):
                 "data": response_data.decode('utf-8'),
                 "server": server_url
             }
-
+            
             forwarded_response = web.json_response(response_data)
-
-
 
             return forwarded_response
 
@@ -64,27 +61,14 @@ async def handle_request(request):
 
 
 def active_one_node(nodes_info):
-
     node_address = None
     for node in route_table:
         if node['status'] == 'N':
             node_address = node['address'][7:-5]
             node['status'] = 'Y'
-
-            active_cmd = f'sudo docker node update --availability active {node["name"]}'
-            
-            active_result_code = os.system(active_cmd)
-            if active_result_code == 0:
-                print(f"Actived Success")
-            else:
-                print(f"Actived Failed")
-
-
     
     # if unactive node actived
-    print("out", node_address)
     if node_address is not None:
-        print("in", node_address)
         for node in nodes_info:
             if node['address'][:-5] == node_address and active_node(node['name']):
                 return {'name': node['name'], 'status': 'Start running success'}
@@ -96,14 +80,14 @@ def active_one_node(nodes_info):
 
 def process_for_monitor(nodes_info):
     # start monitor
-    generator = start_monitor(nodes_info=nodes_info)
+
     while True:
         print(route_table)
-        values = next(generator)
+        values = monitor_node(nodes_info=nodes_info)
         for value in values:
             if value['HS'] == 'up':
                 retvalue = active_one_node(nodes_info=nodes_info)
-                print(retvalue)
+                print("retvalue : ", retvalue)
             else:
                 pass
 
@@ -113,8 +97,6 @@ if __name__ == "__main__":
     monitor_process.start()
 
     app = web.Application()
-    app.router.add_get('/', handle_request)
+    app.router.add_post('/', handle_request)
 
     web.run_app(app, host='192.168.56.102', port=8080)
-
-    

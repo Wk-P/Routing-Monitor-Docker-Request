@@ -116,10 +116,5 @@ def create_monitor():
 
     return nodes_info
 
-def start_monitor(nodes_info):
-    while True:
-        yield monitor_node(nodes_info=nodes_info)
-
-
 if __name__ == "__main__":
     pass
