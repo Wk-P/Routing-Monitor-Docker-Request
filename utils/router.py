@@ -71,6 +71,15 @@ def active_one_node(nodes_info):
             node_address = node['address'][7:-5]
             node['status'] = 'Y'
 
+            active_cmd = f'sudo docker node update --availability active {node["name"]}'
+            
+            active_result_code = os.system(active_cmd)
+            if active_result_code == 0:
+                print(f"Actived Success")
+            else:
+                print(f"Actived Failed")
+
+
     
     # if unactive node actived
     print("out", node_address)
