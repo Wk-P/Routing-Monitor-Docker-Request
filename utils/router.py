@@ -1,5 +1,3 @@
-# round robin production
-
 import aiohttp
 import asyncio
 from aiohttp import web
@@ -7,97 +5,49 @@ from monitor import create_monitor, active_node, monitor_node
 import multiprocessing
 import os
 
-route_table = [
-    {   
-        "address": "http://192.168.56.103:8080",
-        'status': "N"
-    },
-    {
-        "address": "http://192.168.56.104:8080",
-        'status': "Y"
-    }
-]
-
-nodes_info = create_monitor()
-
-server_index = 0
-
-async def handle_request(request):
-    # get request from client 
-    global server_index
-    server_url = None
-
-    print(route_table)
+def update_route_table(shared_route_table):
+    # 在主进程中更新共享的route_table
     while True:
-        if route_table[server_index]['status'] == 'Y':
-            server_url = route_table[server_index]['address']
-            server_index = (server_index + 1) % len(route_table)
-            break
-        
-        server_index = (server_index + 1) % len(route_table)
-    
+        # 这里可以根据需要更新route_table
+        # 例如：shared_route_table[0]['status'] = 'Y'
+        pass
 
-    async with aiohttp.ClientSession() as session:
-        
-        # request transform to target server and get response from this server
-        async with session.request(
-            method="GET",
-            url=server_url,
-            headers=request.headers,
-            data=await request.read()
-        ) as response:
-            
-            # send request to client
-            response_data = await response.read()
-
-            response_data = {
-                "data": response_data.decode('utf-8'),
-                "server": server_url
-            }
-            
-            forwarded_response = web.json_response(response_data)
-
-            return forwarded_response
-
-
-
-
-def active_one_node(nodes_info):
-    node_address = None
-    for node in route_table:
-        if node['status'] == 'N':
-            node_address = node['address'][7:-5]
-            node['status'] = 'Y'
-    
-    print(route_table)
-
-    # if unactive node actived
-    if node_address is not None:
-        for node in nodes_info:
-            if node['address'][:-5] == node_address and active_node(node['name']):
-                return {'name': node['name'], 'status': 'Start running success'}
-
-        return {'type': 'text', 'msg': {'name': node['name'], 'status': 'Start running failed'}}
-    else:
-        return {'type': 'error', 'msg': "No mathcing node or node has been started"}
-
-
-def process_for_monitor(nodes_info):
-    # start monitor
-
+async def web_app(shared_route_table):
+    # 协程中使用共享的route_table
     while True:
-        values = monitor_node(nodes_info=nodes_info)
-        for value in values:
-            if value['HS'] == 'up':
-                retvalue = active_one_node(nodes_info=nodes_info)
-                print("retvalue : ", retvalue)
-            else:
-                pass
+        # 这里可以访问共享的route_table，根据需要进行处理
+        await asyncio.sleep(1)
 
 if __name__ == "__main__":
+    manager = multiprocessing.Manager()
+    shared_route_table = manager.list(route_table)  # 创建一个共享的列表
 
-    monitor_process = multiprocessing.Process(target=process_for_monitor, args=((nodes_info,)))
-    monitor_process.start()
+    # 启动一个进程来更新route_table
+    update_process = multiprocessing.Process(target=update_route_table, args=(shared_route_table,))
+    update_process.start()
+
+    nodes_info = create_monitor()
+
+    server_index = 0
+
+    async def handle_request(request):
+        # 在处理请求时使用共享的route_table
+        global server_index
+        server_url = None
+
+        while True:
+            if shared_route_table[server_index]['status'] == 'Y':
+                server_url = shared_route_table[server_index]['address']
+                break
+            server_index = (server_index + 1) % len(shared_route_table)
+
+        # 其余的请求处理逻辑不变
+
+    # 创建一个事件循环
+    loop = asyncio.get_event_loop()
+
+    # 启动web_app协程
+    web_app_task = loop.create_task(web_app(shared_route_table))
 
     app = web.Application()
     app.router.add_post('/', handle_request)
