@@ -74,8 +74,8 @@ def active_one_node(nodes_info):
                 return {'name': node['name'], 'status': 'Start running success'}
 
         return {'type': 'text', 'msg': {'name': node['name'], 'status': 'Start running failed'}}
-    else:
-        return {'type': 'error', 'msg': "No mathcing node or node has been started"}
+    # else:
+    #     return {'type': 'error', 'msg': "No mathcing node or node has been started"}
 
 
 def process_for_monitor(nodes_info):

@@ -97,7 +97,9 @@ def monitor_node(nodes_info):
 
 
 def active_node(node_name):
+    password = 1233321
     active_cmd = f'sudo docker node update --availability active {node_name}'
+    os.system('echo %s | sudo -S %s' % (password, active_cmd))
 
     if os.system(active_cmd) == 0:
         return True
