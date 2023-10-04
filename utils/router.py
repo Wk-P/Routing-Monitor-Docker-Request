@@ -27,11 +27,13 @@ async def handle_request(request):
     global server_index
     server_url = None
 
+    print(route_table)
     while True:
         if route_table[server_index]['status'] == 'Y':
             server_url = route_table[server_index]['address']
-            # server_index = (server_index + 1) % len(route_table)
+            server_index = (server_index + 1) % len(route_table)
             break
+        
         server_index = (server_index + 1) % len(route_table)
     
 
@@ -67,6 +69,8 @@ def active_one_node(nodes_info):
             node_address = node['address'][7:-5]
             node['status'] = 'Y'
     
+    print(route_table)
+
     # if unactive node actived
     if node_address is not None:
         for node in nodes_info:
@@ -74,15 +78,14 @@ def active_one_node(nodes_info):
                 return {'name': node['name'], 'status': 'Start running success'}
 
         return {'type': 'text', 'msg': {'name': node['name'], 'status': 'Start running failed'}}
-    # else:
-    #     return {'type': 'error', 'msg': "No mathcing node or node has been started"}
+    else:
+        return {'type': 'error', 'msg': "No mathcing node or node has been started"}
 
 
 def process_for_monitor(nodes_info):
     # start monitor
 
     while True:
-        print(route_table)
         values = monitor_node(nodes_info=nodes_info)
         for value in values:
             if value['HS'] == 'up':
