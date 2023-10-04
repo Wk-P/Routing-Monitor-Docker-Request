@@ -2,30 +2,16 @@ import aiohttp
 import asyncio
 from aiohttp import web
 import multiprocessing
+from multiprocessing import Manager, Lock
 from monitor import create_monitor, active_node, monitor_node
-# Create a multiprocessing Manager for shared data
-manager = multiprocessing.Manager()
 
-# Use a Manager list for route_table to make it shared between processes
-route_table = manager.list([
-    {
-        "address": "http://192.168.56.103:8080",
-        'status': "N"
-    },
-    {
-        "address": "http://192.168.56.104:8080",
-        'status': "Y"
-    }
-])
 
-nodes_info = create_monitor()
-
-server_index = 0
 
 async def handle_request(request):
     global server_index
     server_url = None
 
+    # print(f"In handle {route_table}") 
     while True:
         if route_table[server_index]['status'] == 'Y':
             server_url = route_table[server_index]['address']
@@ -50,25 +36,32 @@ async def handle_request(request):
 
             return forwarded_response
 
+
+# update routing table function
 def active_one_node(nodes_info):
+    print(f"In active {route_table}") 
     node_address = None
     for node in route_table:
         if node['status'] == 'N':
             node_address = node['address'][7:-5]
             node['status'] = 'Y'
+            print(f"In active {route_table}") 
+
 
     if node_address is not None:
         for node in nodes_info:
             if node['address'][:-5] == node_address and active_node(node['name']):
                 return {'name': node['name'], 'status': 'Start running success'}
-
+        
         return {'type': 'text', 'msg': {'name': node['name'], 'status': 'Start running failed'}}
     else:
         return {'type': 'error', 'msg': "No matching node or node has been started"}
 
-def process_for_monitor(nodes_info, shared_route_table):
+
+# update routing table update routing table
+def process_for_monitor(nodes_info, route_table):
     while True:
-        print(shared_route_table)  # Access shared route_table
+        print(f"In monitor {route_table}")  # Access shared route_table
         values = monitor_node(nodes_info=nodes_info)
         for value in values:
             if value['HS'] == 'up':
@@ -77,7 +70,27 @@ def process_for_monitor(nodes_info, shared_route_table):
             else:
                 pass
 
+
 if __name__ == "__main__":
+    # Create a multiprocessing Manager for shared data
+    manager = Manager()
+    lock = Lock()
+    # Use a Manager list for route_table to make it shared between processes
+    route_table = manager.list([
+        {
+            "address": "http://192.168.56.103:8080",
+            'status': "N"
+        },
+        {
+            "address": "http://192.168.56.104:8080",
+            'status': "Y"
+        }
+    ])
+
+    nodes_info = create_monitor()
+
+    server_index = 0
+
     # Create a separate process for process_for_monitor
     monitor_process = multiprocessing.Process(target=process_for_monitor, args=(nodes_info, route_table))
     monitor_process.start()
