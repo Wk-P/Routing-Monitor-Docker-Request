@@ -3,6 +3,7 @@ import asyncio
 from aiohttp import web
 import multiprocessing
 
+# Initial route table with example entries
 route_table = [
     {
         "address": "http://192.168.56.103:8080",
@@ -15,20 +16,20 @@ route_table = [
 ]
 
 def update_route_table(shared_route_table):
-    # 在主进程中更新共享的route_table
+    # Update the shared route_table in the main process
     while True:
-        # 这里可以根据需要更新route_table
-        # 例如：shared_route_table[0]['status'] = 'Y'
+        # You can update the route_table here as needed
+        # For example: shared_route_table[0]['status'] = 'Y'
         pass
 
 async def web_app(shared_route_table):
-    # 协程中使用共享的route_table
+    # Use the shared route_table in the coroutine
     while True:
-        # 这里可以访问共享的route_table，根据需要进行处理
+        # Access the shared route_table here and process as needed
         await asyncio.sleep(1)
 
 async def handle_request(request):
-    # 在处理请求时使用共享的route_table
+    # Use the shared route_table when handling requests
     global server_index
     server_url = None
 
@@ -38,26 +39,26 @@ async def handle_request(request):
             break
         server_index = (server_index + 1) % len(shared_route_table)
 
-    # 其余的请求处理逻辑不变
+    # The rest of the request handling logic remains unchanged
     return web.Response(text=f"Forwarded to {server_url}")
 
 if __name__ == "__main__":
     manager = multiprocessing.Manager()
-    shared_route_table = manager.list(route_table)  # 创建一个共享的列表
+    shared_route_table = manager.list(route_table)  # Create a shared list
 
-    # 启动一个进程来更新route_table
+    # Start a process to update the route_table
     update_process = multiprocessing.Process(target=update_route_table, args=(shared_route_table,))
     update_process.start()
 
-    # 创建一个事件循环
+    # Create an event loop
     loop = asyncio.get_event_loop()
 
-    # 启动web_app协程
+    # Start the web_app coroutine
     web_app_task = loop.create_task(web_app(shared_route_table))
 
     app = web.Application()
     app.router.add_post('/', handle_request)
 
-    server_index = 0  # 这个变量需要在全局中声明
+    server_index = 0  # This variable needs to be declared globally
 
     web.run_app(app, host='192.168.56.102', port=8080)
