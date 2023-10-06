@@ -5,6 +5,7 @@ const express = require('express');
 // child process
 const { fork } = require('child_process');
 
+const path = require('path');
 
 //Contents
 
@@ -24,12 +25,13 @@ app.post('/', (req, res) => {
 	// run a new child process
 
 	// for container
-	// const childProcess = fork('child.js');
+	const childScriptPath = path.join(path.dirname(__filename), 'child.js')
+	const childProcess = fork(childScriptPath);
 
 
 	// for test on linux host in Documents folder
 	try {
-		const childProcess = fork('Documents/js/child.js');
+		// const childProcess = fork('Documents/js/child.js');
 
 		// send message to child process
 		childProcess.send({ requestContent: req.body });
