@@ -12,7 +12,6 @@ async def handle_request(request):
 
     table = queue.get()
 
-    print(f"In handle {table}") 
     while True:
         if table[server_index]['status'] == 'Y':
             server_url = table[server_index]['address']
@@ -32,9 +31,7 @@ async def handle_request(request):
             # get request body json data
             json=request_data
         ) as response:
-            print(response.status)
             response_data = await response.json()
-            print(f"Respnose_data:{response_data}")
             response_data = {
                 "data": response_data,
                 "server": server_url
