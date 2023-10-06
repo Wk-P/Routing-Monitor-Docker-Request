@@ -1,6 +1,5 @@
 /.dockerignore
 /Dockerfile
 /docker_account
-/js
 /packages
 /utils/__pycache__/*
