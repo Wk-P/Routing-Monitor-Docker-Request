@@ -10,7 +10,7 @@ async def handle_request(request):
     global server_index
     server_url = None
 
-    table = queue.get()
+    table = route_table_queue.get()
 
     while True:
         if table[server_index]['status'] == 'Y':
@@ -19,7 +19,7 @@ async def handle_request(request):
             break
         server_index = (server_index + 1) % len(route_table)
 
-    queue.put(table)
+    route_table_queue.put(table)
 
 
     request_data = await request.json()
@@ -82,7 +82,8 @@ def process_for_monitor(nodes_info, queue):
                 pass
 
 if __name__ == "__main__":
-    queue = multiprocessing.Queue(1)
+    route_table_queue = multiprocessing.Queue(1)
+    resources_table_queue = multiprocessing.Queue(1)
 
     # Use a Manager l    shared_memory_name = data_memory.name
     route_table = [
@@ -96,14 +97,14 @@ if __name__ == "__main__":
         }
     ]
     
-    queue.put(route_table)
+    route_table_queue.put(route_table)
 
     nodes_info = create_monitor()
 
     server_index = 0
 
     # Create a separate process for process_for_monitor
-    monitor_process = multiprocessing.Process(target=process_for_monitor, args=(nodes_info, queue))
+    monitor_process = multiprocessing.Process(target=process_for_monitor, args=(nodes_info, route_table_queue))
     monitor_process.start()
 
     app = web.Application()
