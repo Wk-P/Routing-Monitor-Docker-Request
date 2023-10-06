@@ -1,4 +1,4 @@
-'user strict';
+'use strict';
 
 // for main server
 const express = require('express');
