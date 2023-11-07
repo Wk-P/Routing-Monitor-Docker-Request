@@ -1,5 +1,8 @@
 'use strict';
 
+var os = require("")
+
+
 // for main server
 const express = require('express');
 // child process
@@ -35,10 +38,28 @@ app.post('/', (req, res) => {
 
 		// send message to child process
 		childProcess.send({ requestContent: req.body });
-
+		
 		// listen child process
+		
 		childProcess.on('message', (message) => {
-			res.json({counter: message});
+			let cpu_usage = 0;
+			// get CPU and MEM
+			const cpus = os.cpus();
+			for (let i = 0, len = cpus.length;i < len;i++) {
+				var cpu = cpus[i], total = 0;
+				for (let type in cpu.times) {
+					total += cpu.times[type];
+				}
+
+				for (type in cpu.times) {
+					cpu_usage = Math.round(100 * cpu.times[type] / total);
+				}
+			}
+			res.json({
+				counter: message,
+				cpu: cpu_usage,
+				mem: mem_usage
+			});
 			childProcess.kill();
 		});
 	} catch (err) {
