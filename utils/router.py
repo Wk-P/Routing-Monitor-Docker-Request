@@ -98,7 +98,7 @@ if __name__ == "__main__":
     
     route_table_queue.put(route_table)
 
-    nodes_info = create_monitor()
+    # nodes_info = create_monitor()
 
     server_index = 0
 

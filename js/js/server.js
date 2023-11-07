@@ -52,7 +52,7 @@ app.post('/', (req, res) => {
 					total += cpu.times[type];
 				}
 
-				for (type in cpu.times) {
+				for (let type in cpu.times) {
 					cpu_usage = Math.round(100 * cpu.times[type] / total);
 				}
 			}
@@ -66,7 +66,7 @@ app.post('/', (req, res) => {
 				cpu: cpu_usage,
 				mem: mem_usage
 			});
-			
+
 			childProcess.kill();
 		});
 	} catch (err) {

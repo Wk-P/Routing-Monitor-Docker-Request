@@ -46,13 +46,16 @@ def generate_nodes_info_pool(nodes, service_name):
 # def update_data(client, container, manager_client, service_name, scaled):
 def monitor_node(nodes_info):
     resources = []
-    cpu_percent_limit = 5
+    cpu_percent_limit = 40
     for node in nodes_info:
         client = node['client']
 
         for container in node['containers']:
+
             # get CPU stats data
             stats_data = client.containers.get(container.id).stats(stream=False)
+
+            print(stats_data)
 
             pre_cpu_stats = stats_data['precpu_stats']
             cpu_stats = stats_data['cpu_stats']
@@ -71,8 +74,23 @@ def monitor_node(nodes_info):
             if system_delta > 0.0:
                 cpu_percent = (cpu_delta / system_delta) * online_cpus * 100
 
-            print(f"Node {node['name']} Container {container.name.split('.')[0]} CPU Percent is {cpu_percent: .2f} %")
             
+
+            # memory stats
+            memory_stats = stats_data['memory_stats']
+            memory_usage = memory_stats['usage'] / 1024 / 1024
+            memory_limit = memory_stats['limit'] / 1024 / 1024 / 1024
+
+
+            print(f"Node {node['name']} Container {container.name.split('.')[0]} CPU Percent is {cpu_percent: .2f} %")
+            print(f"Node {node['name']} Container {container.name.split('.')[0]} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
+
+
+            file_path = "training.txt"
+            with open(file_path, 'a', encoding='utf-8') as file:
+                file.write(f"{node['address']} {cpu_percent} {memory_usage/memory_limit}\n")
+
+
             # scaling up
             data = {}
             if cpu_percent >= cpu_percent_limit:
@@ -81,14 +99,20 @@ def monitor_node(nodes_info):
                     'node': node['name'],
                     'status': 'running',
                     'HS': 'up',
-                    'VS': None
+                    'VS': None,
+                    'cpu-usage': cpu_percent,
+                    'mem-usage': memory_usage,
+                    'mem-limit': memory_limit
                 }
             else:
                 data = {
                     'node': node['name'],
                     'status': 'running',
                     'HS': None,
-                    'VS': None
+                    'VS': None,
+                    'cpu-usage': cpu_percent,
+                    'mem-usage': memory_usage,
+                    'mem-limit': memory_limit
                 }
 
             resources.append(data)
