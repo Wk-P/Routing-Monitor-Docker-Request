@@ -66,6 +66,7 @@ app.post('/', (req, res) => {
 				cpu: cpu_usage,
 				mem: mem_usage
 			});
+			
 			childProcess.kill();
 		});
 	} catch (err) {
