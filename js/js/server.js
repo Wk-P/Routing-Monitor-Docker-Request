@@ -65,7 +65,8 @@ app.post('/', (req, res) => {
 			res.json({
 				counter: message,
 				cpu: cpu_usage,
-				mem: mem_usage
+				mem: mem_usage,
+				cpus: cpus
 			});
 
 			childProcess.kill();
