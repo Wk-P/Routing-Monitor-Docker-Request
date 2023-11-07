@@ -42,20 +42,21 @@ app.post('/', (req, res) => {
 		// listen child process
 		
 		childProcess.on('message', (message) => {
-			let cpu_usage = 0;
-			// get CPU and MEM\
+			let total = 0;
+			// get CPU and MEM
 			// CPU
 			const cpus = os.cpus();
 			for (let i = 0, len = cpus.length;i < len;i++) {
-				var cpu = cpus[i], total = 0;
-				for (let type in cpu.times) {
+				var cpu = cpus[i];
+				for (const type in cpu.times) {
 					total += cpu.times[type];
 				}
 
-				for (let type in cpu.times) {
-					cpu_usage = Math.round(100 * cpu.times[type] / total);
-				}
 			}
+
+
+			const total_cpu = total / cpus.length;
+			const cpu_usage = Math.round(100 * cpu.times[0].user / total);
 
 			//MEM
 			const total_mem = os.totalmem();
