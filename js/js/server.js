@@ -53,15 +53,14 @@ app.post('/', (req, res) => {
 				}
 			}
 
-			
-			console.log(cpu.times[0]);
+			console.log(total);
+			console.log(cpus.length);
 
-			const total_cpu = total / cpus.length;
-			const cpu_usage = Math.round(100 * cpu.times[0].user / total_cpu);
+			const cpu_usage = Math.round(100 * cpus[cpus.length - 1].times.user / total);
 
 			//MEM
 			const total_mem = os.totalmem();
-			const mem_usage = Math.round((total_mem - os.freemem()) / total_mem) * 100;
+			const mem_usage = Math.round((total_mem - os.freemem()) / total_mem);
 
 			res.json({
 				counter: message,
