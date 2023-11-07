@@ -1,6 +1,6 @@
 'use strict';
 
-var os = require("os")
+const os = require("os");
 
 
 // for main server
@@ -43,7 +43,8 @@ app.post('/', (req, res) => {
 		
 		childProcess.on('message', (message) => {
 			let cpu_usage = 0;
-			// get CPU and MEM
+			// get CPU and MEM\
+			// CPU
 			const cpus = os.cpus();
 			for (let i = 0, len = cpus.length;i < len;i++) {
 				var cpu = cpus[i], total = 0;
@@ -55,6 +56,11 @@ app.post('/', (req, res) => {
 					cpu_usage = Math.round(100 * cpu.times[type] / total);
 				}
 			}
+
+			//MEM
+			const total_mem = os.totalmem();
+			const mem_usage = Math.round((total_mem - os.freemem()) / total_mem) * 100;
+
 			res.json({
 				counter: message,
 				cpu: cpu_usage,
