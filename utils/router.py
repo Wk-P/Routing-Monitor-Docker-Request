@@ -5,7 +5,6 @@ import multiprocessing
 from monitor import create_monitor, active_node, monitor_node
 
 
-
 async def handle_request(request):
     global server_index
     server_url = None
@@ -34,7 +33,7 @@ async def handle_request(request):
             response_data = await response.json()
             response_data = {
                 "data": response_data,
-                "server": server_url
+                "server": server_url,
             }
 
             forwarded_response = web.json_response(response_data)
@@ -89,7 +88,7 @@ if __name__ == "__main__":
     route_table = [
         {
             "address": "http://192.168.56.103:8080",
-            'status': "N"
+            'status': "Y"
         },
         {
             "address": "http://192.168.56.104:8080",
@@ -103,9 +102,10 @@ if __name__ == "__main__":
 
     server_index = 0
 
+
     # Create a separate process for process_for_monitor
-    monitor_process = multiprocessing.Process(target=process_for_monitor, args=(nodes_info, route_table_queue))
-    monitor_process.start()
+    # monitor_process = multiprocessing.Process(target=process_for_monitor, args=(nodes_info, route_table_queue))
+    # monitor_process.start()
 
     app = web.Application()
     app.router.add_post('/', handle_request)
