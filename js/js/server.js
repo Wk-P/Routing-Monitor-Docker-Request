@@ -56,7 +56,7 @@ app.post('/', (req, res) => {
 
 
 			const total_cpu = total / cpus.length;
-			const cpu_usage = Math.round(100 * cpu.times[0].user / total);
+			const cpu_usage = Math.round(100 * cpu.times[0].user / total_cpu);
 
 			//MEM
 			const total_mem = os.totalmem();
