@@ -51,9 +51,10 @@ app.post('/', (req, res) => {
 				for (const type in cpu.times) {
 					total += cpu.times[type];
 				}
-
 			}
 
+			
+			console.log(cpu.times[0]);
 
 			const total_cpu = total / cpus.length;
 			const cpu_usage = Math.round(100 * cpu.times[0].user / total_cpu);
