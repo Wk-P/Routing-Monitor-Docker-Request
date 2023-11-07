@@ -59,7 +59,7 @@ app.post('/', (req, res) => {
 			console.log(total);
 			console.log(cpus.length);
 
-			const cpu_usage = Math.round(100 * (1 - totalNonIdle / total));
+			const cpu_usage = Math.round(100 * (totalNonIdle / total));
 
 			//MEM
 			const total_mem = os.totalmem();
