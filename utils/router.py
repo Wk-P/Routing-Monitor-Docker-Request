@@ -1,8 +1,6 @@
 import aiohttp
-import asyncio
 from aiohttp import web
 import multiprocessing
-from monitor import create_monitor, active_node, monitor_node
 
 
 async def handle_request(request):
@@ -40,45 +38,11 @@ async def handle_request(request):
             return forwarded_response
 
 
-# update routing table function
-def active_one_node(nodes_info, queue):
-    table = queue.get()
-
-    node_address = None
-    for node in table:
-        if node['status'] == 'N':
-            node_address = node['address'][7:-5]
-            node['status'] = 'Y'
-            print(f"In active {table}") 
-
-    queue.put(table)
-
-    if node_address is not None:
-        for node in nodes_info:
-            if node['address'][:-5] == node_address and active_node(node['name']):
-                return {'name': node['name'], 'status': 'Start running success'}
-        
-        return {'type': 'text', 'msg': {'name': node['name'], 'status': 'Start running failed'}}
-    else:
-        return {'type': 'error', 'msg': "No matching node or node has been started"}
-
-
 async def get_route_table(queue):
     while True:
         modified_route_table = queue.get()
         route_table = modified_route_table
         queue.put(route_table)
-
-# update routing table update routing table
-def process_for_monitor(nodes_info, queue):
-    while True:
-        # print(f"In monitor {table}")  # Access shared route_table
-        values = monitor_node(nodes_info=nodes_info)
-        for value in values:
-            if value['HS'] == 'up':
-                active_one_node(nodes_info=nodes_info, queue=queue)
-            else:
-                pass
 
 if __name__ == "__main__":
     route_table_queue = multiprocessing.Queue(1)
