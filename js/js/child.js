@@ -1,11 +1,25 @@
 process.on('message', (message) => {
     // code with time
+	const startTime = process.hrtime();
 
     n = message.requestContent.number;
     // get result
+
+    const counterResult = simulateHeavyCalculation(n)
+
+    const currentUsage = process.cpuUsage()
+    const userUsage = currentUsage['user']
+    const systemUsage = currentUsage['system']
+
+    const cpuUsagePercent = (userUsage / (userUsage + systemUsage))
+
+
+    const elapsed = process.hrtime(startTime);
+
     const result = {
-        counter: simulateHeavyCalculation(n),
-        cpuUsage: process.cpuUsage()
+        counter: counterResult,
+        cpuUsage: cpuUsagePercent,
+        processTime: elapsed
     }
 
     // send message to main process

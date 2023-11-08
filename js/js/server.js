@@ -24,12 +24,12 @@ app.use(express.json());
 
 app.post('/', (req, res) => {
 
-	// run a new child process
+	// run a new child process	
 
 	// for container
 	const childScriptPath = path.join(path.dirname(__filename), 'child.js')
-	const childProcess = fork(childScriptPath);
 
+	const childProcess = fork(childScriptPath);
 
 	// for test on linux host in Documents folder
 	try {
@@ -39,10 +39,13 @@ app.post('/', (req, res) => {
 		// listen child process
 		
 		childProcess.on('message', (data) => {
-			// get CPU and MEM
-			// CPU
-			
-			res.json(data);
+			// get and MEM
+			const memUsage = (1 - (os.freemem() / os.totalmem()))
+
+			res.json({
+				data: data,
+				mem: memUsage
+			});
 
 			childProcess.kill();
 		});
