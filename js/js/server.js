@@ -38,20 +38,11 @@ app.post('/', (req, res) => {
 		
 		// listen child process
 		
-		childProcess.on('message', (message) => {
+		childProcess.on('message', (data) => {
 			// get CPU and MEM
 			// CPU
-			const cpus = os.cpus();
 			
-			//MEM
-			const total_mem = os.totalmem();
-			const mem_usage = (total_mem - os.freemem()) / total_mem;
-
-			res.json({
-				counter: message,
-				mem: mem_usage,
-				cpus: cpus,
-			});
+			res.json(data);
 
 			childProcess.kill();
 		});

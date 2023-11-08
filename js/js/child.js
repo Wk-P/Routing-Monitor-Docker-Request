@@ -3,8 +3,10 @@ process.on('message', (message) => {
 
     n = message.requestContent.number;
     // get result
-    const result = simulateHeavyCalculation(n);
-
+    const result = {
+        counter: simulateHeavyCalculation(n),
+        cpuUsage: process.cpuUsage()
+    }
 
     // send message to main process
     process.send(result);
