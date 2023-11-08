@@ -1,4 +1,5 @@
 import docker, time, json, os
+import multiprocessing
 
 # NODE name, address, client instance
 def generate_nodes_info_pool(nodes, service_name):
@@ -54,8 +55,6 @@ def monitor_node(nodes_info):
 
             # get CPU stats data
             stats_data = client.containers.get(container.id).stats(stream=False)
-
-            print(stats_data)
 
             pre_cpu_stats = stats_data['precpu_stats']
             cpu_stats = stats_data['cpu_stats']
@@ -142,5 +141,54 @@ def create_monitor():
 
     return nodes_info
 
+
+
+def active_one_node(nodes_info, route_table):
+    
+
+    node_address = None
+    for node in route_table:
+        if node['status'] == 'N':
+            node_address = node['address'][7:-5]
+            node['status'] = 'Y'
+            print(f"In active {route_table}") 
+
+    if node_address is not None:
+        for node in nodes_info:
+            if node['address'][:-5] == node_address and active_node(node['name']):
+                return {'name': node['name'], 'status': 'Start running success'}
+        
+        return {'type': 'text', 'msg': {'name': node['name'], 'status': 'Start running failed'}}
+    else:
+        return {'type': 'error', 'msg': "No matching node or node has been started"}
+
+
+def process_for_monitor(nodes_info, route_table):
+    while True:
+        # print(f"In monitor {table}")  # Access shared route_table
+        values = monitor_node(nodes_info=nodes_info)
+        for value in values:
+            if value['HS'] == 'up':
+                active_one_node(nodes_info=nodes_info, route_table=route_table)
+            else:
+                pass
+
 if __name__ == "__main__":
-    pass
+    route_table = [
+        {
+            "address": "http://192.168.56.103:8080",
+            'status': "Y"
+        },
+        {
+            "address": "http://192.168.56.104:8080",
+            'status': "Y"
+        }
+    ]
+
+    nodes_info = create_monitor()
+
+    # Create a separate process for process_for_monitor
+    monitor_process = multiprocessing.Process(target=process_for_monitor, args=(nodes_info, route_table))
+    monitor_process.start()
+
+    
