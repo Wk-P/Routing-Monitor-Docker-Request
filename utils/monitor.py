@@ -47,7 +47,7 @@ def generate_nodes_info_pool(nodes, service_name):
 # def update_data(client, container, manager_client, service_name, scaled):
 def monitor_node(nodes_info):
     resources = []
-    cpu_percent_limit = 40
+    cpu_percent_limit = 50
     for node in nodes_info:
         client = node['client']
 
@@ -60,6 +60,7 @@ def monitor_node(nodes_info):
             cpu_stats = stats_data['cpu_stats']
 
             cpu_usage = cpu_stats['cpu_usage']
+            print(cpu_usage)
             pre_cpu_usage = pre_cpu_stats['cpu_usage']
 
             system_cpu_usage = cpu_stats['system_cpu_usage']

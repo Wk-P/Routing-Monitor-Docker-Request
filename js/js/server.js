@@ -2,7 +2,6 @@
 
 const os = require("os");
 
-
 // for main server
 const express = require('express');
 // child process
@@ -34,19 +33,25 @@ app.post('/', (req, res) => {
 
 	// for test on linux host in Documents folder
 	try {
-		// const childProcess = fork('Documents/js/child.js');
-
 		// send message to child process
 		childProcess.send({ requestContent: req.body });
 		
 		// listen child process
 		
 		childProcess.on('message', (message) => {
+			let total = 0;
+			// get CPU and MEM
+			// CPU
+			const cpus = os.cpus();
 			
+			//MEM
+			const total_mem = os.totalmem();
+			const mem_usage = (total_mem - os.freemem()) / total_mem;
+
 			res.json({
 				counter: message,
 				mem: mem_usage,
-				cpus: cpus
+				cpus: cpus,
 			});
 
 			childProcess.kill();
