@@ -39,7 +39,6 @@ app.post('/', (req, res) => {
 		// listen child process
 		
 		childProcess.on('message', (message) => {
-			let total = 0;
 			// get CPU and MEM
 			// CPU
 			const cpus = os.cpus();
