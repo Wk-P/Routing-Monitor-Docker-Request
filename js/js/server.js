@@ -46,25 +46,13 @@ app.post('/', (req, res) => {
 			// get CPU and MEM
 			// CPU
 			const cpus = os.cpus();
-			for (let i = 0; i < cpus.length; i++) {
-				const cpu = cpus[i];
-				for (const type in cpu.times) {
-					total += cpu.times[type];
-					if (type !== 'idle') {
-						totalNonIdle += cpu.times[type];
-					}
-				}
-			}
-
-			const cpu_usage = Math.round(100 * (totalNonIdle / total));
 
 			//MEM
 			const total_mem = os.totalmem();
-			const mem_usage = Math.round((total_mem - os.freemem()) / total_mem);
+			const mem_usage = (total_mem - os.freemem()) / total_mem;
 
 			res.json({
 				counter: message,
-				cpu: cpu_usage,
 				mem: mem_usage,
 				cpus: cpus
 			});
