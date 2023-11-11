@@ -1,11 +1,12 @@
 process.on('message', (message) => {
     // code with time
-	const startTime = process.hrtime();
 
-    n = message.requestContent.number;
+    const n = message.requestContent.number;
     // get result
 
+    const startTime = process.hrtime();
     const counterResult = simulateHeavyCalculation(n)
+    const elapsed = process.hrtime(startTime);
 
     const currentUsage = process.cpuUsage()
     const userUsage = currentUsage['user']
@@ -14,12 +15,12 @@ process.on('message', (message) => {
     const cpuUsagePercent = (userUsage / (userUsage + systemUsage))
 
 
-    const elapsed = process.hrtime(startTime);
 
     const result = {
+        number: n,
         counter: counterResult,
         cpuUsage: cpuUsagePercent,
-        processTime: elapsed
+        runtime: elapsed[0] * 1000 + elapsed[1] / 1e6
     }
 
     // send message to main process
@@ -48,7 +49,7 @@ function simulateHeavyCalculation(n) {
     let count = 0;
     let num = 2;
 
-    while (num < n) {
+    while (num <= n) {
         if (isPrime(num)) {
             count++;
         }

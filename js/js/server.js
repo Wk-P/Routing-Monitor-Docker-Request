@@ -23,7 +23,7 @@ app.use(express.json());
 
 
 app.post('/', (req, res) => {
-
+	
 	// run a new child process	
 
 	// for container
@@ -33,6 +33,9 @@ app.post('/', (req, res) => {
 
 	// for test on linux host in Documents folder
 	try {
+
+		// Timer for child process run time
+
 		// send message to child process
 		childProcess.send({ requestContent: req.body });
 		
@@ -44,9 +47,10 @@ app.post('/', (req, res) => {
 
 			res.json({
 				data: data,
-				mem: memUsage
-			});
+				mem: memUsage,
 
+			});
+			
 			childProcess.kill();
 		});
 	} catch (err) {
