@@ -66,8 +66,8 @@ app.head('/', (req, res) => {
 		
 		res.setHeader("data", cpuPercent);
 		res.setHeader("mem", memUsage);
-		res.writeHead(200);
-		res.end();
+		res.status(200).end();
+
 	} catch (err) {
 		res.status(500).json({error: 'Internal Server Error'});
 	}

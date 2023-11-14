@@ -34,112 +34,59 @@ async def handle_request(request):
     
     response_to_client = None
 
-
     # send request to first server
     async with aiohttp.ClientSession() as session:
-        if server_url == "http://192.168.56.103:8080":
+        # send request to others' servers
+        for server in cpu_usage_table:
+            if server != server_url:
+                async with session.request(
+                    method="HEAD",
+                    url=server_url,
+                    headers=request.headers,
+                ) as response:
+                    # to Json
+                    response_data = await response.headers.items()
+
+                    print(response_data)
+
+                    # response
+                    response = {
+                        "data": response_data,
+                        "server": server_url,
+                    }
+
+                    # add to list for update cpu_usage_table
+                    cpu_usage_table = cpu_usage_queue.get()
+                    cpu_usage_table[server_url] = response_data['data']['cpuPercent']
+                    cpu_usage_queue.put(cpu_usage_table)
+
         # send post
-            async with session.request(
-                method=request.method,
-                url=server_url,
-                headers=request.headers,
-                # get request body json data
-                json=request_data
-            ) as response:
-                # to Json
-                response_data = await response.json()
+        async with session.request(
+            method=request.method,
+            url=server_url,
+            headers=request.headers,
+            # get request body json data
+            json=request_data
+        ) as response:
+            # to Json
+            response_data = await response.json()
 
-                # response
-                response = {
-                    "data": response_data,
-                    "server": server_url,
-                }
+            # response
+            response = {
+                "data": response_data,
+                "server": server_url,
+            }
 
-                response_to_client = response
+            response_to_client = response
 
-                # add to list for update cpu_usage_table
-                cpu_usage_table = cpu_usage_queue.get()
-                cpu_usage_table[server_url] = response_data['data']['cpuUsage']
-                cpu_usage_queue.put(cpu_usage_table)
-            
-            
-        # send by head method for cpu/mem usage
-        else:
-            async with session.request(
-                method="HEAD",
-                url=server_url,
-                headers=request.headers,
-            ) as response:
-                # to Json
-                response_data = await response.headers.items()
+            # add to list for update cpu_usage_table
+            cpu_usage_table = cpu_usage_queue.get()
+            cpu_usage_table[server_url] = response_data['data']['cpuUsage']
+            cpu_usage_queue.put(cpu_usage_table)
 
-                print(response_data)
-
-                # response
-                response = {
-                    "data": response_data,
-                    "server": server_url,
-                }
-
-                # add to list for update cpu_usage_table
-                cpu_usage_table = cpu_usage_queue.get()
-                cpu_usage_table[server_url] = response_data['data']['cpuPercent']
-                cpu_usage_queue.put(cpu_usage_table)
-
-    # send request to second server
-    async with aiohttp.ClientSession() as session:
-        # send post
-        if server_url == "http://192.168.56.104:8080":
-            async with session.request(
-                method=request.method,
-                url=server_url,
-                headers=request.headers,
-                # get request body json data
-                json=request_data
-            ) as response:
-                # to Json
-                response_data = await response.json()
+            return web.json_response(response_to_client)
 
 
-                # add to list for update cpu_usage_table
-                cpu_usage_table = cpu_usage_queue.get()
-                cpu_usage_table[server_url] = response_data['data']['cpuUsage']
-                cpu_usage_queue.put(cpu_usage_table)
-
-
-                # response
-                response = {
-                    "data": response_data,
-                    "server": server_url,
-                }
-
-                # to client response
-                response_to_client = response
-            
-    
-        # send by head method for cpu/mem usage
-        else:
-            async with session.request(
-                method="HEAD",
-                url=server_url,
-                headers=request.headers,
-            ) as response:
-                # to Json
-                response_data = await response.headers.items()
-
-                print(response_data)
-                # response
-                response = {
-                    "data": response_data,
-                    "server": server_url,
-                }
-                
-                # add to list for update cpu_usage_table
-                cpu_usage_table = cpu_usage_queue.get()
-                cpu_usage_table[server_url] = response_data['data']['cpuPercent']
-                cpu_usage_queue.put(cpu_usage_table)
-
-    return web.json_response(response_to_client)
 
 async def get_route_table(queue):
     while True:
