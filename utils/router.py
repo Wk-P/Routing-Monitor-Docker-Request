@@ -32,59 +32,68 @@ async def handle_request(request):
     
     request_data = await request.json()
     
-    response_to_client = None
+    tasks = []
 
     # send request to first server
     async with aiohttp.ClientSession() as session:
-        # send request to others' servers
-        for server in cpu_usage_table:
-            if server != server_url:
-                async with session.request(
-                    method="HEAD",
-                    url=server_url,
+
+        # declare an async function for send request
+        async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, cpu_usage_queue):
+            if method == "HEAD":
+            # send request to others' servers
+                async with session.head(
+                    url=url,
                     headers=request.headers,
                 ) as response:
-                    # to Json
-                    response_data = await response.headers.items()
+                    # get headers
+                    headers = await response.headers
 
-                    print(response_data)
+                    for server, value in headers:
+                        # add to list for update cpu_usage_table
+                        cpu_usage_table = cpu_usage_queue.get()
+                        cpu_usage_table[server] = value
+                        cpu_usage_queue.put(cpu_usage_table)
+
+            # Now Just Head
+            elif method == 'POST':
+                            # send request to others' servers
+                async with session.post(
+                    url=url,
+                    headers=request.headers,
+                    json=request_data
+                ) as response:
+                    # to Json
+                    response_data = await response.json()
 
                     # response
                     response = {
                         "data": response_data,
-                        "server": server_url,
+                        "server": url,
                     }
 
                     # add to list for update cpu_usage_table
                     cpu_usage_table = cpu_usage_queue.get()
-                    cpu_usage_table[server_url] = response_data['data']['cpuPercent']
+                    cpu_usage_table[url] = response_data['data']['cpuUsage']
                     cpu_usage_queue.put(cpu_usage_table)
 
-        # send post
-        async with session.request(
-            method=request.method,
-            url=server_url,
-            headers=request.headers,
-            # get request body json data
-            json=request_data
-        ) as response:
-            # to Json
-            response_data = await response.json()
+            else:
+                print("Error")
+                response = None
 
-            # response
-            response = {
-                "data": response_data,
-                "server": server_url,
-            }
+            return response
 
-            response_to_client = response
+        for server in cpu_usage_table:
+            if server_url == server:
+                tasks.append(asyncio.create_task(req_task(session, server_url, "POST", request, request_data, cpu_usage_queue)))
+            else:
+                tasks.append(asyncio.create_task(req_task(session, server_url, "HEAD", request, request_data, cpu_usage_queue)))
 
-            # add to list for update cpu_usage_table
-            cpu_usage_table = cpu_usage_queue.get()
-            cpu_usage_table[server_url] = response_data['data']['cpuUsage']
-            cpu_usage_queue.put(cpu_usage_table)
+        responses = await asyncio.gather(*tasks)
 
-            return web.json_response(response_to_client)
+        print(responses)
+
+        return responses
+
 
 
 
