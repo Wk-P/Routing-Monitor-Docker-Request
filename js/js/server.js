@@ -22,18 +22,18 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+try {
+	app.post('/', (req, res) => {
+		
+		// run a new child process	
 
-app.post('/', (req, res) => {
-	
-	// run a new child process	
+		// for container
+		const childScriptPath = path.join(path.dirname(__filename), 'child.js')
 
-	// for container
-	const childScriptPath = path.join(path.dirname(__filename), 'child.js')
+		const childProcess = fork(childScriptPath);
 
-	const childProcess = fork(childScriptPath);
+		// for test on linux host in Documents folder
 
-	// for test on linux host in Documents folder
-	try {
 
 		// Timer for child process run time
 
@@ -47,16 +47,16 @@ app.post('/', (req, res) => {
 			const memUsage = (1 - (os.freemem() / os.totalmem()))
 
 			childProcess.kill();
+			
+			data['mem'] = memUsage;
 
-			res.json({
-				data: data,
-				mem: memUsage,
-			});
+			res.json(data);
 		});
-	} catch (err) {
-		res.status(500).json({ error: 'Interal Server Error'});
-	}
-});
+		
+	})
+} catch (err) {
+	res.status(500).json({ error: 'Interal Server Error'});
+}
 
 app.head('/', (req, res) => {
 	try {
