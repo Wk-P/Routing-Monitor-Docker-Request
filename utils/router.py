@@ -3,6 +3,60 @@ from aiohttp import web
 import multiprocessing
 import asyncio
 
+
+
+
+
+# declare an async function for send request
+async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, cpu_usage_queue):
+    try:
+        if method == "HEAD":
+        # send request to others' servers
+            async with session.head(
+                url=url,
+                headers=request.headers,
+            ) as response:
+                # get headers
+                headers = await response.headers
+
+                for server, value in headers:
+                    # add to list for update cpu_usage_table
+                    cpu_usage_table = cpu_usage_queue.get()
+                    cpu_usage_table[server] = value
+                    cpu_usage_queue.put(cpu_usage_table)
+
+        # Now Just Head
+        elif method == 'POST':
+                        # send request to others' servers
+            async with session.post(
+                url=url,
+                headers=request.headers,
+                json=request_data
+            ) as response:
+                # to Json
+                response_data = await response.json()
+
+                # response
+                response = {
+                    "data": response_data,
+                    "server": url,
+                }
+
+                # add to list for update cpu_usage_table
+                cpu_usage_table = cpu_usage_queue.get()
+                cpu_usage_table[url] = response_data['data']['cpuUsage']
+                cpu_usage_queue.put(cpu_usage_table)
+
+        else:
+            print("Error")
+            response = None
+
+        return response
+    except Exception as e:
+        print(f"Error in req_task: {e}")
+        return None
+
+
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 
 async def handle_request(request):
@@ -36,56 +90,7 @@ async def handle_request(request):
 
     # send request to first server
     async with aiohttp.ClientSession() as session:
-
-        # declare an async function for send request
-        async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, cpu_usage_queue):
-            try:
-                if method == "HEAD":
-                # send request to others' servers
-                    async with session.head(
-                        url=url,
-                        headers=request.headers,
-                    ) as response:
-                        # get headers
-                        headers = await response.headers
-
-                        for server, value in headers:
-                            # add to list for update cpu_usage_table
-                            cpu_usage_table = cpu_usage_queue.get()
-                            cpu_usage_table[server] = value
-                            cpu_usage_queue.put(cpu_usage_table)
-
-                # Now Just Head
-                elif method == 'POST':
-                                # send request to others' servers
-                    async with session.post(
-                        url=url,
-                        headers=request.headers,
-                        json=request_data
-                    ) as response:
-                        # to Json
-                        response_data = await response.json()
-
-                        # response
-                        response = {
-                            "data": response_data,
-                            "server": url,
-                        }
-
-                        # add to list for update cpu_usage_table
-                        cpu_usage_table = cpu_usage_queue.get()
-                        cpu_usage_table[url] = response_data['data']['cpuUsage']
-                        cpu_usage_queue.put(cpu_usage_table)
-
-                else:
-                    print("Error")
-                    response = None
-
-                return response
-            except Exception as e:
-                print(f"Error in req_task: {e}")
-                return None
-
+                
         for server in cpu_usage_table:
             if server_url == server:
                 tasks.append(asyncio.create_task(req_task(session, server_url, "POST", request, request_data, cpu_usage_queue)))
