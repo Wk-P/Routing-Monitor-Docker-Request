@@ -125,11 +125,21 @@ if __name__ == "__main__":
     # Use a Manager l    shared_memory_name = data_memory.name
     route_table = [
         {
+            "role": "worker1",
+            "name": 'ubuntuDockerWorker1',
             "address": "http://192.168.56.103:8080",
             'status': "Y"
         },
         {
-            "address": "http://192.168.56.104:8080",
+            "role": "worker",
+            "name": 'ubuntuDockerWorker',
+            "address": "http://192.168.56.105:8080",
+            'status': "Y"
+        },
+        {
+            "role": "worker",
+            "name": 'ubuntuDockerWorker2',
+            "address": "http://192.168.56.106:8080",
             'status': "Y"
         }
     ]
@@ -150,4 +160,4 @@ if __name__ == "__main__":
     app = web.Application()
     app.router.add_post('/', handle_request)
 
-    web.run_app(app, host='192.168.56.102', port=8080)
+    web.run_app(app, host='192.168.56.104', port=8080)
