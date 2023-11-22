@@ -4,64 +4,63 @@ import multiprocessing
 import asyncio
 
 
-
-
-
 # declare an async function for send request
-async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, cpu_usage_queue):
-    if method == "HEAD":
-    # send request to others' servers
-        async with session.head(
-            url=url,
-        ) as response:
-            # get headers
+async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, route_table: list, cpu_limit):
+    async with asyncio.Lock():
+        if method == "HEAD":
+        # send request to others' servers
+            async with session.head(
+                url=url,
+            ) as response:
+                # get headers
 
-            headers = response.headers
-            mem = headers.get('mem')
-            cpuUsage = headers.get('data')
-            
-            response = {
-                "data": {
-                    'cpuUsage': cpuUsage,
-                    'mem': mem
-                },
-                "server": url
-            }
+                headers = response.headers
+                mem = headers.get('mem')
+                cpuUsage = float(headers.get('data'))
+                
+                response = {
+                    "data": {
+                        'cpuUsage': cpuUsage * cpu_limit,
+                        'mem': mem
+                    },
+                    "server": url
+                }
 
-            # add to list for update cpu_usage_table
-            cpu_usage_table = cpu_usage_queue.get()
-            cpu_usage_table[url] = cpuUsage
-            cpu_usage_queue.put(cpu_usage_table)
+                # add to list for update route_table
+                async with asyncio.Lock():
+                    for server in route_table:
+                        if server['address'] == url:
+                            server['cpu_usage'] = cpuUsage * cpu_limit
 
-            return response
 
-    # Now Just Head
-    elif method == 'POST':
-                    # send request to others' servers
-        async with session.post(
-            url=url,
-            headers=request.headers,
-            json=request_data
-        ) as response:
-            # to Json
-            response_data = await response.json()
+        # Now Just Head
+        elif method == 'POST':
+                        # send request to others' servers
+            async with session.post(
+                url=url,
+                headers=request.headers,
+                json=request_data
+            ) as response:
+                # to Json
 
-            # response
-            response = {
-                "data": response_data,
-                "server": url,
-            }
+                response_data = await response.json()
+                response_data['cpuUsage'] = response_data['cpuUsage'] * cpu_limit
 
-            # add to list for update cpu_usage_table
-            cpu_usage_table = cpu_usage_queue.get()
-            cpu_usage_table[url] = response_data['cpuUsage']
-            cpu_usage_queue.put(cpu_usage_table)
+                # response
+                response = {
+                    "data": response_data,
+                    "server": url,
+                }
 
-            return response
+                # add to list for update route_table
+                for server in route_table:
+                    if server['address'] == url:
+                        server['cpu_usage'] = response_data['cpuUsage']
 
-    else:
-        print("Error")
-        response = None
+
+        else:
+            print("Error")
+            response = None
 
         return response
 
@@ -71,27 +70,14 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
 async def handle_request(request):
 
     server_url = None
-
-    table = route_table_queue.get()
-
-    # while True:
-    #     if table[server_index]['status'] == 'Y':
-    #         server_url = table[server_index]['address']
-    #         server_index = (server_index + 1) % len(route_table)
-    #         break
-    #     server_index = (server_index + 1) % len(route_table)
-
-    cpu_usage_table = cpu_usage_queue.get()
-    
-    
-    min_usage = 2
-    for server in cpu_usage_table:
-        if float(cpu_usage_table[server]) < min_usage:
-            server_url = server
-            min_usage = float(cpu_usage_table[server])
-
-    route_table_queue.put(table)
-    cpu_usage_queue.put(cpu_usage_table)
+    cpu_limit = 0.2
+    async with asyncio.Lock():
+        min_usage = 2
+        for server in route_table:
+            if server['status'] == 'Y':
+                if float(server['cpu_usage']) < min_usage:
+                    server_url = server['address']
+                    min_usage = float(server['cpu_usage'])
     
     request_data = await request.json()
     
@@ -99,63 +85,48 @@ async def handle_request(request):
 
     # send request to first server
     async with aiohttp.ClientSession() as session:
-        for server in cpu_usage_table:
-            if server_url == server:
-                tasks.append(asyncio.create_task(req_task(session, server, "POST", request, request_data, cpu_usage_queue)))
-            else:
-                tasks.append(asyncio.create_task(req_task(session, server, "HEAD", request, request_data, cpu_usage_queue)))
+        for server in route_table:
+            if server['status'] == 'Y':
+                if server_url == server['address']:
+                    tasks.append(asyncio.create_task(req_task(session, server['address'], "POST", request, request_data, route_table, cpu_limit)))
+                else:
+                    tasks.append(asyncio.create_task(req_task(session, server['address'], "HEAD", request, request_data, route_table, cpu_limit)))
 
         responses = await asyncio.gather(*tasks)
+
+        # Here solve the HS and VS
+        
         return web.json_response(responses)
-            
 
 
-
-
-async def get_route_table(queue):
-    while True:
-        modified_route_table = queue.get()
-        route_table = modified_route_table
-        queue.put(route_table)
 
 if __name__ == "__main__":
-    route_table_queue = multiprocessing.Queue(1)
-    cpu_usage_queue = multiprocessing.Queue(1)
-
     # Use a Manager l    shared_memory_name = data_memory.name
     route_table = [
         {
             "role": "worker1",
             "name": 'ubuntuDockerWorker1',
             "address": "http://192.168.56.103:8080",
-            'status': "Y"
+            'status': "Y",
+            'cpu_usage': 0
         },
         {
             "role": "worker",
             "name": 'ubuntuDockerWorker',
             "address": "http://192.168.56.105:8080",
-            'status': "Y"
+            'status': "N",
+            'cpu_usage': 0
         },
         {
             "role": "worker",
             "name": 'ubuntuDockerWorker2',
             "address": "http://192.168.56.106:8080",
-            'status': "Y"
+            'status': "Y",
+            'cpu_usage': 0
         }
     ]
-    
-    cpu_usage_table = dict()
-
-    for server in route_table:
-        cpu_usage_table[server['address']] = 0
-
-    print(cpu_usage_table)
-
-    route_table_queue.put(route_table)
-    cpu_usage_queue.put(cpu_usage_table)
 
     server_index = 0
-
 
     app = web.Application()
     app.router.add_post('/', handle_request)

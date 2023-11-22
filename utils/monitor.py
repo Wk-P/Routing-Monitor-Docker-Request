@@ -181,7 +181,7 @@ if __name__ == "__main__":
             'status': "Y"
         },
         {
-            "address": "http://192.168.56.104:8080",
+            "address": "http://192.168.56.105:8080",
             'status': "Y"
         }
     ]
