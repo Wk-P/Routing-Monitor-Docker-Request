@@ -2,7 +2,7 @@ import aiohttp
 from aiohttp import web
 import multiprocessing
 import asyncio
-
+import monitor_thr
 
 # declare an async function for send request
 async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, route_table: list, cpu_limit):
@@ -70,7 +70,7 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
 async def handle_request(request):
 
     server_url = None
-    cpu_limit = 0.2
+    cpu_limit = 0.5
     async with asyncio.Lock():
         min_usage = 2
         for server in route_table:
@@ -123,6 +123,13 @@ if __name__ == "__main__":
             "address": "http://192.168.56.106:8080",
             'status': "Y",
             'cpu_usage': 0
+        },
+        {
+            "role": "worker",
+            "name": 'ubuntuDockerWorker3',
+            "address": "http://192.168.56.104:8080",
+            'status': "N",
+            'cpu_usage': 0
         }
     ]
 
@@ -131,4 +138,6 @@ if __name__ == "__main__":
     app = web.Application()
     app.router.add_post('/', handle_request)
 
-    web.run_app(app, host='192.168.56.104', port=8080)
+    web.run_app(app, host='192.168.56.107', port=8080)
+
+    monitor_thr.main()
