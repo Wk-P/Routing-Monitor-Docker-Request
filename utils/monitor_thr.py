@@ -8,9 +8,10 @@ from concurrent.futures import ThreadPoolExecutor
 import concurrent.futures
 import queue
 import logging
+
 logging.basicConfig(filename='logs/hs-log.log', level=logging.INFO)
 
-def get_cpu_usage(cpu_usage_stats, lock, ip, node):
+def get_cpu_usage(q: asyncio.Queue, ip, node):
     try:
         if node.attrs['Status']['State'] != 'ready':
             return None
@@ -43,34 +44,36 @@ def get_cpu_usage(cpu_usage_stats, lock, ip, node):
             memory_usage = memory_stats['usage'] / 1024 / 1024
             memory_limit = memory_stats['limit'] / 1024 / 1024 / 1024
 
-            print(f"Node {node.id} Container {container['Names']} CPU Percent is {cpu_percent: .2f} %")
+            print(f"Hostname {node.attrs['Description']['Hostname']} Node {node.id} Container {container['Names']} CPU Percent is {cpu_percent: .2f} %")
             # print(f"Node {node.id} Container {container['Names']} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
 
-            with lock:
-                # Update cpu usage for special node
-                for stats in cpu_usage_stats:
-                    if stats['node_id'] == node.id:
-                        stats['cpu_usage'] = cpu_percent
+            cpu_usage_stats: list = q.get()
+            # Update cpu usage for special node
+            for stats in cpu_usage_stats:
+                if stats['node_id'] == node.id:
+                    stats['cpu_usage'] = cpu_percent
+            q.put(cpu_usage_stats)
         
-
         # horizontal scaling scheduler
-        # hs_scheduler(cpu_usage_stats, lock)
+        # hs_scheduler(cpu_usage_stats)
     
     except Exception as e:
         print("Error")
         print(e)
     
 
-def hs(cpu_usage_stats, _class, lock):
+def hs(q: asyncio.Queue, _class):
     # for getting node id
     print("HS RUNNING...")
     password = '123321'
+
+
+    cpu_usage_stats = q.get()
     if _class == 'up':
         for s in cpu_usage_stats:
             if s['availability'] == 'drain' and s['state'] == 'ready':
                 hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {s['node_id']}"
-                with lock:
-                    s['availability'] = 'active'
+                s['availability'] = 'active'
                 
                 # scaling
                 process = subprocess.Popen(hs_active_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -92,36 +95,36 @@ def hs(cpu_usage_stats, _class, lock):
         for s in cpu_usage_stats:
             if s['availability'] == 'active' and s['state'] == 'ready':
                 hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {s['node_id']}"
-                with lock:
-                    s['availability'] = 'drain'
+                s['availability'] = 'drain'
                 
                 # scaling
                 process = subprocess.Popen(hs_drain_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 stdout, stderr = process.communicate()
 
-                time.sleep(1)
-                break
+                time.sleep(0.5)
+                return
 
     else:
         exit(1)        
+    q.put(cpu_usage_stats)
 
 
-
-def hs_scheduler(cpu_usage_stats, lock):
-    temp_stats = cpu_usage_stats
-    if hs_up_check(temp_stats, 40):
+def hs_scheduler(q: asyncio.Queue):
+    if hs_up_check(q, 40):
         logging.info(f"HS : Up")
-        hs(cpu_usage_stats, "up", lock)
-    elif hs_down_check(temp_stats, 20):
+        hs(q, "up")
+    elif hs_down_check(q, 20):
         logging.info(f"HS : Down")
-        hs(cpu_usage_stats, "down", lock)
+        hs(q, "down")
     else:
         logging.info(f"HS : no")
         pass
 
-def hs_down_check(cpu_usage_stats: list, hs_under_limit_cpu_usage: float):
+def hs_down_check(q: asyncio.Queue, hs_under_limit_cpu_usage: float):
     flag = 0
     cm = 0 
+    cpu_usage_stats = q.get()
+
     for stats in cpu_usage_stats:
         if stats['availability'] == 'active' and stats['state'] == 'ready':
             cm += 1
@@ -136,21 +139,23 @@ def hs_down_check(cpu_usage_stats: list, hs_under_limit_cpu_usage: float):
             else:
                 flag = 0
 
+    q.put(cpu_usage_stats)
     return flag
 
-def hs_up_check(cpu_usage_stats: list, hs_over_limit_cpu_usage: float):
+def hs_up_check(q: asyncio.Queue, hs_over_limit_cpu_usage: float):
     flag = 0
+    cpu_usage_stats = q.get()
     for stats in cpu_usage_stats:
         if stats['availability'] == 'active' and stats['state'] == 'ready':
             if stats['cpu_usage'] > hs_over_limit_cpu_usage:
                 flag += 1
             else:
                 flag = 0
-
+    q.put(cpu_usage_stats)
     return flag
 
 
-def main(q: queue.Queue):
+def main(q: asyncio.Queue):
     port = 2375
     manager_ip = '192.168.56.107'
     swarm_client = docker.DockerClient(base_url=f'tcp://{manager_ip}:{port}')
@@ -159,18 +164,18 @@ def main(q: queue.Queue):
         
         # declare
         route_table: list = q.get()
-        lock = threading.Lock()
 
         # initialize lists
         for node in swarm_nodes:
             if node.attrs['Spec']['Role'] == 'worker':
                 route_table.append({
                     "node_id": node.id,
+                    'name': node.attrs['Description']['Hostname'],
                     "cpu_usage": 0,
                     "availability": node.attrs['Spec']['Availability'],      # get availability for choosing drain node to HS
                     "state": node.attrs['Status']['State'],
                     "address": node.attrs['Status']['Addr'],
-                    'cpuUsage': 0
+                    'cpuUsage': 0,
                 })
 
         q.put(route_table)
@@ -179,26 +184,22 @@ def main(q: queue.Queue):
             while True:
                 futures = list()
                 # get route_table from queue
-                route_table = q.get()
                 for node in swarm_nodes:
                     
-                    f = pool.submit(get_cpu_usage(route_table, lock, node.attrs['Status']['Addr'], node))
+                    f = pool.submit(get_cpu_usage(q, node.attrs['Status']['Addr'], node))
                     futures.append(f)
                     
 
                 concurrent.futures.wait(futures)
                 
                 # put into for router using
-                q.put(route_table)
 
 
                 # get for monitor
-                route_table = q.get()
 
-                f = pool.submit(hs_scheduler(route_table, lock))
+                f = pool.submit(hs_scheduler(q))
                 concurrent.futures.wait([f])
                 
-                q.put(route_table)
 
         except KeyboardInterrupt:
             pool.terminate()
