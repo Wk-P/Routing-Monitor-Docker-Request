@@ -81,7 +81,7 @@ async def handle_request(request):
     if syncQueue.qsize() < 1:
         return web.json_response({"Error": "Nan"})
 
-    rt = syncQueue.get()
+    rt = syncQueue.get_nowait()
     print(rt)
     async with asyncio.Lock():
         min_usage = 2
@@ -100,19 +100,17 @@ async def handle_request(request):
 
     # send request to first server
     async with aiohttp.ClientSession() as session:
-        rt = syncQueue.get()
         for server in route_table:
             if server['status'] == 'Y':
                 if server_url == server['address']:
-                    tasks.append(asyncio.create_task(req_task(session, server['address'], "POST", request, request_data, rt, cpu_limit)))
+                    tasks.append(asyncio.create_task(req_task(session, server['address'], "POST", request, request_data, syncQueue, cpu_limit)))
                 else:
-                    tasks.append(asyncio.create_task(req_task(session, server['address'], "HEAD", request, request_data, rt, cpu_limit)))
+                    tasks.append(asyncio.create_task(req_task(session, server['address'], "HEAD", request, request_data, syncQueue, cpu_limit)))
 
         responses = await asyncio.gather(*tasks)
 
         # Here update route_table
         
-    syncQueue.put(rt)
         
     return web.json_response(responses)
 
