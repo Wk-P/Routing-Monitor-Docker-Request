@@ -160,50 +160,22 @@ def main(q: asyncio.Queue):
     manager_ip = '192.168.56.107'
     swarm_client = docker.DockerClient(base_url=f'tcp://{manager_ip}:{port}')
     swarm_nodes = swarm_client.nodes.list()
-    with ThreadPoolExecutor(max_workers = len(swarm_nodes) + 1) as pool:
-        
-        # declare
-        route_table: list = q.get()
+    # declare
+    route_table: list = q.get()
 
-        # initialize lists
-        for node in swarm_nodes:
-            if node.attrs['Spec']['Role'] == 'worker':
-                route_table.append({
-                    "node_id": node.id,
-                    'name': node.attrs['Description']['Hostname'],
-                    "cpu_usage": 0,
-                    "availability": node.attrs['Spec']['Availability'],      # get availability for choosing drain node to HS
-                    "state": node.attrs['Status']['State'],
-                    "address": node.attrs['Status']['Addr'],
-                    'cpuUsage': 0,
-                })
-
-        q.put(route_table)
-        # run thread pool
-        try:
-            while True:
-                futures = list()
-                # get route_table from queue
-                for node in swarm_nodes:
-                    
-                    f = pool.submit(get_cpu_usage(q, node.attrs['Status']['Addr'], node))
-                    futures.append(f)
-                    
-
-                concurrent.futures.wait(futures)
-                
-                # put into for router using
-
-
-                # get for monitor
-
-                f = pool.submit(hs_scheduler(q))
-                concurrent.futures.wait([f])
-                
-
-        except KeyboardInterrupt:
-            pool.terminate()
-
+    # initialize lists
+    for node in swarm_nodes:
+        if node.attrs['Spec']['Role'] == 'worker':
+            route_table.append({
+                "node_id": node.id,
+                'name': node.attrs['Description']['Hostname'],
+                "cpu_usage": 0,
+                "availability": node.attrs['Spec']['Availability'],      # get availability for choosing drain node to HS
+                "state": node.attrs['Status']['State'],
+                "address": node.attrs['Status']['Addr'],
+                'cpuUsage': 0,
+            })
+    q.put(route_table)
 
 if __name__ == "__main__":
     pass

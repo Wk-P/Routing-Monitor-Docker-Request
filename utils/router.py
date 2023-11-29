@@ -5,10 +5,12 @@ import asyncio
 import monitor_thr
 import queue
 import threading
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 # declare an async function for send request
 async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, q: queue.Queue, cpu_limit):
-    rt = q.get()
+    rt = await q.get()
     if method == "HEAD":
     # send request to others' servers
         async with session.head(
@@ -64,7 +66,7 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
         response = None
 
     # put into queue for sync
-    q.put(rt)
+    await q.put(rt)
 
     return response
 
@@ -79,7 +81,7 @@ async def handle_request(request):
     if syncQueue.qsize() < 1:
         return web.json_response({"Error": "Queue Nan"})
     
-    rt = syncQueue.get()
+    rt = await syncQueue.get()
     print(rt)
     if len(rt) < 1:
         return web.json_response({"Error": "Route table Nan"})
@@ -97,6 +99,7 @@ async def handle_request(request):
     
     tasks = []
 
+    rt = await syncQueue.get()
     # send request to first server
     async with aiohttp.ClientSession() as session:
         for stats in rt:
@@ -108,34 +111,49 @@ async def handle_request(request):
 
         responses = await asyncio.gather(*tasks)
 
-        # Here update route_table
-        
+    # Here update route_table
+    syncQueue.put_nowait(rt)
     return web.json_response(responses)
 
 
 async def main(q: asyncio.Queue):
-    server_index = 0
+    route_table = await q.get()
+    with ThreadPoolExecutor(max_workers = len(route_table) + 1) as pool:
+        # run thread pool
+        try:
+            while True:
+                futures = list()
+                # get route_table from queue
+                for node in route_table:
+                    
+                    f = pool.submit(monitor_thr.get_cpu_usage(q, node.attrs['Status']['Addr'], node))
+                    futures.append(f)
+                    
 
-    route_table = list()
-    await syncQueue.put(route_table)
-
-    moniter = threading.Thread(target=monitor_thr.main, args=(q,))
-    moniter.start()
-
-    print("HS monitor is running...")
+                route_table.futures.wait(futures)
+                
+                # put into for router using
 
 
+                # get for monitor
 
-    moniter.join()
+                f = pool.submit(monitor_thr.hs_scheduler(q))
+                concurrent.futures.wait([f])
+
+                q.put_nowait(route_table)            
+    
+        except KeyboardInterrupt:
+            pool.terminate()
 
 if __name__ == "__main__":
     syncQueue = asyncio.Queue()
 
+    monitor_task = asyncio.create_task(main(syncQueue))
+    asyncio.run(monitor_task)
+
     app = web.Application()
     app.router.add_post('/', handle_request)
 
-    # add thread task into event loop
-    asyncio.ensure_future(main(syncQueue))
 
     web.run_app(app, host='192.168.56.107', port=8080)
     print("Web server is running on 192.168.56.107:8080...")
