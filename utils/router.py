@@ -130,7 +130,7 @@ async def main(q: asyncio.Queue):
                     futures.append(f)
                     
 
-                route_table.futures.wait(futures)
+                concurrent.futures.wait(futures)
                 
                 # put into for router using
 
