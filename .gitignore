@@ -3,3 +3,4 @@
 /docker_account
 /packages
 /utils/__pycache__/*
+/logs/*
