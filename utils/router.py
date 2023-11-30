@@ -9,7 +9,7 @@ import logging
 
 logging.basicConfig(filename='logs/hs-log.log', level=logging.INFO)
 
-async def get_cpu_usage(cpu_usage_stats, ip, node):
+def get_cpu_usage(cpu_usage_stats, ip, node):
     try:
         if node.attrs['Status']['State'] != 'ready':
             return None
@@ -45,8 +45,6 @@ async def get_cpu_usage(cpu_usage_stats, ip, node):
             logging.info(f"Hostname {node.attrs['Description']['Hostname']} Node {node.id} Container {container['Names']} CPU Percent is {cpu_percent: .2f} %")
             # print(f"Node {node.id} Container {container['Names']} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
 
-            await asyncio.sleep(0.01)
-            
             # cpu_usage_stats: list = q.get()
             # Update cpu usage for special node
             for stats in cpu_usage_stats:
@@ -120,7 +118,6 @@ def hs_scheduler(cpu_usage_stats):
         hs(cpu_usage_stats, "down")
     else:
         logging.info(f"HS : no")
-        pass
 
 def hs_down_check(cpu_usage_stats, hs_under_limit_cpu_usage: float):
     flag = 0
@@ -197,17 +194,15 @@ def init_route_table():
 
 async def monitor_main():
     global route_table
-    global req_count
     try:
         print("Start Monitoring...")
         while True:
-        # get route_table from queue
+            # get route_table from queue
             for stats in route_table:
-                await get_cpu_usage(route_table, ip=stats['address'], node=stats['node_object'])
+                get_cpu_usage(route_table, ip=stats['address'], node=stats['node_object'])
             
-            # if req_count % 10 == 0 and req_count != 0:
+            await asyncio.sleep(1)
             hs_scheduler(route_table)
-        # await asyncio.sleep(3)
 
     except:
         print("Error in monitor main function")
@@ -282,8 +277,6 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 async def handle_request(request):
     global route_table
-    global req_count
-    req_count += 1
 
     # temp_rt: list = route_table
     server_url = None
@@ -326,18 +319,12 @@ async def handle_request(request):
 
     # Here update route_table
     # await syncQueue.put(rt)
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, monitor_main)
-
-
     return web.json_response(responses)
 
 
 if __name__ == "__main__":
 
     try:
-        req_count = 0
-
         route_table = init_route_table()
 
         loop = asyncio.new_event_loop()
@@ -346,7 +333,6 @@ if __name__ == "__main__":
         app = web.Application()
         app.router.add_post('/', handle_request)
 
-        print("Web server is running on 192.168.56.107:8080...")
         web.run_app(app, host='192.168.56.107', port=8080, loop=loop)
 
     except asyncio.CancelledError:
@@ -354,7 +340,3 @@ if __name__ == "__main__":
     finally:
         monitor_task.cancel()
         app.shutdown()
-
-
-    # process.join()
-    # Use a Manager l    shared_memory_name = data_memory.name
