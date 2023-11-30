@@ -5,11 +5,11 @@ import docker
 import time
 import subprocess
 import logging
+import multiprocessing
+import threading
 
 
-logging.basicConfig(filename='logs/hs-log.log', level=logging.INFO)
-
-def get_cpu_usage(cpu_usage_stats, ip, node):
+def get_cpu_usage(cpu_usage_stats, ip, node, log):
     try:
         if node.attrs['Status']['State'] != 'ready':
             return None
@@ -42,7 +42,7 @@ def get_cpu_usage(cpu_usage_stats, ip, node):
             memory_usage = memory_stats['usage'] / 1024 / 1024
             memory_limit = memory_stats['limit'] / 1024 / 1024 / 1024
 
-            logging.info(f"Hostname {node.attrs['Description']['Hostname']} Node {node.id} Container {container['Names']} CPU Percent is {cpu_percent: .2f} %")
+            log.info(f"Hostname {node.attrs['Description']['Hostname']} Node {node.id} Container {container['Names']} CPU Percent is {cpu_percent: .2f} %")
             # print(f"Node {node.id} Container {container['Names']} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
 
             # cpu_usage_stats: list = q.get()
@@ -109,17 +109,16 @@ def hs(cpu_usage_stats, _class):
     # q.put_nowait(cpu_usage_stats)
 
 
-def hs_scheduler(cpu_usage_stats):
+def hs_scheduler(cpu_usage_stats: list):
     if hs_up_check(cpu_usage_stats, 40):
-        logging.info(f"HS : Up")
         hs(cpu_usage_stats, "up")
     elif hs_down_check(cpu_usage_stats, 0):
-        logging.info(f"HS : Down")
         hs(cpu_usage_stats, "down")
+        time.sleep(2)
     else:
-        logging.info(f"HS : no")
+        pass
 
-def hs_down_check(cpu_usage_stats, hs_under_limit_cpu_usage: float):
+def hs_down_check(cpu_usage_stats: list, hs_under_limit_cpu_usage: float):
     flag = 0
     cm = 0          # last one container can not be remove
     count = 0
@@ -148,7 +147,7 @@ def hs_down_check(cpu_usage_stats, hs_under_limit_cpu_usage: float):
     # q.put_nowait(cpu_usage_stats)
     return flag
 
-def hs_up_check(cpu_usage_stats, hs_over_limit_cpu_usage: float):
+def hs_up_check(cpu_usage_stats: list, hs_over_limit_cpu_usage: float):
     flag = 0
     # cpu_usage_stats = q.get()
     count = 0
@@ -191,19 +190,21 @@ def init_route_table():
     return cpu_usage_stats
 
 
-
-async def monitor_main():
+def monitor_main():
     global route_table
     try:
         print("Start Monitoring...")
-        while True:
-            # get route_table from queue
-            for stats in route_table:
-                get_cpu_usage(route_table, ip=stats['address'], node=stats['node_object'])
-            
-            await asyncio.sleep(1)
-            hs_scheduler(route_table)
 
+        handler = logging.FileHandler(filename='logs/hs-log.log')
+        monitor_log = logging.Logger(name="monitor", level=logging.INFO)
+        monitor_log.addHandler(handler)
+
+        while True:
+            for stats in route_table:
+                get_cpu_usage(route_table, ip=stats['address'], node=stats['node_object'], log=monitor_log)
+            
+            monitor_log.info("--------------------------")
+            hs_scheduler(route_table)        
     except:
         print("Error in monitor main function")
 
@@ -212,7 +213,6 @@ async def monitor_main():
 
 # declare an async function for send request
 async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, cpu_limit):
-    # rt = await q.get()
     if method == "HEAD":
     # send request to others' servers
         async with session.head(
@@ -277,6 +277,7 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 async def handle_request(request):
     global route_table
+    global req_count
 
     # temp_rt: list = route_table
     server_url = None
@@ -323,20 +324,26 @@ async def handle_request(request):
 
 
 if __name__ == "__main__":
+    req_count = 0
 
     try:
         route_table = init_route_table()
-
         loop = asyncio.new_event_loop()
-        monitor_task = loop.create_task(monitor_main())
 
-        app = web.Application()
+        # monitor_process = multiprocessing.Process(target=monitor_main)
+        # monitor_process.start()
+
+        monitor_threading = threading.Thread(target=monitor_main)
+        monitor_threading.start()
+
+        app = web.Application(logger=None)
         app.router.add_post('/', handle_request)
 
-        web.run_app(app, host='192.168.56.107', port=8080, loop=loop)
+        web.run_app(app, host='192.168.56.107', port=8080, loop=loop, access_log=None)
 
     except asyncio.CancelledError:
         pass
     finally:
-        monitor_task.cancel()
+        # monitor_process.join()
+        monitor_threading.join()
         app.shutdown()
