@@ -1,16 +1,223 @@
 import aiohttp
 from aiohttp import web
-import multiprocessing
 import asyncio
-import monitor_thr
-import queue
-import threading
-import concurrent.futures
-from concurrent.futures import ThreadPoolExecutor
+import docker
+import time
+import subprocess
+import logging
+
+
+logging.basicConfig(filename='logs/hs-log.log', level=logging.INFO)
+
+async def get_cpu_usage(cpu_usage_stats, ip, node):
+    try:
+        if node.attrs['Status']['State'] != 'ready':
+            return None
+            
+        client = docker.api.APIClient(base_url=f"tcp://{ip}:2375")
+        for container in client.containers():
+            stats = client.stats(container['Id'], stream=False)
+
+            pre_cpu_stats = stats['precpu_stats']
+            cpu_stats = stats['cpu_stats']
+
+            cpu_usage = cpu_stats['cpu_usage']
+            # print(cpu_usage)
+            pre_cpu_usage = pre_cpu_stats['cpu_usage']
+
+            system_cpu_usage = cpu_stats['system_cpu_usage']
+            online_cpus = cpu_stats['online_cpus']
+
+            # calculate
+            cpu_delta = cpu_usage['total_usage'] - pre_cpu_usage['total_usage']
+            system_delta = system_cpu_usage - pre_cpu_stats['system_cpu_usage']
+
+            # cpu_percent = 0.0
+            # if system_delta > 0.0:
+            cpu_percent = (cpu_delta / system_delta) * online_cpus * 100
+
+
+            # memory stats
+            memory_stats = stats['memory_stats']
+            memory_usage = memory_stats['usage'] / 1024 / 1024
+            memory_limit = memory_stats['limit'] / 1024 / 1024 / 1024
+
+            logging.info(f"Hostname {node.attrs['Description']['Hostname']} Node {node.id} Container {container['Names']} CPU Percent is {cpu_percent: .2f} %")
+            # print(f"Node {node.id} Container {container['Names']} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
+
+            await asyncio.sleep(0.01)
+            
+            # cpu_usage_stats: list = q.get()
+            # Update cpu usage for special node
+            for stats in cpu_usage_stats:
+                if stats['node_id'] == node.id:
+                    stats['cpu_usage'] = cpu_percent
+            # q.put(cpu_usage_stats)
+        
+        # horizontal scaling scheduler
+        # hs_scheduler(cpu_usage_stats)
+    
+
+    except Exception as e:
+        print("Error in get_cpu_usage")
+        print(e)
+
+    return cpu_usage_stats    
+
+def hs(cpu_usage_stats, _class):
+    # for getting node id
+    print("HS RUNNING...")
+    password = '123321'
+
+    # cpu_usage_stats = q.get()
+    if _class == 'up':
+        print("UP")
+        for s in cpu_usage_stats:
+            if s['availability'] == 'drain' and s['state'] == 'ready':
+                hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {s['node_id']}"
+                s['availability'] = 'active'
+                
+                # scaling
+                process = subprocess.Popen(hs_active_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                stdout, stderr = process.communicate()
+                return
+
+    elif _class == 'down':
+        active_num = 1
+        get_node_num_cmd = f"echo '{password}' | sudo -S docker node ls | wc -l"
+        n_process = subprocess.Popen(get_node_num_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        output, err = n_process.communicate()
+
+        # print(worker_sum)
+        if n_process.returncode == 0:
+            worker_sum = int(output.strip())
+            if active_num >= worker_sum:
+                return
+
+        print("DOWN")
+        for s in cpu_usage_stats:
+            if s['availability'] == 'active' and s['state'] == 'ready':
+                hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {s['node_id']}"
+                s['availability'] = 'drain'
+                
+                # scaling
+                process = subprocess.Popen(hs_drain_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                stdout, stderr = process.communicate()
+                return
+
+    else:
+        print("Error in HS")
+        return
+    # q.put_nowait(cpu_usage_stats)
+
+
+def hs_scheduler(cpu_usage_stats):
+    if hs_up_check(cpu_usage_stats, 40):
+        logging.info(f"HS : Up")
+        hs(cpu_usage_stats, "up")
+    elif hs_down_check(cpu_usage_stats, 0):
+        logging.info(f"HS : Down")
+        hs(cpu_usage_stats, "down")
+    else:
+        logging.info(f"HS : no")
+        pass
+
+def hs_down_check(cpu_usage_stats, hs_under_limit_cpu_usage: float):
+    flag = 0
+    cm = 0          # last one container can not be remove
+    count = 0
+
+
+    # if hs count will equal to flag
+
+    for stats in cpu_usage_stats:
+        if stats['availability'] == 'active' and stats['state'] == 'ready':
+            cm += 1
+    
+    if cm <= 1:
+        return 0
+
+
+    for stats in cpu_usage_stats:
+        if stats['availability'] == 'active' and stats['state'] == 'ready':
+            count += 1
+            if stats['cpu_usage'] <= hs_under_limit_cpu_usage:
+                flag += 1
+    # q.put_nowait(cpu_usage_stats)
+    if flag == count:
+        return 1
+    return 0
+
+    # q.put_nowait(cpu_usage_stats)
+    return flag
+
+def hs_up_check(cpu_usage_stats, hs_over_limit_cpu_usage: float):
+    flag = 0
+    # cpu_usage_stats = q.get()
+    count = 0
+
+    # if hs count will equal to flag
+
+    for stats in cpu_usage_stats:
+        if stats['availability'] == 'active' and stats['state'] == 'ready':
+            count += 1
+            if stats['cpu_usage'] > hs_over_limit_cpu_usage:
+                flag += 1
+    # q.put_nowait(cpu_usage_stats)
+    if flag == count:
+        return 1
+    return 0
+
+
+def init_route_table():
+    port = 2375
+    manager_ip = '192.168.56.107'
+    swarm_client = docker.DockerClient(base_url=f'tcp://{manager_ip}:{port}')
+    swarm_nodes = swarm_client.nodes.list()
+    cpu_usage_stats = list()
+    container_port = 8080
+    # declare
+
+    # initialize lists
+    for node in swarm_nodes:
+        if node.attrs['Spec']['Role'] == 'worker':
+            cpu_usage_stats.append({
+                "node_id": node.id,
+                'name': node.attrs['Description']['Hostname'],
+                "cpu_usage": 0,
+                "availability": node.attrs['Spec']['Availability'],      # get availability for choosing drain node to HS
+                "state": node.attrs['Status']['State'],
+                "address": node.attrs['Status']['Addr'],
+                "port": container_port,
+                "node_object": node, 
+            })
+    return cpu_usage_stats
+
+
+
+async def monitor_main():
+    global route_table
+    global req_count
+    try:
+        print("Start Monitoring...")
+        while True:
+        # get route_table from queue
+            for stats in route_table:
+                await get_cpu_usage(route_table, ip=stats['address'], node=stats['node_object'])
+            
+            # if req_count % 10 == 0 and req_count != 0:
+            hs_scheduler(route_table)
+        # await asyncio.sleep(3)
+
+    except:
+        print("Error in monitor main function")
+
+
+
 
 # declare an async function for send request
-async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, q: queue.Queue, cpu_limit):
-    rt = await q.get()
+async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, cpu_limit):
+    # rt = await q.get()
     if method == "HEAD":
     # send request to others' servers
         async with session.head(
@@ -31,14 +238,14 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
             }
 
             # add to list for update route_table
-            for stats in rt:
-                if stats['address'] == url:
-                    stats['cpuUsage'] = cpuUsage * cpu_limit
+            # for stats in route_table:
+            #     if stats['address'] == url:
+            #         stats['cpuUsage'] = cpuUsage * cpu_limit
 
 
     # Now Just Head
     elif method == 'POST':
-                    # send request to others' servers
+        # send request to others' servers
         async with session.post(
             url=url,
             headers=request.headers,
@@ -56,17 +263,17 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
             }
 
             # add to list for update route_table
-            for stats in rt:
-                if stats['address'] == url:
-                    stats['cpuUsage'] = response_data['cpuUsage']
+            # for stats in route_table:
+            #     if stats['address'] == url:
+            #         stats['cpu_usage'] = response_data['cpuUsage']
 
 
     else:
-        print("Error")
+        print("Error in req_task")
         response = None
 
     # put into queue for sync
-    await q.put(rt)
+    # await q.put(rt)
 
     return response
 
@@ -74,129 +281,80 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
 
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 async def handle_request(request):
-    global syncQueue
+    global route_table
+    global req_count
+    req_count += 1
+
+    # temp_rt: list = route_table
     server_url = None
     cpu_limit = 0.5
+
     
-    if syncQueue.qsize() < 1:
-        return web.json_response({"Error": "Queue Nan"})
+    # if syncQueue.qsize() < 1:
+        # return web.json_response({"Error": "Queue Empty"})
     
-    rt = await syncQueue.get()
-    print(rt)
-    if len(rt) < 1:
-        return web.json_response({"Error": "Route table Nan"})
+    # rt = await syncQueue.get()
+    # if len(route_table) < 1:
+        # return web.json_response({"Error": "Route Table Empty"})
     min_usage = 2
-    for stats in rt:
+    for stats in route_table:
+        # print(f"{stats['address']} : {stats['cpu_usage']}")
         if stats['state'] == 'ready' and stats['availability'] == 'active':
             if float(stats['cpu_usage']) < min_usage:
                 server_url = stats['address']
-                min_usage = float(stats['cpuUsage'])
+                min_usage = float(stats['cpu_usage'])
     
-    syncQueue.put(rt)
+    # await syncQueue.put(route_table)
 
-    print(server_url)
     request_data = await request.json()
     
     tasks = []
 
-    rt = await syncQueue.get()
+    # rt = await syncQueue.get()
     # send request to first server
     async with aiohttp.ClientSession() as session:
-        for stats in rt:
+        for stats in route_table:
             if stats['state'] == 'ready' and stats['availability'] == 'active':
                 if server_url == stats['address']:
-                    tasks.append(asyncio.create_task(req_task(session, stats['address'], "POST", request, request_data, syncQueue, cpu_limit)))
+                    tasks.append(asyncio.create_task(req_task(session, f"http://{stats['address']}:{stats['port']}", "POST", request, request_data, cpu_limit)))
                 else:
-                    tasks.append(asyncio.create_task(req_task(session, stats['address'], "HEAD", request, request_data, syncQueue, cpu_limit)))
+                    tasks.append(asyncio.create_task(req_task(session, f"http://{stats['address']}:{stats['port']}", "HEAD", request, request_data, cpu_limit)))
 
         responses = await asyncio.gather(*tasks)
 
+
+
     # Here update route_table
-    syncQueue.put_nowait(rt)
+    # await syncQueue.put(rt)
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, monitor_main)
+
+
     return web.json_response(responses)
 
 
-async def main(q: asyncio.Queue):
-    route_table = await q.get()
-    with ThreadPoolExecutor(max_workers = len(route_table) + 1) as pool:
-        # run thread pool
-        try:
-            while True:
-                futures = list()
-                # get route_table from queue
-                for node in route_table:
-                    
-                    f = pool.submit(monitor_thr.get_cpu_usage(q, node.attrs['Status']['Addr'], node))
-                    futures.append(f)
-                    
-
-                concurrent.futures.wait(futures)
-                
-                # put into for router using
-
-
-                # get for monitor
-
-                f = pool.submit(monitor_thr.hs_scheduler(q))
-                concurrent.futures.wait([f])
-
-                q.put_nowait(route_table)            
-    
-        except KeyboardInterrupt:
-            pool.terminate()
-
 if __name__ == "__main__":
-    syncQueue = asyncio.Queue()
 
-    monitor_task = asyncio.create_task(main(syncQueue))
-    asyncio.run(monitor_task)
+    try:
+        req_count = 0
 
-    app = web.Application()
-    app.router.add_post('/', handle_request)
+        route_table = init_route_table()
+
+        loop = asyncio.new_event_loop()
+        monitor_task = loop.create_task(monitor_main())
+
+        app = web.Application()
+        app.router.add_post('/', handle_request)
+
+        print("Web server is running on 192.168.56.107:8080...")
+        web.run_app(app, host='192.168.56.107', port=8080, loop=loop)
+
+    except asyncio.CancelledError:
+        pass
+    finally:
+        monitor_task.cancel()
+        app.shutdown()
 
 
-    web.run_app(app, host='192.168.56.107', port=8080)
-    print("Web server is running on 192.168.56.107:8080...")
-
+    # process.join()
     # Use a Manager l    shared_memory_name = data_memory.name
-
-    # [
-        # {
-        #     "name": '',
-        #     "address": "http://192.168.56.103:8080",
-        #     'state': "",
-        #     'cpu_usage': 0,
-        #     'availability': '',
-        #     'node_id': ''
-        # },
-        # {
-        #     "name": '',
-        #     "address": "http://192.168.56.105:8080",
-        #     'state': "",
-        #     'cpu_usage': 0,
-        #     'availability': '',
-        #     'node_id': ''
-        # },
-        # {
-        #     "name": '',
-        #     "address": "http://192.168.56.106:8080",
-        #     'state': "",
-        #     'cpu_usage': 0,
-        #     'availability': '',
-        #     'node_id': ''
-        # },
-        # {
-        #     "name": '',
-        #     "address": "http://192.168.56.104:8080",
-        #     'state': '',
-        #     'cpu_usage': 0,
-        #     'availability': '',
-        #     'node_id': ''
-        # }
-    # ]
-
-    
-
-
-
-
