@@ -212,7 +212,7 @@ def monitor_main():
 
 
 # declare an async function for send request
-async def req_task(session: aiohttp.ClientSession, url, method, request, request_data, cpu_limit):
+async def req_task(session: aiohttp.ClientSession, url, method, request: aiohttp.ClientRequest, request_data, cpu_limit):
     if method == "HEAD":
     # send request to others' servers
         async with session.head(
@@ -275,7 +275,7 @@ async def req_task(session: aiohttp.ClientSession, url, method, request, request
 
 
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
-async def handle_request(request):
+async def handle_request(request: aiohttp.ClientRequest):
     global route_table
     global req_count
 
@@ -311,8 +311,8 @@ async def handle_request(request):
             if stats['state'] == 'ready' and stats['availability'] == 'active':
                 if server_url == stats['address']:
                     tasks.append(asyncio.create_task(req_task(session, f"http://{stats['address']}:{stats['port']}", "POST", request, request_data, cpu_limit)))
-                else:
-                    tasks.append(asyncio.create_task(req_task(session, f"http://{stats['address']}:{stats['port']}", "HEAD", request, request_data, cpu_limit)))
+                # else:
+                    # tasks.append(asyncio.create_task(req_task(session, f"http://{stats['address']}:{stats['port']}", "HEAD", request, request_data, cpu_limit)))
 
         responses = await asyncio.gather(*tasks)
 
