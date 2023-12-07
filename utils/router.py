@@ -353,19 +353,22 @@ if __name__ == "__main__":
         route_table = init_route_table()
         main_loop = asyncio.new_event_loop()
 
+    
+        task = send_head_request()
+        asyncio.gather(task)
+
+
+        app = web.Application()
+        app.router.add_post('/', handle_request)
+
+        web.run_app(app, host='192.168.56.107', port=8080, loop=main_loop)
+
+
         # monitor_process = multiprocessing.Process(target=monitor_main)
         # monitor_process.start()
-        
-        task = main_loop.create_task(send_head_request())
-        asyncio.gather(task)
 
         # monitor_threading = threading.Thread(target=monitor_main)
         # monitor_threading.start()
-
-        # app = web.Application()
-        # app.router.add_post('/', handle_request)
-
-        # web.run_app(app, host='192.168.56.107', port=8080, loop=loop)
 
     except asyncio.CancelledError:
         pass
