@@ -33,8 +33,8 @@ def get_cpu_usage(cpu_usage_stats, ip, node, log):
             system_delta = system_cpu_usage - pre_cpu_stats['system_cpu_usage']
 
             # cpu_percent = 0.0
-            # if system_delta > 0.0:
-            cpu_percent = (cpu_delta / system_delta) * online_cpus * 100
+            if system_delta > 0.0:
+                cpu_percent = (cpu_delta / system_delta) * online_cpus * 100
 
 
             # memory stats
@@ -69,15 +69,18 @@ def hs(cpu_usage_stats, _class):
 
     # cpu_usage_stats = q.get()
     if _class == 'up':
-        print("UP")
         for s in cpu_usage_stats:
             if s['availability'] == 'drain' and s['state'] == 'ready':
                 hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {s['node_id']}"
-                s['availability'] = 'active'
                 
                 # scaling
                 process = subprocess.Popen(hs_active_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 stdout, stderr = process.communicate()
+                print("UP")
+
+                time.sleep(3)
+                s['availability'] = 'active'
+
                 return
 
     elif _class == 'down':
@@ -92,19 +95,22 @@ def hs(cpu_usage_stats, _class):
             if active_num >= worker_sum:
                 return
 
-        print("DOWN")
         for s in cpu_usage_stats:
             if s['availability'] == 'active' and s['state'] == 'ready':
                 hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {s['node_id']}"
                 s['availability'] = 'drain'
                 
+                time.sleep(1)
                 # scaling
                 process = subprocess.Popen(hs_drain_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 stdout, stderr = process.communicate()
+                
+                print("DOWN")
                 return
 
     else:
-        print("Error in HS")
+        print("Error in HS")    
+
         return
     # q.put_nowait(cpu_usage_stats)
 
@@ -144,8 +150,6 @@ def hs_down_check(cpu_usage_stats: list, hs_under_limit_cpu_usage: float):
         return 1
     return 0
 
-    # q.put_nowait(cpu_usage_stats)
-    return flag
 
 def hs_up_check(cpu_usage_stats: list, hs_over_limit_cpu_usage: float):
     flag = 0
@@ -212,7 +216,7 @@ def monitor_main():
 
 
 # declare an async function for send request
-async def req_task(session: aiohttp.ClientSession, url, method, request: aiohttp.ClientRequest, request_data, cpu_limit):
+async def req_post_task(session: aiohttp.ClientSession, url, method, request: aiohttp.ClientRequest, request_data, cpu_limit):
     if method == "HEAD":
     # send request to others' servers
         async with session.head(
@@ -249,7 +253,6 @@ async def req_task(session: aiohttp.ClientSession, url, method, request: aiohttp
             # to Json
 
             response_data = await response.json()
-            response_data['cpuUsage'] = response_data['cpuUsage'] * cpu_limit
 
             # response
             response = {
@@ -273,6 +276,27 @@ async def req_task(session: aiohttp.ClientSession, url, method, request: aiohttp
     return response
 
 
+async def send_head_request():
+    global route_table
+    while True:
+        for node in route_table:
+            if node['state'] == 'ready' and node['availability'] == 'active':
+                async with aiohttp.ClientSession() as session:
+                    async with session.head(url=f"http://{node['address']}") as response:
+                        headers = response.headers
+                        mem = headers.get('mem')
+                        cpuUsage = float(headers.get('data'))
+                        response = {
+                            "data": {
+                                'cpuUsage': cpuUsage,
+                                'mem': mem
+                            },
+                            "server": node['address']
+                        }
+                        print(response)
+                        
+
+        await asyncio.sleep(0.01)
 
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 async def handle_request(request: aiohttp.ClientRequest):
@@ -283,7 +307,6 @@ async def handle_request(request: aiohttp.ClientRequest):
     server_url = None
     cpu_limit = 0.5
 
-    
     # if syncQueue.qsize() < 1:
         # return web.json_response({"Error": "Queue Empty"})
     
@@ -310,7 +333,7 @@ async def handle_request(request: aiohttp.ClientRequest):
         for stats in route_table:
             if stats['state'] == 'ready' and stats['availability'] == 'active':
                 if server_url == stats['address']:
-                    tasks.append(asyncio.create_task(req_task(session, f"http://{stats['address']}:{stats['port']}", "POST", request, request_data, cpu_limit)))
+                    tasks.append(asyncio.create_task(req_post_task(session, f"http://{stats['address']}:{stats['port']}", "POST", request, request_data, cpu_limit)))
                 # else:
                     # tasks.append(asyncio.create_task(req_task(session, f"http://{stats['address']}:{stats['port']}", "HEAD", request, request_data, cpu_limit)))
 
@@ -328,22 +351,26 @@ if __name__ == "__main__":
 
     try:
         route_table = init_route_table()
-        loop = asyncio.new_event_loop()
+        main_loop = asyncio.new_event_loop()
 
         # monitor_process = multiprocessing.Process(target=monitor_main)
         # monitor_process.start()
+        
+        task = main_loop.create_task(send_head_request())
+        asyncio.gather(task)
 
-        monitor_threading = threading.Thread(target=monitor_main)
-        monitor_threading.start()
+        # monitor_threading = threading.Thread(target=monitor_main)
+        # monitor_threading.start()
 
-        app = web.Application(logger=None)
-        app.router.add_post('/', handle_request)
+        # app = web.Application()
+        # app.router.add_post('/', handle_request)
 
-        web.run_app(app, host='192.168.56.107', port=8080, loop=loop, access_log=None)
+        # web.run_app(app, host='192.168.56.107', port=8080, loop=loop)
 
     except asyncio.CancelledError:
         pass
     finally:
         # monitor_process.join()
-        monitor_threading.join()
-        app.shutdown()
+        # monitor_threading.join()
+        # app.shutdown()
+        pass

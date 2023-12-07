@@ -1,6 +1,6 @@
 'use strict';
 
-const os = require("os");
+const os = require('os');
 
 // for main server
 const express = require('express');
@@ -21,6 +21,21 @@ const HOST = '0.0.0.0';
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+function getCpuUsage() {
+	const cpus = os.cpus();
+	let total = 0;
+	let idle = 0;
+	for (const cpu of cpus) {
+		total += cpu.times.user + cpu.times.system + cpu.times.idle;
+		idle += cpu.times.idle;
+	}
+
+	const idleCpuUsage = (idle / total) * 100;
+	const cpuUsage = 100 - idleCpuUsage.toFixed(2);
+
+	return cpuUsage;
+}
 
 try {
 	app.post('/', (req, res) => {
@@ -48,8 +63,6 @@ try {
 
 			childProcess.kill();
 			
-			data['mem'] = memUsage;
-
 			res.json(data);
 		});
 		
@@ -61,8 +74,7 @@ try {
 app.head('/', (req, res) => {
 	try {
 		const memUsage = (1 - (os.freemem() / os.totalmem()))
-		const cpuUsage = process.cpuUsage()
-		const cpuPercent = cpuUsage['user'] / (cpuUsage['system'] + cpuUsage['user'])
+		const cpuPercent = getCpuUsage()
 		
 		res.setHeader("data", cpuPercent);
 		res.setHeader("mem", memUsage);
