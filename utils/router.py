@@ -7,7 +7,8 @@ import subprocess
 import logging
 import multiprocessing
 import threading
-
+import requests
+import json
 
 def get_cpu_usage(cpu_usage_stats, ip, node, log):
     try:
@@ -184,6 +185,12 @@ def init_route_table():
             cpu_usage_stats.append({
                 "node_id": node.id,
                 'name': node.attrs['Description']['Hostname'],
+                "times": {
+                    'prev_total': 0,
+                    'prev_idle': 0,
+                    'prev_user': 0,
+                    'prev_sys': 0
+                },
                 "cpu_usage": 0,
                 "availability": node.attrs['Spec']['Availability'],      # get availability for choosing drain node to HS
                 "state": node.attrs['Status']['State'],
@@ -277,26 +284,76 @@ async def req_post_task(session: aiohttp.ClientSession, url, method, request: ai
 
 
 async def send_head_request():
+    global cpu_limit
     global route_table
+
+    handler = logging.FileHandler(filename='logs/hs-log.log')
+    monitor_log = logging.Logger(name="monitor", level=logging.INFO)
+    monitor_log.addHandler(handler)
+
+
     while True:
         for node in route_table:
             if node['state'] == 'ready' and node['availability'] == 'active':
-                async with aiohttp.ClientSession() as session:
-                    async with session.head(url=f"http://{node['address']}") as response:
-                        headers = response.headers
-                        mem = headers.get('mem')
-                        cpuUsage = float(headers.get('data'))
-                        response = {
-                            "data": {
-                                'cpuUsage': cpuUsage,
-                                'mem': mem
-                            },
-                            "server": node['address']
-                        }
-                        print(response)
-                        
+                with requests.head(url=f"http://{node['address']}:{node['port']}") as response:
+                    headers = response.headers
+                    mem = headers.get('mem')
+                    cpus_dict = json.loads(headers.get('data'))
 
-        await asyncio.sleep(0.01)
+                    print(cpus_dict)
+
+                    current_total = 0
+                    current_idle = 0
+                    current_user = 0
+
+                    for cpu in cpus_dict:
+                        current_total += (cpu['times']['user'] + cpu['times']['sys'] + cpu['times']['idle'])
+                        current_idle += cpu['times']['idle']
+                        current_user += cpu['times']['user']
+
+
+                    prev_total = node['times']['prev_total']
+                    prev_idle = node['times']['prev_idle']
+                    prev_user = node['times']['prev_user']
+                    print('---------------\n')
+                    print(f"Current Total: {current_total}")
+                    print(f"Current Idle: {current_idle}")
+                    print(f"Current User: {current_user}")
+                    print(f"Prev Total: {prev_total}")
+                    print(f"Prev Idle: {prev_idle}")
+                    print(f"Prev User: {prev_user}")
+                    print(f"Diff User: {current_user - prev_user}")
+                    print(f"Diff total: {current_total - prev_total}")
+                    print(f"Diff idle: {current_idle - prev_idle}")
+
+                    diff_t = current_total - prev_total
+                    diff_idle = current_idle - prev_idle
+                    idleRate = diff_idle / diff_t
+
+                    if current_total > prev_total:
+                        cpu_percent = 1 - idleRate
+                    else:
+                        cpu_percent = node['cpu_usage']
+
+                    monitor_log.info(f"{cpu_percent*100:.4f}%")
+
+                    if cpu_percent >= 0:
+                        node['cpu_usage'] = cpu_percent
+                        node['times']['prev_total'] = current_total
+                        node['times']['prev_idle'] = current_idle
+                        node['times']['prev_user'] = current_user
+                        print(f"{cpu_percent*100:.4f}%")
+                    else:
+                        print(node['times']['prev_total'])
+                    response = {
+                        "data": {
+                            # 'cpuUsage': cpuUsage,
+                            'mem': mem
+                        },
+                        "server": node['address']
+                    }
+
+        await asyncio.sleep(0.05)
 
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 async def handle_request(request: aiohttp.ClientRequest):
@@ -319,7 +376,7 @@ async def handle_request(request: aiohttp.ClientRequest):
         if stats['state'] == 'ready' and stats['availability'] == 'active':
             if float(stats['cpu_usage']) < min_usage:
                 server_url = stats['address']
-                min_usage = float(stats['cpu_usage'])
+                min_usage = stats['cpu_usage']
     
     # await syncQueue.put(route_table)
 
@@ -348,20 +405,21 @@ async def handle_request(request: aiohttp.ClientRequest):
 
 if __name__ == "__main__":
     req_count = 0
-
+    cpu_limit = 0.5
     try:
         route_table = init_route_table()
         main_loop = asyncio.new_event_loop()
 
     
-        task = send_head_request()
+        task = main_loop.create_task(send_head_request())
         asyncio.gather(task)
 
 
         app = web.Application()
         app.router.add_post('/', handle_request)
-
-        web.run_app(app, host='192.168.56.107', port=8080, loop=main_loop)
+        # app['send_head_request'] = asyncio.ensure_future(send_head_request())
+        
+        web.run_app(app=app, host='192.168.56.107', port=8080, loop=main_loop)
 
 
         # monitor_process = multiprocessing.Process(target=monitor_main)
