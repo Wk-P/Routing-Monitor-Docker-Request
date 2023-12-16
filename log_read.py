@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import statsmodels.api as sm
 
 # 读取log文件内容
