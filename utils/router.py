@@ -63,57 +63,57 @@ def get_cpu_usage(cpu_usage_stats, ip, node, log):
 
     return cpu_usage_stats    
 
-def hs(cpu_usage_stats, _class):
+def hs(rout_table, _class):
     # for getting node id
     print("HS RUNNING...")
     password = '123321'
 
     # cpu_usage_stats = q.get()
     if _class == 'up':
-        for s in cpu_usage_stats:
+        for s in rout_table:
             if s['availability'] == 'drain' and s['state'] == 'ready':
                 hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {s['node_id']}"
                 
                 # scaling
                 process = subprocess.Popen(hs_active_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                stdout, stderr = process.communicate()
                 print("UP")
 
                 time.sleep(3)
-                s['availability'] = 'active'
+                process.wait()
+                print(f"return code: {process.returncode}")
+                if process.returncode == 0:
+                    s['availability'] = 'active'
 
                 return
 
     elif _class == 'down':
-        active_num = 1
-        get_node_num_cmd = f"echo '{password}' | sudo -S docker node ls | wc -l"
-        n_process = subprocess.Popen(get_node_num_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        output, err = n_process.communicate()
-
-        # print(worker_sum)
-        if n_process.returncode == 0:
-            worker_sum = int(output.strip())
-            if active_num >= worker_sum:
-                return
-
-        for s in cpu_usage_stats:
-            if s['availability'] == 'active' and s['state'] == 'ready':
-                hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {s['node_id']}"
-                s['availability'] = 'drain'
-                
-                time.sleep(1)
-                # scaling
-                process = subprocess.Popen(hs_drain_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                stdout, stderr = process.communicate()
-                
-                print("DOWN")
-                return
+        active_num = 0
+        for node in rout_table:
+            if node['availability'] == 'active' and node['state'] == 'ready':
+                active_num += 1
+        
+        print(active_num)
+        if active_num > 1:
+            for s in rout_table:
+                if s['availability'] == 'active' and s['state'] == 'ready':
+                    hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {s['node_id']}"
+                    s['availability'] = 'drain'
+                    time.sleep(3)
+                    
+                    process = subprocess.Popen(hs_drain_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    process.wait()
+                    print(process.returncode)
+                    # scaling
+                    if process.returncode == 0:
+                        print("DOWN")
+                    return
 
     else:
         print("Error in HS")    
 
         return
     # q.put_nowait(cpu_usage_stats)
+
 
 
 def hs_scheduler(cpu_usage_stats: list):
@@ -291,6 +291,17 @@ async def send_head_request():
     monitor_log = logging.Logger(name="monitor", level=logging.INFO)
     monitor_log.addHandler(handler)
 
+    hs_up_time_count = 0
+    hs_down_time_count = 0
+    enable_hs_up = 0
+    enable_hs_down = -1
+    for node in route_table:
+        if node['state'] == 'ready' and node['availability'] == 'drain':
+            enable_hs_up += 1
+        elif node['state'] == 'ready' and node['availability'] == 'active':
+            enable_hs_down += 1
+    
+    
 
     while True:
         for node in route_table:
@@ -315,7 +326,8 @@ async def send_head_request():
                     prev_total = node['times']['prev_total']
                     prev_idle = node['times']['prev_idle']
                     prev_user = node['times']['prev_user']
-                    print('---------------\n')
+                    print('---------------')
+                    print(f"Node: {node['name']} : {node['address']}")
                     print(f"Current Total: {current_total}")
                     print(f"Current Idle: {current_idle}")
                     print(f"Current User: {current_user}")
@@ -326,23 +338,27 @@ async def send_head_request():
                     print(f"Diff total: {current_total - prev_total}")
                     print(f"Diff idle: {current_idle - prev_idle}")
 
+
+                    # cpus data
                     diff_t = current_total - prev_total
                     diff_idle = current_idle - prev_idle
+                    diff_user = current_user - prev_user
                     idleRate = diff_idle / diff_t
+                    userRate = diff_user / diff_t
 
                     if current_total > prev_total:
-                        cpu_percent = 1 - idleRate
+                        cpu_percent = userRate / cpu_limit
                     else:
                         cpu_percent = node['cpu_usage']
 
-                    monitor_log.info(f"{cpu_percent*100:.4f}%")
+                    monitor_log.info(f"{node['name']}:{cpu_percent*100:.4f}%")
 
                     if cpu_percent >= 0:
                         node['cpu_usage'] = cpu_percent
                         node['times']['prev_total'] = current_total
                         node['times']['prev_idle'] = current_idle
                         node['times']['prev_user'] = current_user
-                        print(f"{cpu_percent*100:.4f}%")
+                        print(f"{cpu_percent * 100:.4f}%")
                     else:
                         print(node['times']['prev_total'])
                     response = {
@@ -353,7 +369,40 @@ async def send_head_request():
                         "server": node['address']
                     }
 
-        await asyncio.sleep(0.05)
+                    # HS when cpu usages of cpus over 80% of cpu limit in 3 seconds 
+        
+
+
+        for node in route_table:
+            if node['state'] == 'ready' and node['availability'] == 'active':
+                if node['cpu_usage'] > 0.8 * cpu_limit:
+                    hs_up_time_count += 1
+                    hs_down_time_count -= 1
+                
+                if node['cpu_usage']  < 0.2 * cpu_limit:
+                    hs_down_time_count += 1
+                    hs_up_time_count -= 1
+                    
+        
+        # hs up
+        if hs_up_time_count > 3 and enable_hs_up > 0:
+            hs_up_time_count = 0
+            hs(route_table, "up")
+            enable_hs_up -= 1
+            enable_hs_down += 1
+        
+        # hs down
+        if hs_down_time_count > 3 and enable_hs_down > 0:
+            hs_down_time_count = 0
+            hs(route_table, "down")
+            enable_hs_up += 1
+            enable_hs_down -= 1    
+
+        
+        
+
+        # get cpu usage interval
+        await asyncio.sleep(1)
 
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 async def handle_request(request: aiohttp.ClientRequest):
