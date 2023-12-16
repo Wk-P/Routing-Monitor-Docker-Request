@@ -187,7 +187,6 @@ def init_route_table():
                 'name': node.attrs['Description']['Hostname'],
                 "times": {
                     'prev_total': 0,
-                    'prev_idle': 0,
                     'prev_user': 0,
                     'prev_sys': 0
                 },
@@ -304,6 +303,7 @@ async def send_head_request():
     
     log_time = 0
     while True:
+        print("-------------")
         for node in route_table:
             if node['state'] == 'ready' and node['availability'] == 'active':
                 with requests.head(url=f"http://{node['address']}:{node['port']}") as response:
@@ -314,34 +314,19 @@ async def send_head_request():
                     print(cpus_dict)
 
                     current_total = 0
-                    current_idle = 0
                     current_user = 0
 
                     for cpu in cpus_dict:
                         current_total += (cpu['times']['user'] + cpu['times']['sys'] + cpu['times']['idle'])
-                        current_idle += cpu['times']['idle']
                         current_user += cpu['times']['user']
 
 
                     prev_total = node['times']['prev_total']
-                    prev_idle = node['times']['prev_idle']
                     prev_user = node['times']['prev_user']
-                    print('---------------')
-                    print(f"Node: {node['name']} : {node['address']}")
-                    print(f"Current Total: {current_total}")
-                    print(f"Current Idle: {current_idle}")
-                    print(f"Current User: {current_user}")
-                    print(f"Prev Total: {prev_total}")
-                    print(f"Prev Idle: {prev_idle}")
-                    print(f"Prev User: {prev_user}")
-                    print(f"Diff User: {current_user - prev_user}")
-                    print(f"Diff total: {current_total - prev_total}")
-                    print(f"Diff idle: {current_idle - prev_idle}")
 
 
                     # cpus data
                     diff_t = current_total - prev_total
-                    diff_idle = current_idle - prev_idle
                     diff_user = current_user - prev_user
                     userRate = diff_user / diff_t
 
@@ -355,7 +340,6 @@ async def send_head_request():
                     if cpu_percent >= 0:
                         node['cpu_usage'] = cpu_percent
                         node['times']['prev_total'] = current_total
-                        node['times']['prev_idle'] = current_idle
                         node['times']['prev_user'] = current_user
                         print(f"{cpu_percent * 100:.4f}%")
                     else:
