@@ -287,7 +287,7 @@ async def send_head_request():
     global cpu_limit
     global route_table
 
-    handler = logging.FileHandler(filename='logs/hs-log.log')
+    handler = logging.FileHandler(filename='logs/hs-log.log', mode='w')
     monitor_log = logging.Logger(name="monitor", level=logging.INFO)
     monitor_log.addHandler(handler)
 
