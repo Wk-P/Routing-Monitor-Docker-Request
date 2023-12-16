@@ -302,7 +302,7 @@ async def send_head_request():
             enable_hs_down += 1
     
     
-
+    log_time = 0
     while True:
         for node in route_table:
             if node['state'] == 'ready' and node['availability'] == 'active':
@@ -343,7 +343,6 @@ async def send_head_request():
                     diff_t = current_total - prev_total
                     diff_idle = current_idle - prev_idle
                     diff_user = current_user - prev_user
-                    idleRate = diff_idle / diff_t
                     userRate = diff_user / diff_t
 
                     if current_total > prev_total:
@@ -351,7 +350,7 @@ async def send_head_request():
                     else:
                         cpu_percent = node['cpu_usage']
 
-                    monitor_log.info(f"{node['name']}:{cpu_percent*100:.4f}%")
+                    monitor_log.info(f"{log_time}:{node['name']}:{cpu_percent*100:.4f}%")
 
                     if cpu_percent >= 0:
                         node['cpu_usage'] = cpu_percent
@@ -370,8 +369,7 @@ async def send_head_request():
                     }
 
                     # HS when cpu usages of cpus over 80% of cpu limit in 3 seconds 
-        
-
+        log_time += 1
 
         for node in route_table:
             if node['state'] == 'ready' and node['availability'] == 'active':
