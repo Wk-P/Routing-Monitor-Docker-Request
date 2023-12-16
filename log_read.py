@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
 # 读取log文件内容
-log_file_path = "hs-log.log"
+log_file_path = "logs/hs-log.log"
 
 with open(log_file_path, 'r', encoding='utf-8') as file:
     log_content = file.read()
