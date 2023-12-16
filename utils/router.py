@@ -384,7 +384,7 @@ async def send_head_request():
         
 
         # get cpu usage interval
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
 
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 async def handle_request(request: aiohttp.ClientRequest):
