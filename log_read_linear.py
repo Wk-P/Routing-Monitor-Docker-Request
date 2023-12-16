@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 import numpy as np
 
 # 读取log文件内容
@@ -42,16 +43,21 @@ for line in lines:
         workers_data[time_point][worker] = percentage
         workers_names.add(worker)
 
-# 绘制简单的折线图
+# 绘制简单插值曲线图
 plt.figure(figsize=(10, 6))
 
 for worker in workers_names:
     x = range(1, len(time_series) + 1)
     y = [workers_data[time_point].get(worker, 0) for time_point in time_series]
 
-    plt.plot(x, y, label=f'{worker}', marker='')
+    # 使用interp1d进行插值（简单线性插值）
+    f = interp1d(x, y, kind='linear')
+    x_new = np.linspace(1, len(time_series), 300)
+    y_new = f(x_new)
 
-plt.title('Worker Percentage Over Time')
+    plt.plot(x_new, y_new, label=f'{worker}')
+
+plt.title('Worker Percentage Over Time (Linear Interpolation)')
 plt.xlabel('Time Index')
 plt.ylabel('Percentage')
 plt.legend()

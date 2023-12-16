@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import numpy as np
+import statsmodels.api as sm
 
 # 读取log文件内容
 log_file_path = "logs/hs-log.log"
@@ -28,6 +28,7 @@ for line in lines:
 # 将字典中的数据拆分为 time_series 和 percentages
 time_series = list(workers_data.keys())
 
+
 workers_names = set()
 
 for line in lines:
@@ -42,14 +43,20 @@ for line in lines:
         workers_data[time_point][worker] = percentage
         workers_names.add(worker)
 
-# 绘制简单的折线图
+
+percentages = {worker: [workers_data[time_point].get(worker, 0) for time_point in time_series] for worker in workers_names}
+
+# 绘制平滑曲线图
 plt.figure(figsize=(10, 6))
 
 for worker in workers_names:
     x = range(1, len(time_series) + 1)
-    y = [workers_data[time_point].get(worker, 0) for time_point in time_series]
+    y = percentages[worker]
 
-    plt.plot(x, y, label=f'{worker}', marker='')
+    # 使用LOWESS进行平滑
+    lowess = sm.nonparametric.lowess(y, x, frac=0.2)
+    
+    plt.plot(lowess[:, 0], lowess[:, 1], label=f'{worker}')
 
 plt.title('Worker Percentage Over Time')
 plt.xlabel('Time Index')
