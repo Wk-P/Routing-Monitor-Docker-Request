@@ -331,7 +331,7 @@ async def send_head_request():
                     userRate = diff_user / diff_t
 
                     if current_total > prev_total:
-                        cpu_percent = userRate / cpu_limit
+                        cpu_percent = userRate
                     else:
                         cpu_percent = node['cpu_usage']
 
