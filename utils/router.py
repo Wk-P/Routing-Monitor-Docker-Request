@@ -260,10 +260,16 @@ async def req_post_task(session: aiohttp.ClientSession, url, method, request: ai
 
             response_data = await response.json()
 
+            usage = list()
+            for u in route_table:
+                if u['state'] == 'ready' and u['availability'] == 'active':
+                    usage.append({u['name']: u['cpu_usage']})
+
             # response
             response = {
                 "data": response_data,
                 "server": url,
+                "replicas_usage": usage,
             }
 
             # add to list for update route_table
@@ -337,7 +343,7 @@ async def send_head_request():
                     userRate = diff_su / diff_t
 
                     if current_total > prev_total:
-                        cpu_percent = userRate / cpu_limit
+                        cpu_percent = min(userRate / cpu_limit, cpu_limit)
                     else:
                         cpu_percent = node['cpu_usage']
 
