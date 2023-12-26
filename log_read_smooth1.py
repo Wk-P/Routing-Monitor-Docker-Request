@@ -14,21 +14,6 @@ lines = log_content.split('\n')
 # 提取信息
 time_series = []
 workers_data = {}
-
-for line in lines:
-    parts = line.split(':')
-    if len(parts) == 3:
-        time_point, worker, percentage = parts
-        percentage = round(float(percentage.rstrip('%')), 1)
-
-        if time_point not in workers_data:
-            workers_data[time_point] = {}
-
-        workers_data[time_point][worker] = percentage
-
-# 将字典中的数据拆分为 time_series 和 percentages
-time_series = list(workers_data.keys())
-
 workers_names = set()
 
 for line in lines:
@@ -42,6 +27,10 @@ for line in lines:
 
         workers_data[time_point][worker] = percentage
         workers_names.add(worker)
+
+# 将字典中的数据拆分为 time_series 和 percentages
+time_series = list(workers_data.keys())
+
 
 # 绘制平滑曲线图
 plt.figure(figsize=(10, 6))
