@@ -416,7 +416,7 @@ async def handle_request(request: aiohttp.ClientRequest):
     for stats in route_table:
         # print(f"{stats['address']} : {stats['cpu_usage']}")
         if stats['state'] == 'ready' and stats['availability'] == 'active':
-            if float(stats['cpu_usage']) < min_usage:
+            if float(stats['cpu_usage']) <= min_usage:
                 server_url = stats['address']
                 min_usage = stats['cpu_usage']
     
