@@ -188,7 +188,7 @@ def init_route_table():
                 "times": {
                     'prev_total': 0,
                     'prev_user': 0,
-                    'prev_sys': 0
+                    'prev_sys': 0,
                 },
                 "cpu_usage": 0,
                 "availability": node.attrs['Spec']['Availability'],      # get availability for choosing drain node to HS
@@ -315,20 +315,26 @@ async def send_head_request():
 
                     current_total = 0
                     current_user = 0
+                    current_sys = 0
 
                     for cpu in cpus_dict:
                         current_total += (cpu['times']['user'] + cpu['times']['sys'] + cpu['times']['idle'])
                         current_user += cpu['times']['user']
-
+                        current_sys += cpu['times']['sys']
 
                     prev_total = node['times']['prev_total']
                     prev_user = node['times']['prev_user']
+                    prev_sys = node['times']['prev_sys']
 
-
+                    # test
+                    print(f"df total : {current_total - prev_total}")
+                    print(f"df su    : {((current_sys - prev_sys) + (current_user - prev_user))}")
+                    print(f"df sys   : {current_sys - prev_sys}")
+                    print(f"df user  : {current_user - prev_user}")
                     # cpus data
                     diff_t = current_total - prev_total
-                    diff_user = current_user - prev_user
-                    userRate = diff_user / diff_t
+                    diff_su = ((current_sys - prev_sys) + (current_user - prev_user))
+                    userRate = diff_su / diff_t
 
                     if current_total > prev_total:
                         cpu_percent = userRate / cpu_limit
@@ -341,6 +347,7 @@ async def send_head_request():
                         node['cpu_usage'] = cpu_percent
                         node['times']['prev_total'] = current_total
                         node['times']['prev_user'] = current_user
+                        node['times']['prev_sys'] = current_sys
                         print(f"{cpu_percent * 100:.4f}%")
                     else:
                         print(node['times']['prev_total'])
@@ -379,12 +386,10 @@ async def send_head_request():
             hs(route_table, "down")
             enable_hs_up += 1
             enable_hs_down -= 1    
-
-        
         
 
         # get cpu usage interval
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1)
 
 # For changing by cpu usage, first time is random, next is to cpuUsage min 
 async def handle_request(request: aiohttp.ClientRequest):
