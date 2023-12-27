@@ -380,14 +380,14 @@ async def send_head_request():
                     
         
         # hs up
-        if hs_up_time_count > 3 and enable_hs_up > 0:
+        if hs_up_time_count > 3 * enable_hs_down and enable_hs_up > 0:
             hs_up_time_count = 0
             hs(route_table, "up")
             enable_hs_up -= 1
             enable_hs_down += 1
         
         # hs down
-        if hs_down_time_count > 3 and enable_hs_down > 0:
+        if hs_down_time_count > 3 * enable_hs_up and enable_hs_down > 0:
             hs_down_time_count = 0
             hs(route_table, "down")
             enable_hs_up += 1
