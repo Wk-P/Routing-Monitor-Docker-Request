@@ -1,0 +1,81 @@
+cpu_usage
+
+Response counts:
+Server http://192.168.56.104:8080 responses => 1388
+Server http://192.168.56.103:8080 responses => 1318
+Server http://192.168.56.106:8080 responses => 1294
+Run time :  292.115 seconds
+
+round_robin
+Response counts:
+Server http://192.168.56.104:8080 responses => 1000
+Server http://192.168.56.103:8080 responses => 818
+Server http://192.168.56.106:8080 responses => 788
+Run time :  170.682 seconds
+
+
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 4057, 'counter': 560, 'runtime': 5.268585}, 'server': 'http://192.168.56.103:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 24740, 'counter': 2737, 'runtime': 787.419064}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 8741, 'counter': 1090, 'runtime': 474.115609}, 'server': 'http://192.168.56.104:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 4195, 'counter': 574, 'runtime': 94.592356}, 'server': 'http://192.168.56.104:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 7028, 'counter': 904, 'runtime': 102.692877}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 21506, 'counter': 2413, 'runtime': 706.716344}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 29648, 'counter': 3217, 'runtime': 3299.089923}, 'server': 'http://192.168.56.104:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 27780, 'counter': 3032, 'runtime': 242.791924}, 'server': 'http://192.168.56.103:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 25551, 'counter': 2813, 'runtime': 892.293208}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 27780, 'counter': 3032, 'runtime': 242.791924}, 'server': 'http://192.168.56.103:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 25551, 'counter': 2813, 'runtime': 892.293208}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 753, 'counter': 133, 'runtime': 2.170931}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 12050, 'counter': 1444, 'runtime': 210.341941}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 9163, 'counter': 1136, 'runtime': 99.611057}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.37962962962962965}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+
+Traceback (most recent call last):
+  File "d:\github\PythonSocketProgram\docker_test_client\client.py", line 105, in <module>
+    for future in concurrent.futures.as_completed(futures):
+  File "C:\Python312\Lib\concurrent\futures\_base.py", line 243, in as_completed
+    waiter.event.wait(wait_timeout)
+  File "C:\Python312\Lib\threading.py", line 634, in wait
+    signaled = self._cond.wait(timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\threading.py", line 334, in wait
+    waiter.acquire()
+KeyboardInterrupt
+
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 25283, 'counter': 2788, 'runtime': 993.45504}, 'server': 'http://192.168.56.104:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.5}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 27187, 'counter': 2977, 'runtime': 583.479495}, 'server': 'http://192.168.56.104:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.5}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 14117, 'counter': 1663, 'runtime': 704.427682}, 'server': 'http://192.168.56.103:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.5}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 1725, 'counter': 269, 'runtime': 76.659909}, 'server': 'http://192.168.56.104:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.5}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: [{'data': {'number': 9916, 'counter': 1222, 'runtime': 500.140654}, 'server': 'http://192.168.56.103:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.5}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 29966, 'counter': 3243, 'runtime': 892.865607}, 'server': 'http://192.168.56.104:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.5}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 19275, 'counter': 2186, 'runtime': 219.921284}, 'server': 'http://192.168.56.106:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.5}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+Test: []
+Request failed with error: cannot access local variable 'server' where it is not associated with a value
+Test: [{'data': {'number': 7809, 'counter': 987, 'runtime': 221.568868}, 'server': 'http://192.168.56.103:8080', 'replicas_usage': [{'ubuntuDockerWorker1': 0.5}, {'ubuntuDockerWorker2': 0.5}, {'ubuntuDockerWorker3': 0.5}]}]
+
+Response counts:
+Server http://192.168.56.104:8080 responses => 975
+Server http://192.168.56.103:8080 responses => 891
+Server http://192.168.56.106:8080 responses => 821
+Run time :  178.464 seconds
