@@ -9,6 +9,7 @@ import multiprocessing
 import threading
 import requests
 import json
+import random
 
 
 def get_cpu_usage(cpu_usage_stats, ip, node, log):
@@ -428,6 +429,7 @@ async def send_head_request():
 async def handle_request(request: aiohttp.ClientRequest):
     global route_table
     global req_count
+    global round_robin_index
 
     # temp_rt: list = route_table
     server_url = None
@@ -439,14 +441,26 @@ async def handle_request(request: aiohttp.ClientRequest):
     # rt = await syncQueue.get()
     # if len(route_table) < 1:
     # return web.json_response({"Error": "Route Table Empty"})
-    min_usage = 2
-    for stats in route_table:
-        # print(f"{stats['address']} : {stats['cpu_usage']}")
-        if stats["state"] == "ready" and stats["availability"] == "active":
-            if float(stats["cpu_usage"]) <= min_usage:
-                server_url = stats["address"]
-                min_usage = stats["cpu_usage"]
 
+    """
+    # cpu_usage algorithm
+    # min_usage = 2
+    # for stats in route_table:
+    #     # print(f"{stats['address']} : {stats['cpu_usage']}")
+    #     if stats["state"] == "ready" and stats["availability"] == "active":
+    #         if float(stats["cpu_usage"]) <= min_usage:
+    #             server_url = f"http://{stats['address']}:{stats['port']}"
+    #             min_usage = stats["cpu_usage"]
+    """
+
+    # random
+    round_robin_index = random.randint(0, len(route_table) - 1)
+    server_url = route_table[round_robin_index]['address']
+
+    # round_robin algorithm
+    # server_url = route_table[round_robin_index]['address']
+    # round_robin_index = ( round_robin_index + 1 ) % len(route_table)
+    
     # await syncQueue.put(route_table)
 
     request_data = await request.json()
@@ -456,6 +470,7 @@ async def handle_request(request: aiohttp.ClientRequest):
     # rt = await syncQueue.get()
     # send request to first server
     async with aiohttp.ClientSession() as session:
+        # round_robin
         for stats in route_table:
             if stats["state"] == "ready" and stats["availability"] == "active":
                 if server_url == stats["address"]:
@@ -471,6 +486,20 @@ async def handle_request(request: aiohttp.ClientRequest):
                             )
                         )
                     )
+        
+        # # cpu_usage 
+        # tasks.append(
+        #     asyncio.create_task(
+        #         req_post_task(
+        #             session,
+        #             server_url,
+        #             "POST",
+        #             request,
+        #             request_data,
+        #             cpu_limit,
+        #         )
+        #     )
+        # )
                 # else:
                 # tasks.append(asyncio.create_task(req_task(session, f"http://{stats['address']}:{stats['port']}", "HEAD", request, request_data, cpu_limit)))
 
@@ -484,6 +513,10 @@ async def handle_request(request: aiohttp.ClientRequest):
 if __name__ == "__main__":
     req_count = 0
     cpu_limit = 0.5
+    
+    # round robin
+    round_robin_index = 0
+
     try:
         route_table = init_route_table()
         main_loop = asyncio.new_event_loop()
