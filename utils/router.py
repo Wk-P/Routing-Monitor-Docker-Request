@@ -46,8 +46,7 @@ def collect_cpu_usage(route_table):
     # try:
     for node in route_table:
         if node['state'] == "ready" and node['availability'] == "active":
-            clients_list.append({"client": docker.APIClient(base_url=f"tcp://{node['address']}:2375"), "node_id": node['node_id']})
-
+            clients_list.append({"client": node['node_client'], "node_id": node['node_id']})
     
 
     # concurrent for get cpu usage
@@ -124,10 +123,10 @@ def hs(route_table:list, _class):
 
     # cpu_usage_stats = q.get()
     if _class == "up":
-        for s in route_table:
-            index = route_table.index(s)
-            if s["availability"] == "drain" and s["state"] == "ready" and s['enable_hs'] == 'up':
-                hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {s['node_id']}"
+        for index in range(len(route_table)):
+            temp_obj = route_table[index]
+            if route_table[index]["availability"] == "drain" and route_table[index]["state"] == "ready":
+                hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {route_table[index]['node_id']}"
 
                 # scaling
                 process = subprocess.Popen(
@@ -137,13 +136,13 @@ def hs(route_table:list, _class):
                     stderr=subprocess.PIPE,
                     text=True,
                 )
-                print("UP")
-
-                time.sleep(1)
+                time.sleep(3)
                 process.wait()
                 print(f"return code: {process.returncode}")
                 if process.returncode == 0:
-                    route_table[index]["availability"] = "active"
+                    print("UP")
+                    temp_obj["availability"] = "active"
+                    route_table[index] = temp_obj
                     print(f"s {route_table[index]}")
 
                 return route_table
@@ -156,12 +155,13 @@ def hs(route_table:list, _class):
 
         print(active_num)
         if active_num > 1:
-            for s in route_table:
-                index = route_table.index(s)
-                if s["availability"] == "active" and s["state"] == "ready" and s["enable_hs"] == "down":
-                    hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {s['node_id']}"
-                    route_table[index]["availability"] = "drain"
-                    time.sleep(1)
+            for index in range(len(route_table)):
+                temp_obj = route_table[index]
+                print(f"temp_obj: {temp_obj}")
+                if route_table[index]["availability"] == "active" and route_table[index]["state"] == "ready":
+                    hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {route_table[index]['node_id']}"
+                    temp_obj["availability"] = "drain"
+                    route_table[index] = temp_obj
 
                     process = subprocess.Popen(
                         hs_drain_command,
@@ -170,6 +170,8 @@ def hs(route_table:list, _class):
                         stderr=subprocess.PIPE,
                         text=True,
                     )
+
+                    time.sleep(3)
                     process.wait()
                     print(process.returncode)
                     # scaling
@@ -196,8 +198,8 @@ def init_route_table(manager:multiprocessing.Manager):
     # initialize lists
     for node in swarm_nodes:
         if node.attrs["Spec"]["Role"] == "worker":
-            info = manager.dict()
-            info = {
+            cpu_usage_stats.append({
+                "node_client": docker.APIClient(base_url=f"tcp://{node.attrs['Status']['Addr']}:2375"),
                 "node_id": node.id,
                     "name": node.attrs["Description"]["Hostname"],
                     "cpu_usage": 0,
@@ -208,14 +210,11 @@ def init_route_table(manager:multiprocessing.Manager):
                     "availability": node.attrs["Spec"][
                         "Availability"
                     ],  # get availability for choosing drain node to HS
-                    "enable_hs": 'up',
-                    "hs_count": 0,
                     "state": node.attrs["Status"]["State"],
                     "address": node.attrs["Status"]["Addr"],
                     "port": container_port,
                     "node_object": node,
-            }
-            cpu_usage_stats.append(info)
+            })
     return cpu_usage_stats
 
 
@@ -403,43 +402,65 @@ def hs_proc(route_table: list):
     enable_hs_up = 0
     enable_hs_down = -1
 
+    max_node_list = list()
+    max_usage_counter = 0
 
-    for index in range(len(route_table)):
-        if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "drain":
-            route_table[index]["enable_hs"] = "up"
-            enable_hs_up += 1
-        elif route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
-            route_table[index]["enable_hs"] = "down"
-            enable_hs_down += 1
+    try:
 
-    while True:
-
-        collect_cpu_usage(route_table)
-
-        for node in route_table:
-            print(f"{node['name']} CPU usage => : {100 * node['cpu_usage']} %")
-
-        print(len(route_table))
         for index in range(len(route_table)):
-            if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
-                if route_table[index]["cpu_usage"] > 0.9 * cpu_limit:
-                    route_table[index]['hs_count'] += 1
+            temp_obj = route_table[index]
+            if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "drain":
+                temp_obj["enable_hs"] = "up"
+                route_table[index] = temp_obj
+                enable_hs_up += 1
+            elif route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
+                temp_obj["enable_hs"] = "down"
+                route_table[index] = temp_obj
+                enable_hs_down += 1
 
-                if route_table[index]["cpu_usage"] < 0.1 * cpu_limit:
-                    route_table[index]['hs_count'] -= 1
+        while True:
 
-            print(f"route_table[index]['hs_count']: {route_table[index]['hs_count']}")
-            # hs up
-            if route_table[index]['hs_count'] > 3 and route_table[index]['enable_hs'] == "up":
-                route_table[index]['hs_count'] = 3
-                route_table[index]['enable_hs'] = "down"
-                route_table = hs(route_table, "up")
+            print(f"enable_hs_up: {enable_hs_up}")
+            print(f"enable_hs_down: {enable_hs_down}")
 
-            # hs down
-            if route_table[index]['hs_count'] < 0 and route_table[index]['enable_hs'] == "down":
-                route_table[index]['hs_count'] = 0
-                route_table[index]['enable_hs'] = "up"
-                route_table = hs(route_table, "down")
+            collect_cpu_usage(route_table)
+
+            for index in range(len(route_table)):
+                temp_obj = route_table[index]
+                print(f"{route_table[index]['name']} CPU usage => : {100 * route_table[index]['cpu_usage']} %")
+                if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
+                    if route_table[index]["cpu_usage"] > 0.9 * cpu_limit and route_table[index]['node_id'] not in max_node_list:
+                        max_usage_counter += 1
+                    if route_table[index]["cpu_usage"] < 0.1 * cpu_limit:
+                        max_usage_counter -= 1
+
+                print(f"max_usage_counter: {max_usage_counter}")
+                # hs up
+                if max_usage_counter > 3:
+                    max_usage_counter = 0
+                    if enable_hs_up > 0 and route_table[index]['node_id'] not in max_node_list:
+                        enable_hs_up -= 1
+                        enable_hs_down += 1
+                        route_table = hs(route_table, "up")
+                        max_node_list.append(route_table[index]['node_id'])
+                        print("add!")
+
+
+                # hs down
+                if max_usage_counter < -3:
+                    if route_table[index]['node_id'] in max_node_list:
+                        print("out!")
+                        max_node_list.remove(route_table[index]['node_id'])
+                    max_usage_counter = 0
+                    if enable_hs_down > 0:
+                        enable_hs_down -= 1
+                        enable_hs_up += 1
+                        route_table = hs(route_table, "down")
+
+            for node in route_table:
+                print(f"{node['name']}: {node['availability']}", end='\n')
+    except:
+        pass
 
 if __name__ == "__main__":
     req_count = 0
