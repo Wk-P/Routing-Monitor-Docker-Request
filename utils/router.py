@@ -34,8 +34,7 @@ from multiprocessing import Manager
 
 def fetch(client:dict):
     container = client['client'].containers()[0]
-    return [client['client'].stats(container["Id"], stream=False), client['node_id']]
-
+    return [client['client'].stats(container["Id"], stream=False, one_shot=True), client['node_id']]
 
 def collect_cpu_usage(route_table):
     global cpus
@@ -72,11 +71,10 @@ def collect_cpu_usage(route_table):
             for i in range(len(results)):
                 for k in range(len(route_table)):
                     if route_table[k]['node_id'] == results[i][1] and route_table[k]['state'] == "ready" and route_table[k]['availability'] == "active":
-                        node = route_table[k]
                         
                         # Old implementation
 
-                        pre_cpu_stats = node['times']
+                        pre_cpu_stats = route_table[k]['times']
                         cpu_stats = results[i][0]["cpu_stats"]
                         
                         system_cpu_usage = cpu_stats["system_cpu_usage"]
@@ -93,11 +91,9 @@ def collect_cpu_usage(route_table):
                         # calculate
                         cpu_percent = cpu_delta / system_delta * cpus
                         
-                        node['times']['total_usage'] = cpu_stats["cpu_usage"]["total_usage"]
-                        node['times']['system_cpu_usage'] = system_cpu_usage
-                        node['cpu_usage'] = cpu_percent
-
-                        route_table[k] = node
+                        route_table[k]['times']['total_usage'] = cpu_stats["cpu_usage"]["total_usage"]
+                        route_table[k]['times']['system_cpu_usage'] = system_cpu_usage
+                        route_table[k]['cpu_usage'] = cpu_percent
 
                         # memory stats
                         memory_stats = results[i][0]["memory_stats"]
@@ -118,13 +114,12 @@ def collect_cpu_usage(route_table):
 
 def hs(route_table:list, _class):
     # for getting node id
-    print("HS RUNNING...")
+    print(f"HS {_class} RUNNING...")
     password = "123321"
 
     # cpu_usage_stats = q.get()
     if _class == "up":
         for index in range(len(route_table)):
-            temp_obj = route_table[index]
             if route_table[index]["availability"] == "drain" and route_table[index]["state"] == "ready":
                 hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {route_table[index]['node_id']}"
 
@@ -141,9 +136,7 @@ def hs(route_table:list, _class):
                 print(f"return code: {process.returncode}")
                 if process.returncode == 0:
                     print("UP")
-                    temp_obj["availability"] = "active"
-                    route_table[index] = temp_obj
-                    print(f"s {route_table[index]}")
+                    route_table[index]["availability"] = "active"
 
                 return route_table
 
@@ -153,16 +146,13 @@ def hs(route_table:list, _class):
             if node["availability"] == "active" and node["state"] == "ready":
                 active_num += 1
 
-        print(active_num)
+        print("active_num =>", active_num)
         if active_num > 1:
             for index in range(len(route_table)):
-                temp_obj = route_table[index]
-                print(f"temp_obj: {temp_obj}")
                 if route_table[index]["availability"] == "active" and route_table[index]["state"] == "ready":
                     hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {route_table[index]['node_id']}"
-                    temp_obj["availability"] = "drain"
-                    route_table[index] = temp_obj
-
+                    route_table[index]["availability"] = "drain"
+                    print(f"route_table[index]['availability'] => {route_table[index]['availability']}")
                     process = subprocess.Popen(
                         hs_drain_command,
                         shell=True,
@@ -173,7 +163,7 @@ def hs(route_table:list, _class):
 
                     time.sleep(3)
                     process.wait()
-                    print(process.returncode)
+                    print(f"return code: {process.returncode}")
                     # scaling
                     if process.returncode == 0:
                         print("DOWN")
@@ -198,23 +188,21 @@ def init_route_table(manager:multiprocessing.Manager):
     # initialize lists
     for node in swarm_nodes:
         if node.attrs["Spec"]["Role"] == "worker":
-            cpu_usage_stats.append({
+            cpu_usage_stats.append(manager.dict({
                 "node_client": docker.APIClient(base_url=f"tcp://{node.attrs['Status']['Addr']}:2375"),
                 "node_id": node.id,
-                    "name": node.attrs["Description"]["Hostname"],
-                    "cpu_usage": 0,
-                    "times": {
-                        "total_usage": 0,
-                        "system_cpu_usage": 0,
-                    },
-                    "availability": node.attrs["Spec"][
-                        "Availability"
-                    ],  # get availability for choosing drain node to HS
-                    "state": node.attrs["Status"]["State"],
-                    "address": node.attrs["Status"]["Addr"],
-                    "port": container_port,
-                    "node_object": node,
-            })
+                "name": node.attrs["Description"]["Hostname"],
+                "cpu_usage": 0,
+                "times": manager.dict({
+                    "total_usage": 0,
+                    "system_cpu_usage": 0,
+                }),
+                "availability": node.attrs["Spec"]["Availability"],  # get availability for choosing drain node to HS
+                "state": node.attrs["Status"]["State"],
+                "address": node.attrs["Status"]["Addr"],
+                "port": container_port,
+                "node_object": node,
+            }))
     return cpu_usage_stats
 
 
@@ -391,7 +379,7 @@ def server_proc():
         pass
 
 
-def hs_proc(route_table: list):
+def hs_proc(route_table: list, manager:multiprocessing.Manager):
     global cpu_limit
     # global route_table
 
@@ -402,42 +390,41 @@ def hs_proc(route_table: list):
     enable_hs_up = 0
     enable_hs_down = -1
 
-    max_node_list = list()
+    max_node_list = manager.list()
     max_usage_counter = 0
 
     try:
 
         for index in range(len(route_table)):
-            temp_obj = route_table[index]
             if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "drain":
-                temp_obj["enable_hs"] = "up"
-                route_table[index] = temp_obj
+                route_table[index]["enable_hs"] = "up"
                 enable_hs_up += 1
             elif route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
-                temp_obj["enable_hs"] = "down"
-                route_table[index] = temp_obj
+                route_table[index]["enable_hs"] = "down"
                 enable_hs_down += 1
 
         while True:
-
-            print(f"enable_hs_up: {enable_hs_up}")
-            print(f"enable_hs_down: {enable_hs_down}")
-
             collect_cpu_usage(route_table)
 
             for index in range(len(route_table)):
-                temp_obj = route_table[index]
                 print(f"{route_table[index]['name']} CPU usage => : {100 * route_table[index]['cpu_usage']} %")
                 if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
-                    if route_table[index]["cpu_usage"] > 0.9 * cpu_limit and route_table[index]['node_id'] not in max_node_list:
+                    if route_table[index]["cpu_usage"] > 0.95 * cpu_limit and route_table[index]['node_id'] not in max_node_list:
                         max_usage_counter += 1
-                    if route_table[index]["cpu_usage"] < 0.1 * cpu_limit:
+                    if route_table[index]["cpu_usage"] < 0.05 * cpu_limit and route_table[index]['node_id'] not in max_node_list:
                         max_usage_counter -= 1
-
+                    
+                
+                print(f"enable_hs_up: {enable_hs_up}")
+                print(f"enable_hs_down: {enable_hs_down}")
                 print(f"max_usage_counter: {max_usage_counter}")
+
+                print(f"max_node_list =>", max_node_list)
                 # hs up
-                if max_usage_counter > 3:
+                print(f"cpu_limit =>", cpu_limit)
+                if max_usage_counter > 5:
                     max_usage_counter = 0
+                    
                     if enable_hs_up > 0 and route_table[index]['node_id'] not in max_node_list:
                         enable_hs_up -= 1
                         enable_hs_down += 1
@@ -447,8 +434,10 @@ def hs_proc(route_table: list):
 
 
                 # hs down
-                if max_usage_counter < -3:
+                if max_usage_counter < -5:
+                    print("route_table[index]['node_id'] =>", route_table[index]['node_id'])
                     if route_table[index]['node_id'] in max_node_list:
+                        print("route_table[index]['node_id'] =>", route_table[index]['node_id'])
                         print("out!")
                         max_node_list.remove(route_table[index]['node_id'])
                     max_usage_counter = 0
@@ -464,7 +453,7 @@ def hs_proc(route_table: list):
 
 if __name__ == "__main__":
     req_count = 0
-    cpu_limit = 0.6
+    cpu_limit = 0.8
     cpus = 2
 
     # round robin
@@ -476,7 +465,7 @@ if __name__ == "__main__":
         proc1 = multiprocessing.Process(target=server_proc)
         
         # hs-process
-        proc2 = multiprocessing.Process(target=hs_proc, args=(route_table,))
+        proc2 = multiprocessing.Process(target=hs_proc, args=(route_table, manager))
 
         proc1.start()
         proc2.start()
