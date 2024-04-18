@@ -1,19 +1,16 @@
 import aiohttp
 from aiohttp import web
+import aiohttp.web_request
 import asyncio
 import docker
-import time
 import subprocess
 import logging
-import requests
-import json
-import random
 # from keras.models import load_model
 # from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import multiprocessing
 import concurrent.futures
-from multiprocessing import Manager
+
 
 # model = load_model("./mlp_model/predict_model.keras")
 
@@ -38,7 +35,7 @@ def fetch(client:dict):
 
 def collect_cpu_usage(route_table):
     global cpus
-    print("-- collect_cpu_usage --")
+    print("-- collect_cpu_usage start --")
     # global route_table
     clients_list = list()
     # print(route_table)
@@ -89,11 +86,14 @@ def collect_cpu_usage(route_table):
                         # cpu_system = results[i][0]['cpu_stats']['system_cpu_usage']
 
                         # calculate
-                        cpu_percent = cpu_delta / system_delta * cpus
-                        
+                        cpu_percent = max(round(cpu_delta / system_delta * cpus, 2), 0)
+                        print(f"cpu_percent => {cpu_percent}")
                         route_table[k]['times']['total_usage'] = cpu_stats["cpu_usage"]["total_usage"]
                         route_table[k]['times']['system_cpu_usage'] = system_cpu_usage
                         route_table[k]['cpu_usage'] = cpu_percent
+                        if len(route_table[k]['cpu_usage_history']) >= 10:
+                            route_table[k]['cpu_usage_history'].pop(0)
+                        route_table[k]['cpu_usage_history'].append(cpu_percent)
 
                         # memory stats
                         memory_stats = results[i][0]["memory_stats"]
@@ -101,6 +101,7 @@ def collect_cpu_usage(route_table):
                         memory_limit = memory_stats["limit"] / 1024 / 1024 / 1024
                         # print(f"Hostname {results[i][1]} CPU Percent is {100 * cpu_percent: .2f} %")
                         # print(f"Hostname {results[i][1]} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
+        print("-- collect_cpu_usage end --")
     except: 
         pass
 
@@ -116,64 +117,62 @@ def hs(route_table:list, _class):
     # for getting node id
     print(f"HS {_class} RUNNING...")
     password = "123321"
-
-    # cpu_usage_stats = q.get()
-    if _class == "up":
-        for index in range(len(route_table)):
-            if route_table[index]["availability"] == "drain" and route_table[index]["state"] == "ready":
-                hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {route_table[index]['node_id']}"
-
-                # scaling
-                process = subprocess.Popen(
-                    hs_active_command,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                )
-                time.sleep(3)
-                process.wait()
-                print(f"return code: {process.returncode}")
-                if process.returncode == 0:
-                    print("UP")
-                    route_table[index]["availability"] = "active"
-
-                return route_table
-
-    elif _class == "down":
-        active_num = 0
-        for node in route_table:
-            if node["availability"] == "active" and node["state"] == "ready":
-                active_num += 1
-
-        print("active_num =>", active_num)
-        if active_num > 1:
+    try:
+        if _class == "up":
             for index in range(len(route_table)):
-                if route_table[index]["availability"] == "active" and route_table[index]["state"] == "ready":
-                    hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {route_table[index]['node_id']}"
-                    route_table[index]["availability"] = "drain"
-                    print(f"route_table[index]['availability'] => {route_table[index]['availability']}")
+                if route_table[index]["availability"] == "drain" and route_table[index]["state"] == "ready":
+                    hs_active_command = f"echo '{password}' | sudo -S docker node update --availability active {route_table[index]['node_id']}"
+
+                    # scaling
                     process = subprocess.Popen(
-                        hs_drain_command,
+                        hs_active_command,
                         shell=True,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         text=True,
                     )
-
-                    time.sleep(3)
                     process.wait()
                     print(f"return code: {process.returncode}")
-                    # scaling
                     if process.returncode == 0:
-                        print("DOWN")
-                    return route_table
+                        print("UP")
+                        route_table[index]["availability"] = "active"
+                        route_table[index]["idle"] = "idle"
+                        return route_table[index]['node_id']
 
-    else:
-        print("Error in HS")
+        elif _class == "down":
+            active_num = 0
+            for node in route_table:
+                if node["availability"] == "active" and node["state"] == "ready":
+                    active_num += 1
 
-        return route_table
+            print("active_num =>", active_num)
+            if active_num > 1:
+                for index in range(len(route_table)):
+                    if route_table[index]["availability"] == "active" and route_table[index]["state"] == "ready":
+                        hs_drain_command = f"echo '{password}' | sudo -S docker node update --availability drain {route_table[index]['node_id']}"
+                        route_table[index]["availability"] = "drain"
+                        route_table[index]["cpu_status"] = "null"
+                        process = subprocess.Popen(
+                            hs_drain_command,
+                            shell=True,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True,
+                        )
+                        process.wait()
+                        print(f"return code: {process.returncode}")
+                        # scaling
+                        if process.returncode == 0:
+                            print("DOWN")
+                            return route_table[index]['node_id']
 
+        else:
+            print("Error at args")
+
+            return None
+    except Exception as e:
+        print(e)
+        exit(1)
 
 
 def init_route_table(manager:multiprocessing.Manager):
@@ -197,6 +196,8 @@ def init_route_table(manager:multiprocessing.Manager):
                     "total_usage": 0,
                     "system_cpu_usage": 0,
                 }),
+                "cpu_status": "idle",
+                "cpu_usage_history": manager.list(),
                 "availability": node.attrs["Spec"]["Availability"],  # get availability for choosing drain node to HS
                 "state": node.attrs["Status"]["State"],
                 "address": node.attrs["Status"]["Addr"],
@@ -232,65 +233,50 @@ def init_route_table(manager:multiprocessing.Manager):
 
 
 # declare an async function for send request
-async def req_post_task(
-    session: aiohttp.ClientSession,
-    url,
-    method,
-    request: aiohttp.ClientRequest,
-    request_data,
-):
-
-    if method == "POST":
-        # send request to others' servers
-        async with session.post(
-            url=url, headers=request.headers, json=request_data
-        ) as response:
-            # to Json
-
-            response_data = await response.json()
-
+async def reverse_proxy(request: aiohttp.web_request.Request):
+    global route_table
+    global req_count
+    global round_robin_index
+    async with aiohttp.ClientSession() as session:
+        try:
+            url = get_server_url(route_table=route_table, req_count=req_count, round_robin_index=round_robin_index)
+            # send request to others' servers
+            data = await request.post()
+            # before packet fowarding
             usage = list()
             for u in route_table:
                 if u["state"] == "ready" and u["availability"] == "active":
                     usage.append({u["name"]: u["cpu_usage"]})
 
-            # response
-            response = {
-                "data": response_data,
-                "server": url,
-                "replicas_usage": usage,
-            }
+            async with session.post(
+                url=url, headers=request.headers, data=data
+            ) as response:
+                # to Json
+
+                data = await response.json()
+
+                # response
+                response = {
+                    "data": data,
+                    "server": url,
+                    "replicas_usage": usage,
+                }
 
             # add to list for update route_table
             # for stats in route_table:
             #     if stats['address'] == url:
             #         stats['cpu_usage'] = response_data['cpuUsage']
 
-    else:
-        print("Error in req_task")
-        response = None
+        # put into queue for sync
+        # await q.put(rt)
 
-    # put into queue for sync
-    # await q.put(rt)
-
-    return response
+            return web.json_response(response)
+        except Exception as e:
+            print(e)
 
 
 
-
-
-
-# For changing by cpu usage, first time is random, next is to cpuUsage min
-async def handle_request(request: aiohttp.ClientRequest):
-    global route_table
-    global req_count
-    global round_robin_index
-
-    # get request data 
-    request_data = await request.json()
-    
-    
-    # temp_rt: list = route_table
+def get_server_url(route_table, round_robin_index=None, req_count=None):
     server_url = None
 
     ### cpu_usage algorithm
@@ -302,6 +288,7 @@ async def handle_request(request: aiohttp.ClientRequest):
                 server_url = f"http://{stats['address']}:{stats['port']}"
                 min_usage = stats["cpu_usage"]
 
+
     ### random algorithm
     # round_robin_index = random.randint(0, len(route_table) - 1)
     # server_url = route_table[round_robin_index]['address']
@@ -309,7 +296,6 @@ async def handle_request(request: aiohttp.ClientRequest):
     ### round_robin algorithm
     # server_url = route_table[round_robin_index]['address']
     # round_robin_index = ( round_robin_index + 1 ) % len(route_table)
-
 
     # cpu predict
     # x_data = list()
@@ -322,62 +308,21 @@ async def handle_request(request: aiohttp.ClientRequest):
     #         x_data.append()
 
     # test_predict(x_data)
-    
-    tasks = []
 
-    # send request to first server
-    async with aiohttp.ClientSession() as session:
 
-        ### round_robin
-        # for stats in route_table:
-        #     if stats["state"] == "ready" and stats["availability"] == "active":
-        #         if server_url == stats["address"]:
-        #             tasks.append(
-        #                 asyncio.create_task(
-        #                     req_post_task(
-        #                         session,
-        #                         f"http://{stats['address']}:{stats['port']}",
-        #                         "POST",
-        #                         request,
-        #                         request_data,
-        #                         cpu_limit,
-        #                     )
-        #                 )
-        #             )
-        
-
-        ### cpu_usage 
-        tasks.append(
-            asyncio.create_task(
-                req_post_task(
-                    session,
-                    server_url,
-                    "POST",
-                    request,
-                    request_data,
-                )
-            )
-        )
-
-        responses = await asyncio.gather(*tasks)
-
-    return web.json_response(responses)
+    return server_url
 
 
 def server_proc():
     try:
-        main_loop = asyncio.new_event_loop()
-
         app = web.Application()
-        app.router.add_post("/", handle_request)
-
-        web.run_app(app=app, host="192.168.56.107", port=8080, loop=main_loop)
+        app.router.add_post('/', reverse_proxy)
+        web.run_app(app=app, host="192.168.56.107", port=8080)
 
     except asyncio.CancelledError:
         pass
     finally:
-        pass
-
+        print("END")
 
 def hs_proc(route_table: list, manager:multiprocessing.Manager):
     global cpu_limit
@@ -389,72 +334,99 @@ def hs_proc(route_table: list, manager:multiprocessing.Manager):
 
     enable_hs_up = 0
     enable_hs_down = -1
-
-    max_node_list = manager.list()
-    max_usage_counter = 0
+    active_nodes_set = manager.list()
+    busy_nodes_set = manager.list()
+    idle_nodes_set = manager.list()
+    load_nodes_set = manager.list()
 
     try:
-
+        # init status set
         for index in range(len(route_table)):
             if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "drain":
-                route_table[index]["enable_hs"] = "up"
                 enable_hs_up += 1
             elif route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
-                route_table[index]["enable_hs"] = "down"
+                active_nodes_set.append(route_table[index]['node_id'])
+                if route_table[index]['cpu_status'] == "idle":
+                    idle_nodes_set.append(route_table[index]['node_id'])
+                elif route_table[index]['cpu_status'] == "busy":
+                    busy_nodes_set.append(route_table[index]['node_id'])
+                else:
+                    load_nodes_set.append(route_table[index]['node_id'])
                 enable_hs_down += 1
 
         while True:
             collect_cpu_usage(route_table)
 
+            print(f"enable_hs_up: {enable_hs_up}")
+            print(f"enable_hs_down: {enable_hs_down}")
+            print(f"cpu_limit =>", cpu_limit)
+
+
+            # change cpu usage to cpu status label
             for index in range(len(route_table)):
                 print(f"{route_table[index]['name']} CPU usage => : {100 * route_table[index]['cpu_usage']} %")
                 if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
-                    if route_table[index]["cpu_usage"] > 0.95 * cpu_limit and route_table[index]['node_id'] not in max_node_list:
-                        max_usage_counter += 1
-                    if route_table[index]["cpu_usage"] < 0.05 * cpu_limit and route_table[index]['node_id'] not in max_node_list:
-                        max_usage_counter -= 1
+                    if len(route_table[index]['cpu_usage_history']) >= 10:
+                        cpu_usage_avg = sum(route_table[index]['cpu_usage_history']) / len(route_table[index]['cpu_usage_history'])
+                        if cpu_usage_avg > cpu_limit * 0.8:
+                            route_table[index]['cpu_status'] = 'busy'
+                            # change node status node
+                            if route_table[index]['node_id'] not in busy_nodes_set:
+                                busy_nodes_set.append(route_table[index]['node_id'])
+                                if route_table[index]['node_id'] in idle_nodes_set:
+                                    idle_nodes_set.remove(route_table[index]['node_id'])
+                                if route_table[index]['node_id'] in load_nodes_set:
+                                    load_nodes_set.remove(route_table[index]['node_id'])
+                        elif cpu_usage_avg < cpu_limit * 0.2:
+                            route_table[index]['cpu_status'] = 'idle'
+                            if route_table[index]['node_id'] not in idle_nodes_set:
+                                idle_nodes_set.append(route_table[index]['node_id'])
+                                if route_table[index]['node_id'] in busy_nodes_set:
+                                    busy_nodes_set.remove(route_table[index]['node_id'])
+                                if route_table[index]['node_id'] in load_nodes_set:
+                                    load_nodes_set.remove(route_table[index]['node_id'])
+                        else:
+                            route_table[index]['cpu_status'] = 'load'
+                            if route_table[index]['node_id'] not in load_nodes_set:
+                                load_nodes_set.append(route_table[index]['node_id'])
+                                if route_table[index]['node_id'] in busy_nodes_set:
+                                    busy_nodes_set.remove(route_table[index]['node_id'])
+                                if route_table[index]['node_id'] in idle_nodes_set:
+                                    idle_nodes_set.remove(route_table[index]['node_id'])
+                        
                     
-                
-                print(f"enable_hs_up: {enable_hs_up}")
-                print(f"enable_hs_down: {enable_hs_down}")
-                print(f"max_usage_counter: {max_usage_counter}")
-
-                print(f"max_node_list =>", max_node_list)
-                # hs up
-                print(f"cpu_limit =>", cpu_limit)
-                if max_usage_counter > 5:
-                    max_usage_counter = 0
-                    
-                    if enable_hs_up > 0 and route_table[index]['node_id'] not in max_node_list:
-                        enable_hs_up -= 1
-                        enable_hs_down += 1
-                        route_table = hs(route_table, "up")
-                        max_node_list.append(route_table[index]['node_id'])
-                        print("add!")
+            # hs up
+            if len(busy_nodes_set) >= len(active_nodes_set) and enable_hs_up:
+                enable_hs_up -= 1
+                enable_hs_down += 1
+                hs(route_table, "up")
+                print("Horizontal scaling")
 
 
-                # hs down
-                if max_usage_counter < -5:
-                    print("route_table[index]['node_id'] =>", route_table[index]['node_id'])
-                    if route_table[index]['node_id'] in max_node_list:
-                        print("route_table[index]['node_id'] =>", route_table[index]['node_id'])
-                        print("out!")
-                        max_node_list.remove(route_table[index]['node_id'])
-                    max_usage_counter = 0
-                    if enable_hs_down > 0:
-                        enable_hs_down -= 1
-                        enable_hs_up += 1
-                        route_table = hs(route_table, "down")
+            # hs down
+            if len(idle_nodes_set) >= len(active_nodes_set) and enable_hs_down:
+                enable_hs_down -= 1
+                enable_hs_up += 1
+                node_id = hs(route_table, "down")
+                if node_id in busy_nodes_set:
+                    busy_nodes_set.remove(node_id)
+                elif node_id in idle_nodes_set:
+                    idle_nodes_set.remove(node_id)
+                elif node_id in load_nodes_set:
+                    load_nodes_set.remove(node_id)
+                print("Horizontal scaling down")
 
             for node in route_table:
                 print(f"{node['name']}: {node['availability']}", end='\n')
-    except:
-        pass
+    except Exception as e:
+        print(e)
+        exit(1)
 
 if __name__ == "__main__":
     req_count = 0
     cpu_limit = 0.8
     cpus = 2
+    session = None
 
     # round robin
     round_robin_index = 0
@@ -472,5 +444,7 @@ if __name__ == "__main__":
 
         proc1.join()
         proc2.join()
+    
+    session.close()
 
     

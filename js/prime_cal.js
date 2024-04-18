@@ -1,22 +1,8 @@
+process.on('message', (number) => {
+    // result is a integer number
+    const result = simulateHeavyCalculation(number);
 
-process.on('message', (message) => {
-    // code with time
-    
-    const n = message.requestContent.number;
-    // get result
-
-    const counterResult = simulateHeavyCalculation(n)
-
-    // end time
-    const elapsed = process.hrtime(startTime);
-
-    const result = {
-        number: n,
-        counter: counterResult,
-        runtime: elapsed[0] * 1000 + elapsed[1] / 1000000
-    }
-
-    // send message to main process
+    // send result to main process
     process.send(result);
 })
 

@@ -1,7 +1,5 @@
 'use strict';
 
-const os = require('os');
-
 // for main server
 const express = require('express');
 // child process
@@ -21,68 +19,51 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-function getCpuUsage() {
-	const cpus = os.cpus();
-	let total = 0;
-	let idle = 0;
-	for (const cpu of cpus) {
-		total += cpu.times.user + cpu.times.system + cpu.times.idle;
-		idle += cpu.times.idle;
-	}
-
-	const idleCpuUsage = (idle / total) * 100;
-	const cpuUsage = 100 - idleCpuUsage.toFixed(2);
-
-	return cpuUsage;
-}
-
 try {
 	app.post('/', (req, res) => {
-		
-		// run a new child process	
-
-		// for container
-		const childScriptPath = path.join(path.dirname(__filename), 'child.js')
-
-		const childProcess = fork(childScriptPath);
-
-		// for test on linux host in Documents folder
+		// check headers to get task type
+		const task_type = req.headers.task_type;
+		const data = req.body;
 
 
-		// Timer for child process run time
-
-		// send message to child process
-		childProcess.send({ requestContent: req.body });
-		
-		// listen child process
-		
-		childProcess.on('message', (data) => {
-			// get and MEM
-			const memUsage = (1 - (os.freemem() / os.totalmem()))
-
-			childProcess.kill();
+		// calculate prime number
+		if (task_type == "C") {
+			// run a new child process	
+			const childScriptPath = path.join(path.dirname(__filename), 'prime_cal.js')
+			const childProcess = fork(childScriptPath);
 			
-			res.json(data);
-		});
-		
+			// send message to child process
+			childProcess.send(data.number);
+			
+			// listen child process until finish request handle
+			childProcess.on('message', (result) => {
+				// get and MEM
+				childProcess.kill();
+				res.json({result: result});
+			});
+		} else if (task_type == "M") {
+			// run a new child process	
+			const childScriptPath = path.join(path.dirname(__filename), 'alloc_mem.js')
+			const childProcess = fork(childScriptPath);
+			
+			// send message to child process
+			childProcess.send(data.size);
+			
+			// listen child process until finish request handle
+			childProcess.on('message', (data) => {
+				// get and MEM
+				childProcess.kill();
+				res.json({result: "memory alloc finished"});
+			});
+		} else if (task_type == "H") {
+			res.json({result: "copy finished"});
+		} else {
+			console.log("Error");
+		}
 	})
 } catch (err) {
 	res.status(500).json({ error: 'Interal Server Error'});
 }
-
-app.head('/', (req, res) => {
-	try {
-		const memUsage = (1 - (os.freemem() / os.totalmem()))
-		const cpuPercent = getCpuUsage()
-		
-		res.setHeader("data", cpuPercent);
-		res.setHeader("mem", memUsage);
-		res.status(200).end();
-
-	} catch (err) {
-		res.status(500).json({error: 'Internal Server Error'});
-	}
-})
 
 app.listen(PORT, HOST, () => {
 	console.log(`Running on http://${HOST}:${PORT}`);
