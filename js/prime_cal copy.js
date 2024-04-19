@@ -1,6 +1,6 @@
 process.on('message', (number) => {
     // result is a integer number
-    const result = simulateHeavyCalculation(number);
+    const result = simulateHeavyCalculation(parseInt(number));
 
     // send result to main process
     process.send(result);
