@@ -129,8 +129,8 @@ def collect_cpu_usage(route_table, log):
                         route_table[k]['hdd_usage'] = route_table[k]['node_client'].df()['LayersSize']
 
 
-                        log_str += f"[{route_table[k]['name']}] => mem: {memory_percent} | hdd: {hdd_usgae}\n"
-                
+                        log_str += f"[{route_table[k]['name']}] => mem: {memory_percent} | hdd: {hdd_usgae} | timestamp: {time.time()}  "
+
                 monitor_log.info(log_str)
                         # print(f"Hostname {results[i][1]} CPU Percent is {100 * cpu_percent: .2f} %")
                         # print(f"Hostname {results[i][1]} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
@@ -167,7 +167,6 @@ def hs(route_table:list, _class):
                     )
                     process.wait()
                     wait_task_running(node_id=route_table[index]['node_id'])
-                    time.sleep(2)
                     print(f"return code: {process.returncode}")
                     if process.returncode == 0:
                         print("UP")
@@ -198,7 +197,6 @@ def hs(route_table:list, _class):
                         process.wait()
                         # wait for start
                         wait_task_exiting(node_id=route_table[index]['node_id'])
-                        time.sleep(2)
                         print(f"return code: {process.returncode}")
                         # scaling
                         if process.returncode == 0:
@@ -444,9 +442,9 @@ def hs_proc(route_table: list, manager:multiprocessing.Manager):
                 # print(f"{route_table[index]['name']} CPU usage => : {100 * route_table[index]['cpu_usage']} %")
                 if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
                     print(route_table[index]['cpu_usage_history'])
-                    if len(route_table[index]['cpu_usage_history']) >= 20:
+                    if len(route_table[index]['cpu_usage_history']) >= 10:
                         cpu_usage_avg = sum(route_table[index]['cpu_usage_history']) / len(route_table[index]['cpu_usage_history'])
-                        if cpu_usage_avg > cpu_limit * 0.8:
+                        if cpu_usage_avg >= cpu_limit * 0.8:
                             route_table[index]['cpu_status'] = 'busy'
                             # change node status node
                             if route_table[index]['node_id'] not in busy_nodes_set:
@@ -455,7 +453,7 @@ def hs_proc(route_table: list, manager:multiprocessing.Manager):
                                 idle_nodes_set.remove(route_table[index]['node_id'])
                             if route_table[index]['node_id'] in load_nodes_set:
                                 load_nodes_set.remove(route_table[index]['node_id'])
-                        elif cpu_usage_avg < cpu_limit * 0.2:
+                        elif cpu_usage_avg <= cpu_limit * 0.2:
                             route_table[index]['cpu_status'] = 'idle'
                             if route_table[index]['node_id'] not in idle_nodes_set:
                                 idle_nodes_set.append(route_table[index]['node_id'])
