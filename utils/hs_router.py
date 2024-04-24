@@ -15,7 +15,7 @@ import paramiko
 import re
 
 
-handler = logging.FileHandler(filename="./logs/hs-log_v2.log", mode="w")
+handler = logging.FileHandler(filename="./logs/hs-log_v3.log", mode="w")
 monitor_log = logging.Logger(name="monitor", level=logging.INFO)
 monitor_log.addHandler(handler)
 
