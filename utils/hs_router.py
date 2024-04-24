@@ -11,11 +11,15 @@ import time
 import numpy as np
 import multiprocessing
 import concurrent.futures
+import paramiko
+import re
 
 
 handler = logging.FileHandler(filename="./logs/hs-log.log", mode="w")
 monitor_log = logging.Logger(name="monitor", level=logging.INFO)
 monitor_log.addHandler(handler)
+
+
 
 # model = load_model("./mlp_model/predict_model.keras")
 
@@ -34,20 +38,43 @@ monitor_log.addHandler(handler)
 #     prediction = model.predict(x_data)
 #     print(prediction)
 
-def fetch(client:dict):
-    container = client['client'].containers()[0]
-    return [client['client'].stats(container["Id"], stream=False, one_shot=True), client['node_id']]
 
-def collect_cpu_usage(route_table, log):
+def ssh_command(host, port, username, password, command):
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(host, port=port, username=username, password=password)
+    stdin, stdout, stderr = client.exec_command(command)
+    output = stdout.read().decode()
+    error = stderr.read().decode()
+    client.close()
+    return output, error
+
+
+
+
+def fetch(client:dict):
+    output, error = ssh_command(client['address'], 22, "soar", "123321", "df --total /var/lib/docker/")
+    matches = re.findall(r"([\d]+%) -", output)
+    if matches:
+        hdd_usage = matches[0]
+    else:
+        hdd_usage = "0%"
+
+    container = client['client'].containers(filters={'status': "running"})
+    if len(container):
+        return [client['client'].stats(container[0]["Id"], stream=False, one_shot=True), client['node_id'], hdd_usage]
+
+
+def collect_cpu_usage(route_table, manager_client):
     global cpus
     print("-- collect_cpu_usage start --")
+
     # global route_table
     clients_list = list()
-    # print(route_table)
-    # try:
+
     for node in route_table:
         if node['state'] == "ready" and node['availability'] == "active":
-            clients_list.append({"client": node['node_client'], "node_id": node['node_id']})
+            clients_list.append({"client": node['node_client'], "node_id": node['node_id'], "address": node['address']})
     
 
     # concurrent for get cpu usage
@@ -92,7 +119,7 @@ def collect_cpu_usage(route_table, log):
                         # cpu_system = results[i][0]['cpu_stats']['system_cpu_usage']
 
                         # calculate
-                        cpu_percent = max(0, round(cpu_delta / system_delta * cpus, 2))
+                        cpu_percent = max(0, round(cpu_delta / system_delta * cpus, 4))
                         print(f"cpu_percent => {cpu_percent}")
                         route_table[k]['times']['total_usage'] = cpu_stats["cpu_usage"]["total_usage"]
                         route_table[k]['times']['system_cpu_usage'] = system_cpu_usage
@@ -107,7 +134,7 @@ def collect_cpu_usage(route_table, log):
                         memory_stats = results[i][0]["memory_stats"]
                         memory_usage = memory_stats["usage"]
                         memory_limit = memory_stats["limit"]
-                        memory_percent = round(memory_usage / memory_limit, 2)
+                        memory_percent = round(memory_usage / memory_limit, 4)
 
 
                         # "memory": manager.dict({
@@ -125,12 +152,11 @@ def collect_cpu_usage(route_table, log):
 
                         # hdd stats
                         # log 
-                        hdd_usgae = route_table[k]['node_client'].df()['LayersSize']
-                        route_table[k]['hdd_usage'] = route_table[k]['node_client'].df()['LayersSize']
+                        hdd_usgae = results[i][2]
+                        route_table[k]['hdd_usage'] = hdd_usgae
 
-
-                        log_str += f"[{route_table[k]['name']}] => mem: {memory_percent} | hdd: {hdd_usgae} | timestamp: {time.time()}  "
-
+                        log_str += f"[{route_table[k]['name']}] => mem: {memory_percent} | hdd: {hdd_usgae} | timestamp: {time.time()} "
+                        
                 monitor_log.info(log_str)
                         # print(f"Hostname {results[i][1]} CPU Percent is {100 * cpu_percent: .2f} %")
                         # print(f"Hostname {results[i][1]} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
@@ -151,6 +177,8 @@ def hs(route_table:list, _class):
     # for getting node id
     print(f"HS {_class} RUNNING...")
     password = "123321"
+
+    client = docker.DockerClient(base_url="tcp://10.0.2.15:2375")
     try:
         if _class == "up":
             for index in range(len(route_table)):
@@ -166,7 +194,7 @@ def hs(route_table:list, _class):
                         text=True,
                     )
                     process.wait()
-                    wait_task_running(node_id=route_table[index]['node_id'])
+                    wait_task_running(node_id=route_table[index]['node_id'], client=client)
                     print(f"return code: {process.returncode}")
                     if process.returncode == 0:
                         print("UP")
@@ -196,7 +224,7 @@ def hs(route_table:list, _class):
                         )
                         process.wait()
                         # wait for start
-                        wait_task_exiting(node_id=route_table[index]['node_id'])
+                        wait_task_exiting(node_id=route_table[index]['node_id'], client=client)
                         print(f"return code: {process.returncode}")
                         # scaling
                         if process.returncode == 0:
@@ -212,10 +240,8 @@ def hs(route_table:list, _class):
         exit(1)
 
 
-def wait_task_running(node_id):
+def wait_task_running(node_id, client:docker.DockerClient):
     while True:
-        client = docker.DockerClient(base_url=f"tcp://10.0.2.15:2375")
-
         service = client.services.get('node-service')
 
         tasks = service.tasks()
@@ -225,10 +251,8 @@ def wait_task_running(node_id):
                 return
 
 
-def wait_task_exiting(node_id):
+def wait_task_exiting(node_id, client:docker.DockerClient):
     while True:
-        client = docker.DockerClient(base_url=f"tcp://10.0.2.15:2375")
-
         service = client.services.get('node-service')
 
         tasks = service.tasks()
@@ -312,14 +336,15 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
             # send request to others' servers
             data = await request.post()
             # before packet fowarding
-            _cpu = list()
-            _mem = list()
-            _hdd = list()
+            _cpu = dict()
+            _mem = dict()
+            _hdd = dict()
+            _timestamp = time.time()
             for node in route_table:
                 if node["state"] == "ready" and node["availability"] == "active":
-                    _cpu.append({node["name"]: node["cpu_usage"]})
-                    _mem.append({node["name"]: node["memory"]["memory_percent"]})
-                    _hdd.append({node["name"]: node["hdd_usage"]})
+                    _cpu[node["name"]] = node["cpu_usage"]
+                    _mem[node["name"]] = node["memory"]["memory_percent"]
+                    _hdd[node["name"]] = node["hdd_usage"]
             
             async with session.post(
                 url=url, headers=request.headers, data=data
@@ -327,16 +352,15 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
                 # to Json
                 data = await response.json()
 
-                print("response", data)
-
                 # response
                 response = {
                     "data": data,
                     "server": url,
+                    "timestamp": _timestamp,
                     "replicas_resources": {
                         "cpu": _cpu,
                         "mem": _mem,
-                        "hdd": _hdd
+                        "hdd": _hdd,
                     },
                 }
 
