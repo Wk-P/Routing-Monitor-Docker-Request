@@ -15,10 +15,9 @@ import paramiko
 import re
 
 
-handler = logging.FileHandler(filename="./logs/hs-log.log", mode="w")
+handler = logging.FileHandler(filename="./logs/hs-log_v2.log", mode="w")
 monitor_log = logging.Logger(name="monitor", level=logging.INFO)
 monitor_log.addHandler(handler)
-
 
 
 # model = load_model("./mlp_model/predict_model.keras")
@@ -54,11 +53,11 @@ def ssh_command(host, port, username, password, command):
 
 def fetch(client:dict):
     output, error = ssh_command(client['address'], 22, "soar", "123321", "df --total /var/lib/docker/")
-    matches = re.findall(r"([\d]+%) -", output)
+    matches = re.findall(r"([\d]+)% -", output)
     if matches:
-        hdd_usage = matches[0]
+        hdd_usage = float(matches[0]) / 100
     else:
-        hdd_usage = "0%"
+        hdd_usage = 0
 
     container = client['client'].containers(filters={'status': "running"})
     if len(container):
