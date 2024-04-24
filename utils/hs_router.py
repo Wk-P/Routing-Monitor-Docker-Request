@@ -332,7 +332,7 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
     global round_robin_index
     async with aiohttp.ClientSession() as session:
         try:
-            url = get_server_url(route_table=route_table, req_count=req_count, round_robin_index=round_robin_index)
+            url, hostname = get_server_url(route_table=route_table, req_count=req_count, round_robin_index=round_robin_index)
             # send request to others' servers
             data = await request.post()
             # before packet fowarding
@@ -356,6 +356,7 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
                 response = {
                     "data": data,
                     "server": url,
+                    "hostname": hostname,
                     "timestamp": _timestamp,
                     "replicas_resources": {
                         "cpu": _cpu,
@@ -381,7 +382,7 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
 
 def get_server_url(route_table, round_robin_index=None, req_count=None):
     server_url = None
-
+    hostname = None
     ### cpu_usage algorithm
     min_usage = 2
     for stats in route_table:
@@ -390,6 +391,7 @@ def get_server_url(route_table, round_robin_index=None, req_count=None):
             if float(stats["cpu_usage"]) <= min_usage:
                 server_url = f"http://{stats['address']}:{stats['port']}"
                 min_usage = stats["cpu_usage"]
+                hostname = stats["name"]
 
 
     ### random algorithm
@@ -413,7 +415,7 @@ def get_server_url(route_table, round_robin_index=None, req_count=None):
     # test_predict(x_data)
 
 
-    return server_url
+    return server_url, hostname
 
 
 def server_proc():
