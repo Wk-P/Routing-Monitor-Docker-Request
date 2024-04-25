@@ -1,0 +1,195 @@
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str
+Constructor parameter should be str
+Traceback (most recent call last):
+  File "/home/soar/Documents/github/Routing-Monitor-Docker-Request-/utils/hs_router.py", line 356, in reverse_proxy
+    async with session.post(
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 1187, in __aenter__
+    self._resp = await self._coro
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 445, in _request
+    url = self._build_url(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/aiohttp/client.py", line 372, in _build_url
+    url = URL(str_or_url)
+  File "/home/soar/.local/lib/python3.10/site-packages/yarl/_url.py", line 179, in __new__
+    raise TypeError("Constructor parameter should be str")
+TypeError: Constructor parameter should be str

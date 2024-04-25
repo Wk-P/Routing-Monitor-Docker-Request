@@ -19,6 +19,10 @@ handler = logging.FileHandler(filename="./logs/hs-log_v3.log", mode="w")
 monitor_log = logging.Logger(name="monitor", level=logging.INFO)
 monitor_log.addHandler(handler)
 
+errHandler = logging.FileHandler(filename="./logs/err-log_v1.log", mode="w")
+errLog = logging.Logger(name='error log', level=logging.INFO)
+errLog.addHandler(errHandler)
+
 
 # model = load_model("./mlp_model/predict_model.keras")
 
@@ -162,6 +166,7 @@ def collect_cpu_usage(route_table, manager_client):
         print("-- collect_cpu_usage end --")
     except Exception as e: 
         print("135", e)
+        errLog.exception(e)
         pass
 
     # horizontal scaling scheduler
@@ -236,6 +241,7 @@ def hs(route_table:list, _class):
             return None
     except Exception as e:
         print("208", e)
+        errLog.exception(e)
         exit(1)
 
 
@@ -248,6 +254,7 @@ def wait_task_running(node_id, client:docker.DockerClient):
         for task in tasks:
             if task['Status']['State'] == "running" and task['NodeID'] == node_id:
                 return
+        time.sleep(1)
 
 
 def wait_task_exiting(node_id, client:docker.DockerClient):
@@ -259,6 +266,7 @@ def wait_task_exiting(node_id, client:docker.DockerClient):
         for task in tasks:
             if task['Status']['State'] == "shutdown" and task['NodeID'] == node_id:
                 return
+        time.sleep(1)
 
 
 def init_route_table(manager:multiprocessing.Manager):
@@ -333,7 +341,7 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
         try:
             url, hostname = get_server_url(route_table=route_table, req_count=req_count, round_robin_index=round_robin_index)
             # send request to others' servers
-            data = await request.post()
+            data = await request.post()             # application/x-www-form-urlencoded
             # before packet fowarding
             _cpu = dict()
             _mem = dict()
@@ -344,25 +352,30 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
                     _cpu[node["name"]] = node["cpu_usage"]
                     _mem[node["name"]] = node["memory"]["memory_percent"]
                     _hdd[node["name"]] = node["hdd_usage"]
-            
-            async with session.post(
-                url=url, headers=request.headers, data=data
-            ) as response:
-                # to Json
-                data = await response.json()
+            try:
+                async with session.post(
+                    url=url, headers=request.headers, data=data
+                ) as response:
+                    # to Json
+                    data = await response.json()
 
-                # response
-                response = {
-                    "data": data,
-                    "server": url,
-                    "hostname": hostname,
-                    "timestamp": _timestamp,
-                    "replicas_resources": {
-                        "cpu": _cpu,
-                        "mem": _mem,
-                        "hdd": _hdd,
-                    },
-                }
+                    # response
+                    response = {
+                        "data": data,
+                        "server": url,
+                        "hostname": hostname,
+                        "timestamp": _timestamp,
+                        "replicas_resources": {
+                            "cpu": _cpu,
+                            "mem": _mem,
+                            "hdd": _hdd,
+                        },
+                    }
+
+                return web.json_response(response)
+            except Exception as e:
+                print("371", e)
+                errLog.exception(e)
 
             # add to list for update route_table
             # for stats in route_table:
@@ -372,50 +385,57 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
         # put into queue for sync
         # await q.put(rt)
 
-            return web.json_response(response)
+            
         except Exception as e:
-            print("353", e)
-            pass
+            print("393", e)
+            errLog.exception(e)
+            return web.json_response({"error": 1})
 
 
 
 def get_server_url(route_table, round_robin_index=None, req_count=None):
-    server_url = None
-    hostname = None
-    ### cpu_usage algorithm
-    min_usage = 2
-    for stats in route_table:
-        # print(f"{stats['address']} : {stats['cpu_usage']}")
-        if stats["state"] == "ready" and stats["availability"] == "active":
-            if float(stats["cpu_usage"]) <= min_usage:
+    try:
+        server_url = None
+        hostname = None
+        ### cpu_usage algorithm
+        min_usage = 2
+        for stats in route_table:
+            if stats["state"] == "ready" and stats["availability"] == "active":
+                if float(stats["cpu_usage"]) <= min_usage:
+                    server_url = f"http://{stats['address']}:{stats['port']}"
+                    min_usage = stats["cpu_usage"]
+                    hostname = stats["name"]
+
+
+        ### random algorithm
+        # round_robin_index = random.randint(0, len(route_table) - 1)
+        # server_url = route_table[round_robin_index]['address']
+
+        ### round_robin algorithm
+        # server_url = route_table[round_robin_index]['address']
+        # round_robin_index = ( round_robin_index + 1 ) % len(route_table)
+
+        # cpu predict
+        # x_data = list()
+        # x_data.append(request_data['number'])
+
+        # create x_data list
+        # for stats in route_table:
+        #     if stats["state"] == "ready" and stats["availability"] == "active":
+        #         # 1 2 3 No. of node add to x-training data 
+        #         x_data.append()
+
+        # test_predict(x_data)
+
+
+        return server_url, hostname
+    except Exception as e:
+        errLog.exception(e)
+        for stats in route_table:
+            if stats["state"] == "ready" and stats["availability"] == "active":
                 server_url = f"http://{stats['address']}:{stats['port']}"
-                min_usage = stats["cpu_usage"]
                 hostname = stats["name"]
-
-
-    ### random algorithm
-    # round_robin_index = random.randint(0, len(route_table) - 1)
-    # server_url = route_table[round_robin_index]['address']
-
-    ### round_robin algorithm
-    # server_url = route_table[round_robin_index]['address']
-    # round_robin_index = ( round_robin_index + 1 ) % len(route_table)
-
-    # cpu predict
-    # x_data = list()
-    # x_data.append(request_data['number'])
-
-    # create x_data list
-    # for stats in route_table:
-    #     if stats["state"] == "ready" and stats["availability"] == "active":
-    #         # 1 2 3 No. of node add to x-training data 
-    #         x_data.append()
-
-    # test_predict(x_data)
-
-
-    return server_url, hostname
-
+                return server_url, hostname
 
 def server_proc():
     try:
@@ -466,7 +486,6 @@ def hs_proc(route_table: list, manager:multiprocessing.Manager):
             for index in range(len(route_table)):
                 # print(f"{route_table[index]['name']} CPU usage => : {100 * route_table[index]['cpu_usage']} %")
                 if route_table[index]["state"] == "ready" and route_table[index]["availability"] == "active":
-                    print(route_table[index]['cpu_usage_history'])
                     if len(route_table[index]['cpu_usage_history']) >= 10:
                         cpu_usage_avg = sum(route_table[index]['cpu_usage_history']) / len(route_table[index]['cpu_usage_history'])
                         if cpu_usage_avg >= cpu_limit * 0.8:
@@ -523,6 +542,7 @@ def hs_proc(route_table: list, manager:multiprocessing.Manager):
                 print(f"{node['name']}: {node['availability']}", end='\n')
     except Exception as e:
         print("495", e)
+        errLog.exception(e)
         exit(1)
 
 if __name__ == "__main__":
