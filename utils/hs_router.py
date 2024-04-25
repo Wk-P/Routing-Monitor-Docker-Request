@@ -358,31 +358,27 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
                     _cpu[node["name"]] = node["cpu_usage"]
                     _mem[node["name"]] = node["memory"]["memory_percent"]
                     _hdd[node["name"]] = node["hdd_usage"]
-            try:
-                async with session.post(
-                    url=url, headers=request.headers, data=data
-                ) as response:
-                    # to Json
-                    data = await response.json()
 
-                    # response
-                    response = {
-                        "data": data,
-                        "server": url,
-                        "hostname": hostname,
-                        "timestamp": _timestamp,
-                        "replicas_resources": {
-                            "cpu": _cpu,
-                            "mem": _mem,
-                            "hdd": _hdd,
-                        },
-                    }
+            async with session.post(
+                url=url, headers=request.headers, data=data
+            ) as response:
+                # to Json
+                data = await response.json()
 
-                return web.json_response(response)
-            except Exception as e:
-                print("371", e)
-                errLog.exception(e)
+                # response
+                response = {
+                    "data": data,
+                    "server": url,
+                    "hostname": hostname,
+                    "timestamp": _timestamp,
+                    "replicas_resources": {
+                        "cpu": _cpu,
+                        "mem": _mem,
+                        "hdd": _hdd,
+                    },
+                }
 
+            return web.json_response(response)
             # add to list for update route_table
             # for stats in route_table:
             #     if stats['address'] == url:
@@ -390,7 +386,6 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
 
         # put into queue for sync
         # await q.put(rt)
-
             
         except Exception as e:
             errLog.info(f"{url}")
@@ -413,6 +408,12 @@ def get_server_url(route_table, round_robin_index=None, req_count=None):
                     min_usage = stats["cpu_usage"]
                     hostname = stats["name"]
 
+        if server_url == None:
+            if stats["state"] == "ready" and stats["availability"] == "active":
+                server_url = f"http://{stats['address']}:{stats['port']}"
+                min_usage = stats["cpu_usage"]
+                hostname = stats["name"]
+
 
         ### random algorithm
         # round_robin_index = random.randint(0, len(route_table) - 1)
@@ -434,15 +435,10 @@ def get_server_url(route_table, round_robin_index=None, req_count=None):
 
         # test_predict(x_data)
 
-
         return server_url, hostname
     except Exception as e:
         errLog.exception(e)
-        for stats in route_table:
-            if stats["state"] == "ready" and stats["availability"] == "active":
-                server_url = f"http://{stats['address']}:{stats['port']}"
-                hostname = stats["name"]
-                return server_url, hostname
+        
 
 def server_proc():
     try:
