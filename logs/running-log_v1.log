@@ -25588,3 +25588,83 @@ ubuntuDockerWorker3: drain
 ubuntuDockerWorker1: drain
 ubuntuDockerWorker2: active
 -- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
