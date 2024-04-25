@@ -15,13 +15,17 @@ import paramiko
 import re
 
 
-handler = logging.FileHandler(filename="./logs/hs-log_v3.log", mode="w")
+handler = logging.FileHandler(filename="./logs/hs-log_v3.log", mode="a")
 monitor_log = logging.Logger(name="monitor", level=logging.INFO)
 monitor_log.addHandler(handler)
 
-errHandler = logging.FileHandler(filename="./logs/err-log_v1.log", mode="w")
+errHandler = logging.FileHandler(filename="./logs/err-log_v1.log", mode="a")
 errLog = logging.Logger(name='error log', level=logging.INFO)
 errLog.addHandler(errHandler)
+
+runningHandler = logging.FileHandler(filename='./logs/running-log_v1.log', mode="a")
+runningLog = logging.Logger(name="running_log", level=logging.INFO)
+runningLog.addHandler(runningHandler)
 
 
 # model = load_model("./mlp_model/predict_model.keras")
@@ -70,7 +74,7 @@ def fetch(client:dict):
 
 def collect_cpu_usage(route_table, manager_client):
     global cpus
-    print("-- collect_cpu_usage start --")
+    runningLog.info("-- collect_cpu_usage start --")
 
     # global route_table
     clients_list = list()
@@ -123,7 +127,7 @@ def collect_cpu_usage(route_table, manager_client):
 
                         # calculate
                         cpu_percent = max(0, round(cpu_delta / system_delta * cpus, 4))
-                        print(f"cpu_percent => {cpu_percent}")
+                        runningLog.info(f"cpu_percent => {cpu_percent}")
                         route_table[k]['times']['total_usage'] = cpu_stats["cpu_usage"]["total_usage"]
                         route_table[k]['times']['system_cpu_usage'] = system_cpu_usage
                         route_table[k]['cpu_usage'] = cpu_percent
@@ -163,7 +167,7 @@ def collect_cpu_usage(route_table, manager_client):
                 monitor_log.info(log_str)
                         # print(f"Hostname {results[i][1]} CPU Percent is {100 * cpu_percent: .2f} %")
                         # print(f"Hostname {results[i][1]} MEM Usage is {memory_usage: .2f} MiB / {memory_limit: .2f} GiB")
-        print("-- collect_cpu_usage end --")
+        runningLog.info("-- collect_cpu_usage end --")
     except Exception as e: 
         print("135", e)
         errLog.exception(e)
@@ -180,6 +184,7 @@ def collect_cpu_usage(route_table, manager_client):
 def hs(route_table:list, _class):
     # for getting node id
     print(f"HS {_class} RUNNING...")
+    runningLog.info(f"HS {_class} RUNNING...")
     password = "123321"
 
     client = docker.DockerClient(base_url="tcp://10.0.2.15:2375")
@@ -200,6 +205,7 @@ def hs(route_table:list, _class):
                     process.wait()
                     wait_task_running(node_id=route_table[index]['node_id'], client=client)
                     print(f"return code: {process.returncode}")
+                    runningLog.info(f"return code: {process.returncode}")
                     if process.returncode == 0:
                         print("UP")
                         route_table[index]["availability"] = "active"
@@ -387,6 +393,7 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
 
             
         except Exception as e:
+            errLog.info(f"{url}")
             print("393", e)
             errLog.exception(e)
             return web.json_response({"error": 1})
@@ -515,14 +522,14 @@ def hs_proc(route_table: list, manager:multiprocessing.Manager):
                                 idle_nodes_set.remove(route_table[index]['node_id'])
                         
             # hs up
-            print(len(busy_nodes_set) >= len(active_nodes_set))
+            runningLog.info(len(busy_nodes_set) >= len(active_nodes_set))
             if len(busy_nodes_set) >= len(active_nodes_set) and enable_hs_up:
                 enable_hs_up -= 1
                 enable_hs_down += 1
                 hs(route_table, "up")
-                print("Horizontal scaling")
+                runningLog.info("Horizontal scaling")
 
-            print(len(idle_nodes_set) >= len(active_nodes_set))
+            runningLog.info(len(idle_nodes_set) >= len(active_nodes_set))
             # hs down
             if len(idle_nodes_set) >= len(active_nodes_set) and enable_hs_down:
                 enable_hs_down -= 1
@@ -536,10 +543,10 @@ def hs_proc(route_table: list, manager:multiprocessing.Manager):
                     idle_nodes_set.remove(node_id)
                 elif node_id in load_nodes_set:
                     load_nodes_set.remove(node_id)
-                print("Horizontal scaling down")
+                runningLog.info("Horizontal scaling down")
 
             for node in route_table:
-                print(f"{node['name']}: {node['availability']}", end='\n')
+                runningLog.info(f"{node['name']}: {node['availability']}")
     except Exception as e:
         print("495", e)
         errLog.exception(e)

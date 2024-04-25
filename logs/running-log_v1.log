@@ -1,0 +1,3433 @@
+-- collect_cpu_usage start --
+cpu_percent => 0.3961
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0001
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.3097
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1619
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3074
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5714
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8151
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.7908
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8984
+-- collect_cpu_usage end --
+True
+HS up RUNNING...
+return code: 0
+Horizontal scaling
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 1.1896
+-- collect_cpu_usage end --
+True
+HS up RUNNING...
+return code: 0
+Horizontal scaling
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2352
+cpu_percent => 0
+cpu_percent => 1.1369
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0002
+cpu_percent => 1.5022
+cpu_percent => 1.626
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3003
+cpu_percent => 0.5325
+cpu_percent => 1.1683
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1358
+cpu_percent => 0.6676
+cpu_percent => 1.4006
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4603
+cpu_percent => 0.6377
+cpu_percent => 1.4067
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.363
+cpu_percent => 0.9805
+cpu_percent => 0.8413
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3897
+cpu_percent => 1.5306
+cpu_percent => 1.241
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2199
+cpu_percent => 1.1897
+cpu_percent => 1.6474
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0244
+cpu_percent => 0
+cpu_percent => 1.2807
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 0.5276
+cpu_percent => 2.1045
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.1876
+cpu_percent => 1.9024
+cpu_percent => 2.0935
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5554
+cpu_percent => 1.1671
+cpu_percent => 0.6001
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.7881
+cpu_percent => 1.0207
+cpu_percent => 1.1228
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2183
+cpu_percent => 1.69
+cpu_percent => 1.2269
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7735
+cpu_percent => 1.5112
+cpu_percent => 1.4648
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2223
+cpu_percent => 1.37
+cpu_percent => 1.3305
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5021
+cpu_percent => 1.3093
+cpu_percent => 1.1169
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2025
+cpu_percent => 1.7848
+cpu_percent => 1.3599
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4908
+cpu_percent => 1.3935
+cpu_percent => 1.5172
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2989
+cpu_percent => 1.5137
+cpu_percent => 1.5077
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5544
+cpu_percent => 0.4161
+cpu_percent => 1.566
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.755
+cpu_percent => 0.0551
+cpu_percent => 1.5118
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6865
+cpu_percent => 1.2808
+cpu_percent => 2.0051
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.0696
+cpu_percent => 1.2365
+cpu_percent => 0.3975
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6835
+cpu_percent => 1.6724
+cpu_percent => 0.9824
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3178
+cpu_percent => 1.502
+cpu_percent => 1.1562
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6006
+cpu_percent => 1.3996
+cpu_percent => 1.5672
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2232
+cpu_percent => 1.3268
+cpu_percent => 2.3945
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8762
+cpu_percent => 0.408
+cpu_percent => 1.8265
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.0599
+cpu_percent => 1.0476
+cpu_percent => 1.4598
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3777
+cpu_percent => 1.3951
+cpu_percent => 1.3563
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3947
+cpu_percent => 1.9053
+cpu_percent => 1.4233
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5469
+cpu_percent => 1.2859
+cpu_percent => 0.9304
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1114
+cpu_percent => 1.4581
+cpu_percent => 0.6765
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4407
+cpu_percent => 1.2318
+cpu_percent => 0.4555
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4649
+cpu_percent => 1.2856
+cpu_percent => 1.5715
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.0469
+cpu_percent => 1.5171
+cpu_percent => 1.267
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1844
+cpu_percent => 1.9499
+cpu_percent => 1.4804
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4319
+cpu_percent => 1.7841
+cpu_percent => 0.8649
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1129
+cpu_percent => 0.7161
+cpu_percent => 1.3106
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 2.1977
+cpu_percent => 0.9232
+cpu_percent => 1.3443
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.5909
+cpu_percent => 1.4827
+cpu_percent => 1.4925
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6312
+cpu_percent => 1.3368
+cpu_percent => 1.5652
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8368
+cpu_percent => 1.2147
+cpu_percent => 1.8925
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.7872
+cpu_percent => 1.1445
+cpu_percent => 2.056
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3705
+cpu_percent => 1.335
+cpu_percent => 0.97
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 2.2014
+cpu_percent => 1.544
+cpu_percent => 1.5867
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1076
+cpu_percent => 0.8053
+cpu_percent => 1.7008
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4873
+cpu_percent => 1.5184
+cpu_percent => 2.0707
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4401
+cpu_percent => 1.4678
+cpu_percent => 0.9823
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4222
+cpu_percent => 1.3934
+cpu_percent => 1.8503
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7162
+cpu_percent => 1.5039
+cpu_percent => 1.5645
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5241
+cpu_percent => 1.4477
+cpu_percent => 1.3536
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2373
+cpu_percent => 1.5056
+cpu_percent => 0.8779
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5086
+cpu_percent => 1.5451
+cpu_percent => 1.2983
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1667
+cpu_percent => 1.6861
+cpu_percent => 1.9494
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.665
+cpu_percent => 0.1344
+cpu_percent => 1.3774
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.667
+cpu_percent => 1.5966
+cpu_percent => 1.4366
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3704
+cpu_percent => 1.4909
+cpu_percent => 1.3908
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.7395
+cpu_percent => 1.1857
+cpu_percent => 1.1781
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3795
+cpu_percent => 1.3453
+cpu_percent => 1.3544
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2407
+cpu_percent => 1.4063
+cpu_percent => 2.5526
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.8588
+cpu_percent => 1.7318
+cpu_percent => 0.8721
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.075
+cpu_percent => 1.4059
+cpu_percent => 1.3734
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7103
+cpu_percent => 1.2407
+cpu_percent => 1.3383
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.9426
+cpu_percent => 2.1402
+cpu_percent => 1.9394
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2392
+cpu_percent => 1.4974
+cpu_percent => 0.863
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.5917
+cpu_percent => 0.8149
+cpu_percent => 1.6004
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2793
+cpu_percent => 0.5393
+cpu_percent => 1.5471
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2827
+cpu_percent => 0.3254
+cpu_percent => 1.4982
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.17
+cpu_percent => 1.392
+cpu_percent => 0.7426
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3968
+cpu_percent => 1.2545
+cpu_percent => 1.3486
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2145
+cpu_percent => 1.3903
+cpu_percent => 1.6813
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.9673
+cpu_percent => 1.4193
+cpu_percent => 1.0093
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4636
+cpu_percent => 1.2187
+cpu_percent => 1.5775
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.6494
+cpu_percent => 1.7452
+cpu_percent => 1.0941
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4987
+cpu_percent => 1.2322
+cpu_percent => 1.3772
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.03
+cpu_percent => 1.0459
+cpu_percent => 1.0827
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.9398
+cpu_percent => 1.5212
+cpu_percent => 0.3909
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2741
+cpu_percent => 1.4382
+cpu_percent => 0.6408
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3502
+cpu_percent => 1.4486
+cpu_percent => 1.6888
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3007
+cpu_percent => 0.0001
+cpu_percent => 3.2475
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.1037
+cpu_percent => 2.0757
+cpu_percent => 0.117
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.355
+cpu_percent => 0.8835
+cpu_percent => 1.4908
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1019
+cpu_percent => 1.063
+cpu_percent => 1.5224
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4948
+cpu_percent => 1.4827
+cpu_percent => 0.2857
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.8373
+cpu_percent => 1.506
+cpu_percent => 0.9348
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3538
+cpu_percent => 1.499
+cpu_percent => 0.9867
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6906
+cpu_percent => 0
+cpu_percent => 0.0017
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.696
+cpu_percent => 1.0987
+cpu_percent => 0
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1327
+cpu_percent => 1.2873
+cpu_percent => 1.8194
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0001
+cpu_percent => 0.6044
+cpu_percent => 2.5503
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0003
+cpu_percent => 0.5709
+cpu_percent => 1.1975
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.0163
+cpu_percent => 0.0001
+cpu_percent => 1.4026
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4429
+cpu_percent => 0.742
+cpu_percent => 0.5611
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4898
+cpu_percent => 0.0001
+cpu_percent => 1.3362
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2841
+cpu_percent => 0.2117
+cpu_percent => 1.4165
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.312
+cpu_percent => 1.3191
+cpu_percent => 1.3352
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5988
+cpu_percent => 1.2836
+cpu_percent => 0.2907
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4343
+cpu_percent => 0.9026
+cpu_percent => 1.2601
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3657
+cpu_percent => 1.8432
+cpu_percent => 1.71
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3356
+cpu_percent => 0.8164
+cpu_percent => 1.1595
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.402
+cpu_percent => 0.265
+cpu_percent => 1.7468
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.5521
+cpu_percent => 0.4243
+cpu_percent => 1.9248
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.706
+cpu_percent => 1.4546
+cpu_percent => 2.2784
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4582
+cpu_percent => 0.0364
+cpu_percent => 1.7535
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4812
+cpu_percent => 1.3867
+cpu_percent => 1.37
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3487
+cpu_percent => 1.4238
+cpu_percent => 0.4081
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3222
+cpu_percent => 0.9174
+cpu_percent => 1.4829
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4582
+cpu_percent => 2.4618
+cpu_percent => 1.6436
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2316
+cpu_percent => 1.1136
+cpu_percent => 1.435
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3771
+cpu_percent => 1.6797
+cpu_percent => 1.0546
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4904
+cpu_percent => 1.4666
+cpu_percent => 1.2874
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.1938
+cpu_percent => 1.2626
+cpu_percent => 1.5466
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.8888
+cpu_percent => 2.0904
+cpu_percent => 1.3883
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.6497
+cpu_percent => 1.4845
+cpu_percent => 1.472
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3505
+cpu_percent => 1.2882
+cpu_percent => 0.8918
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.7893
+cpu_percent => 1.9122
+cpu_percent => 1.5536
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5514
+cpu_percent => 0.5718
+cpu_percent => 1.3261
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5048
+cpu_percent => 1.4831
+cpu_percent => 1.544
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.481
+cpu_percent => 1.4976
+cpu_percent => 1.8268
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.8997
+cpu_percent => 1.3134
+cpu_percent => 1.689
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.776
+cpu_percent => 1.6684
+cpu_percent => 1.5885
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2605
+cpu_percent => 1.3379
+cpu_percent => 0.2521
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6603
+cpu_percent => 0.3277
+cpu_percent => 1.4258
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1447
+cpu_percent => 1.5994
+cpu_percent => 1.3626
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3304
+cpu_percent => 1.1704
+cpu_percent => 1.1767
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2663
+cpu_percent => 0.0001
+cpu_percent => 1.6714
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3676
+cpu_percent => 1.568
+cpu_percent => 0.7743
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3071
+cpu_percent => 1.236
+cpu_percent => 1.5177
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2498
+cpu_percent => 0.1894
+cpu_percent => 2.0757
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3569
+cpu_percent => 0.6729
+cpu_percent => 0.804
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1889
+cpu_percent => 2.0383
+cpu_percent => 1.4038
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3506
+cpu_percent => 0.3302
+cpu_percent => 1.3632
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4885
+cpu_percent => 0.4415
+cpu_percent => 1.2316
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.393
+cpu_percent => 1.682
+cpu_percent => 0.6903
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3653
+cpu_percent => 1.4051
+cpu_percent => 1.039
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8917
+cpu_percent => 1.3069
+cpu_percent => 1.4862
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1299
+cpu_percent => 1.2781
+cpu_percent => 1.6028
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.1683
+cpu_percent => 1.7822
+cpu_percent => 0.8386
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3259
+cpu_percent => 0.0001
+cpu_percent => 2.015
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.247
+cpu_percent => 0.2572
+cpu_percent => 0.6272
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5157
+cpu_percent => 1.3481
+cpu_percent => 0.4199
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5079
+cpu_percent => 1.3481
+cpu_percent => 0.7958
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4302
+cpu_percent => 0.5392
+cpu_percent => 1.3656
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6889
+cpu_percent => 1.2016
+cpu_percent => 1.3459
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 3.8696
+cpu_percent => 1.6902
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.4961
+cpu_percent => 1.2384
+cpu_percent => 0.9989
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4489
+cpu_percent => 1.0621
+cpu_percent => 1.5289
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4022
+cpu_percent => 1.5145
+cpu_percent => 1.8218
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.921
+cpu_percent => 0.3697
+cpu_percent => 0.5569
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1318
+cpu_percent => 0
+cpu_percent => 1.8131
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4541
+cpu_percent => 1.0428
+cpu_percent => 0.788
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3231
+cpu_percent => 1.0334
+cpu_percent => 1.3339
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4696
+cpu_percent => 1.4226
+cpu_percent => 1.3124
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.6999
+cpu_percent => 1.5779
+cpu_percent => 1.4201
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.4692
+cpu_percent => 1.3431
+cpu_percent => 1.3624
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3818
+cpu_percent => 1.6281
+cpu_percent => 1.2402
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4492
+cpu_percent => 1.2934
+cpu_percent => 1.3917
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1145
+cpu_percent => 1.3197
+cpu_percent => 1.322
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7755
+cpu_percent => 1.3993
+cpu_percent => 1.198
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5405
+cpu_percent => 1.5928
+cpu_percent => 0.3839
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3916
+cpu_percent => 1.4173
+cpu_percent => 1.4056
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.379
+cpu_percent => 1.6653
+cpu_percent => 1.7488
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4808
+cpu_percent => 0.831
+cpu_percent => 1.8776
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4826
+cpu_percent => 1.2269
+cpu_percent => 1.678
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4424
+cpu_percent => 0.409
+cpu_percent => 1.4444
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1625
+cpu_percent => 2.3187
+cpu_percent => 1.8763
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5766
+cpu_percent => 0.4932
+cpu_percent => 0.7729
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2722
+cpu_percent => 0
+cpu_percent => 2.2782
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6815
+cpu_percent => 0.9402
+cpu_percent => 0.9018
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2178
+cpu_percent => 1.5958
+cpu_percent => 0.8505
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.9148
+cpu_percent => 2.0912
+cpu_percent => 1.6288
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.3603
+cpu_percent => 1.3348
+cpu_percent => 0.6386
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8219
+cpu_percent => 1.7005
+cpu_percent => 1.2938
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1276
+cpu_percent => 1.1063
+cpu_percent => 1.3775
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7007
+cpu_percent => 1.545
+cpu_percent => 2.5949
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3164
+cpu_percent => 0.1545
+cpu_percent => 2.0764
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5491
+cpu_percent => 1.6149
+cpu_percent => 0.4588
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4499
+cpu_percent => 1.2979
+cpu_percent => 1.4021
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5378
+cpu_percent => 1.3411
+cpu_percent => 1.3544
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4534
+cpu_percent => 1.5021
+cpu_percent => 1.4895
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2864
+cpu_percent => 1.235
+cpu_percent => 1.2582
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3626
+cpu_percent => 1.0204
+cpu_percent => 1.116
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5409
+cpu_percent => 0.931
+cpu_percent => 2.4749
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.6424
+cpu_percent => 0.2812
+cpu_percent => 1.7531
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 1.3351
+cpu_percent => 1.7194
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.3454
+cpu_percent => 1.0317
+cpu_percent => 1.4712
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2308
+cpu_percent => 1.5634
+cpu_percent => 1.6033
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.6691
+cpu_percent => 1.5918
+cpu_percent => 1.3952
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6072
+cpu_percent => 1.9832
+cpu_percent => 1.1725
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2844
+cpu_percent => 1.1468
+cpu_percent => 1.6599
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7172
+cpu_percent => 1.5165
+cpu_percent => 0.8319
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7571
+cpu_percent => 1.4004
+cpu_percent => 2.0041
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5503
+cpu_percent => 0.9603
+cpu_percent => 1.1961
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8196
+cpu_percent => 1.0178
+cpu_percent => 1.7388
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6127
+cpu_percent => 1.369
+cpu_percent => 0.6523
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0971
+cpu_percent => 1.3207
+cpu_percent => 1.9721
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.3598
+cpu_percent => 1.2529
+cpu_percent => 1.4351
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1832
+cpu_percent => 1.5951
+cpu_percent => 1.4518
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3453
+cpu_percent => 1.5379
+cpu_percent => 1.522
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3924
+cpu_percent => 2.2996
+cpu_percent => 1.8092
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.5628
+cpu_percent => 2.0318
+cpu_percent => 1.6744
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1874
+cpu_percent => 0.5928
+cpu_percent => 1.0294
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1411
+cpu_percent => 1.1937
+cpu_percent => 1.5362
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.695
+cpu_percent => 0.4416
+cpu_percent => 1.4287
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6468
+cpu_percent => 1.3296
+cpu_percent => 0.8101
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4919
+cpu_percent => 0.6435
+cpu_percent => 1.6142
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8461
+cpu_percent => 1.7464
+cpu_percent => 1.6612
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.8781
+cpu_percent => 1.2755
+cpu_percent => 1.4623
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.079
+cpu_percent => 0.8347
+cpu_percent => 1.2385
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4731
+cpu_percent => 1.0491
+cpu_percent => 0.0868
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4634
+cpu_percent => 1.1352
+cpu_percent => 1.0727
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6606
+cpu_percent => 1.319
+cpu_percent => 2.3887
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.4029
+cpu_percent => 1.8393
+cpu_percent => 1.4125
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4942
+cpu_percent => 1.3068
+cpu_percent => 0.6247
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3411
+cpu_percent => 1.3874
+cpu_percent => 1.6666
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5539
+cpu_percent => 0.749
+cpu_percent => 1.4493
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6777
+cpu_percent => 1.5161
+cpu_percent => 1.1371
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4587
+cpu_percent => 1.3606
+cpu_percent => 2.6807
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5254
+cpu_percent => 1.2411
+cpu_percent => 1.547
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.8895
+cpu_percent => 1.4968
+cpu_percent => 1.1355
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.4429
+cpu_percent => 0.8436
+cpu_percent => 1.6829
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4112
+cpu_percent => 1.1886
+cpu_percent => 1.7959
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4852
+cpu_percent => 0.9108
+cpu_percent => 1.4321
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.9737
+cpu_percent => 1.2654
+cpu_percent => 1.744
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1878
+cpu_percent => 1.4347
+cpu_percent => 1.5591
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7434
+cpu_percent => 1.3637
+cpu_percent => 1.4003
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2952
+cpu_percent => 1.0674
+cpu_percent => 1.6824
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3178
+cpu_percent => 0.8404
+cpu_percent => 1.5114
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6651
+cpu_percent => 0.4655
+cpu_percent => 1.7829
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2901
+cpu_percent => 0.7262
+cpu_percent => 2.2062
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2233
+cpu_percent => 1.4749
+cpu_percent => 0.6922
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.381
+cpu_percent => 1.911
+cpu_percent => 0.5354
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.7374
+cpu_percent => 1.6715
+cpu_percent => 1.7568
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4458
+cpu_percent => 0.7286
+cpu_percent => 1.3531
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3197
+cpu_percent => 1.5811
+cpu_percent => 1.913
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8768
+cpu_percent => 1.5741
+cpu_percent => 1.1984
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2248
+cpu_percent => 1.1659
+cpu_percent => 2.4764
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.305
+cpu_percent => 1.0563
+cpu_percent => 0.7984
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.0826
+cpu_percent => 1.2836
+cpu_percent => 2.3627
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5739
+cpu_percent => 1.556
+cpu_percent => 1.2645
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3079
+cpu_percent => 0.8209
+cpu_percent => 0.2492
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4446
+cpu_percent => 0.5932
+cpu_percent => 1.5656
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2518
+cpu_percent => 1.9542
+cpu_percent => 1.7897
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5139
+cpu_percent => 0.804
+cpu_percent => 1.5264
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.38
+cpu_percent => 0.9275
+cpu_percent => 1.9873
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2399
+cpu_percent => 0.7211
+cpu_percent => 1.5764
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5015
+cpu_percent => 1.2846
+cpu_percent => 0.7547
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.4106
+cpu_percent => 1.681
+cpu_percent => 1.4427
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5922
+cpu_percent => 0.6881
+cpu_percent => 0.7073
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1139
+cpu_percent => 1.5238
+cpu_percent => 1.6785
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4177
+cpu_percent => 2.0374
+cpu_percent => 1.4841
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.256
+cpu_percent => 2.0633
+cpu_percent => 0.2208
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4231
+cpu_percent => 0.7359
+cpu_percent => 1.4958
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7076
+cpu_percent => 1.2117
+cpu_percent => 1.6528
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.277
+cpu_percent => 1.2198
+cpu_percent => 2.3361
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5734
+cpu_percent => 0.4212
+cpu_percent => 1.4845
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3569
+cpu_percent => 1.5993
+cpu_percent => 1.4451
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6171
+cpu_percent => 1.4545
+cpu_percent => 1.7042
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2974
+cpu_percent => 2.2331
+cpu_percent => 1.7931
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.318
+cpu_percent => 0.0015
+cpu_percent => 0.8815
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7619
+cpu_percent => 1.2735
+cpu_percent => 2.1575
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4851
+cpu_percent => 0.8713
+cpu_percent => 1.6225
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3718
+cpu_percent => 0.5802
+cpu_percent => 1.8316
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.5883
+cpu_percent => 1.4276
+cpu_percent => 1.0396
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.4522
+cpu_percent => 1.4773
+cpu_percent => 1.327
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2756
+cpu_percent => 1.5465
+cpu_percent => 1.4135
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1137
+cpu_percent => 1.2153
+cpu_percent => 2.1053
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0656
+cpu_percent => 1.4872
+cpu_percent => 1.3387
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2771
+cpu_percent => 1.464
+cpu_percent => 1.9256
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4234
+cpu_percent => 1.6826
+cpu_percent => 0.8722
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2799
+cpu_percent => 0.1952
+cpu_percent => 1.5891
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5586
+cpu_percent => 0.5438
+cpu_percent => 1.3784
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.751
+cpu_percent => 2.8033
+cpu_percent => 1.3822
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0012
+cpu_percent => 1.3077
+cpu_percent => 1.2491
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7263
+cpu_percent => 1.0575
+cpu_percent => 1.7504
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.181
+cpu_percent => 1.4298
+cpu_percent => 1.3433
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5747
+cpu_percent => 1.3566
+cpu_percent => 1.4449
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2904
+cpu_percent => 0.7647
+cpu_percent => 1.7822
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8179
+cpu_percent => 1.6678
+cpu_percent => 1.4283
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.38
+cpu_percent => 1.8373
+cpu_percent => 1.4374
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4546
+cpu_percent => 0.9888
+cpu_percent => 1.2677
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1524
+cpu_percent => 2.5737
+cpu_percent => 1.8741
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7949
+cpu_percent => 1.3563
+cpu_percent => 1.0202
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.8346
+cpu_percent => 1.6236
+cpu_percent => 2.1011
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6078
+cpu_percent => 0.7672
+cpu_percent => 1.3649
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1657
+cpu_percent => 0.0002
+cpu_percent => 1.4712
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3977
+cpu_percent => 2.409
+cpu_percent => 0.8416
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.5933
+cpu_percent => 2.376
+cpu_percent => 1.3798
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.8859
+cpu_percent => 1.2813
+cpu_percent => 1.6478
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 2.0315
+cpu_percent => 1.6343
+cpu_percent => 1.6676
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1245
+cpu_percent => 0.9466
+cpu_percent => 1.0087
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5204
+cpu_percent => 1.5473
+cpu_percent => 1.3936
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.7433
+cpu_percent => 3.1859
+cpu_percent => 1.1436
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0597
+cpu_percent => 0.1482
+cpu_percent => 2.6377
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2811
+cpu_percent => 0.8101
+cpu_percent => 1.5286
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.6524
+cpu_percent => 2.0511
+cpu_percent => 1.476
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.102
+cpu_percent => 1.2333
+cpu_percent => 0.9335
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.5625
+cpu_percent => 1.9035
+cpu_percent => 1.4443
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3979
+cpu_percent => 1.4745
+cpu_percent => 1.4739
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.2449
+cpu_percent => 0.7952
+cpu_percent => 1.3644
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1176
+cpu_percent => 1.5541
+cpu_percent => 2.3283
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.7484
+cpu_percent => 0.3929
+cpu_percent => 1.3175
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3158
+cpu_percent => 0.0001
+cpu_percent => 1.252
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.1992
+cpu_percent => 1.6803
+cpu_percent => 0.6029
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4446
+cpu_percent => 1.3981
+cpu_percent => 1.4079
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.0879
+cpu_percent => 1.5408
+cpu_percent => 1.7969
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.4328
+cpu_percent => 2.1318
+cpu_percent => 1.5751
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3079
+cpu_percent => 0.0569
+cpu_percent => 1.5648
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.8063
+cpu_percent => 1.5667
+cpu_percent => 1.3939
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.315
+cpu_percent => 1.4622
+cpu_percent => 1.2691
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.471
+cpu_percent => 1.1902
+cpu_percent => 1.6622
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.7914
+cpu_percent => 0.9764
+cpu_percent => 0.1616
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3621
+cpu_percent => 2.2006
+cpu_percent => 0
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 1.3713
+cpu_percent => 0.8909
+cpu_percent => 0
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.6487
+cpu_percent => 0
+cpu_percent => 0.4799
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 0
+cpu_percent => 0
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 0
+cpu_percent => 0
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 0
+cpu_percent => 0
+-- collect_cpu_usage end --
+True
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0.0001
+cpu_percent => 0
+cpu_percent => 0.0001
+-- collect_cpu_usage end --
+False
+False
+ubuntuDockerWorker3: active
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 0
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+HS down RUNNING...
+Horizontal scaling down
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+HS down RUNNING...
+Horizontal scaling down
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+ubuntuDockerWorker3: drain
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
