@@ -2,7 +2,7 @@ const { exec } = require('child_process');
 const { fs } = require('fs');
 
 process.on('message', (size) => {
-    const file_size = allocMemeory(parseInt(size));
+    const file_size = parseInt(size);
     const file = fs.createWriteStream('example.txt', { flags: 'a' })
     let contents = "";
     for (let i = 0; i < file_size; i++) {
