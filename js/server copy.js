@@ -29,48 +29,47 @@ app.post('/', (req, res) => {
 		// run a new child process	
 		const primeScriptPath = path.join(path.dirname(__filename), 'prime_cal.js')
 		const primeProcess = fork(primeScriptPath);
-		
+
 		// send message to child process
 		primeProcess.send(data.number);
-		
+
 		// listen child process until finish request handle
 		primeProcess.on('message', (result) => {
 			// get and MEM
 			primeProcess.kill();
-			res.json({result: result});
+			res.json({ result: result });
 		});
 	} else if (task_type == "M") {
 		try {
 			// run a new child process	
 			const memScriptPath = path.join(path.dirname(__filename), 'alloc_mem.js')
 			const memProcess = fork(memScriptPath);
-			
+
 			// send message to child process
 			memProcess.send(data.size);
-			
+
 			// listen child process until finish request handle
 			memProcess.on('message', (return_code) => {
 				// get and MEM
 				console.log(`return code => ${return_code}`);
 				memProcess.kill();
-				res.json({result: `memory alloc finished, return code => ${return_code}`});
+				res.json({ result: `memory alloc finished, return code => ${return_code}` });
 			});
 		} catch (error) {
-			res.status(500).json({ error: error});
+			res.status(500).json({ error: error });
 		}
 	} else if (task_type == "H") {
 		const hddScriptPath = path.join(path.dirname(__filename), 'hdd_stats.js')
 		const hddProcess = fork(hddScriptPath);
 
-		hddProcess.send("fetch");
-		
-		hddProcess.on("message", (usage) => {
-			console.log(`HDD usage => ${usage}`);
+		hddProcess.send(data.size);
+
+		hddProcess.on("message", (msg) => {
 			hddProcess.kill();
-			res.json({result: usage});
+			res.json({ result: msg });
 		})
 	} else {
-		res.json({result: "error"});
+		res.json({ result: "error" });
 	}
 })
 
