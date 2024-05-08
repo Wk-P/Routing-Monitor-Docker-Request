@@ -270,7 +270,7 @@ def wait_task_exiting(node_id, client:docker.DockerClient):
         tasks = service.tasks()
 
         for task in tasks:
-            if task['Status']['State'] == "shutdown" and task['NodeID'] == node_id:
+            if (task['Status']['State'] == "shutdown" or task['Status']['State'] == "exited") and task['NodeID'] == node_id:
                 return
         time.sleep(1)
 
@@ -343,55 +343,53 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
     global route_table
     global req_count
     global round_robin_index
-    async with aiohttp.ClientSession() as session:
-        try:
-            url, hostname = get_server_url(route_table=route_table, req_count=req_count, round_robin_index=round_robin_index)
-            # send request to others' servers
-            data = await request.post()             # application/x-www-form-urlencoded
-            # before packet fowarding
-            _cpu = dict()
-            _mem = dict()
-            _hdd = dict()
-            _timestamp = time.time()
-            for node in route_table:
-                if node["state"] == "ready" and node["availability"] == "active":
-                    _cpu[node["name"]] = node["cpu_usage"]
-                    _mem[node["name"]] = node["memory"]["memory_percent"]
-                    _hdd[node["name"]] = node["hdd_usage"]
 
-            async with session.post(
-                url=url, headers=request.headers, data=data
-            ) as response:
-                # to Json
-                data = await response.json()
+    retries = 3
 
-                # response
-                response = {
-                    "data": data,
-                    "server": url,
-                    "hostname": hostname,
-                    "timestamp": _timestamp,
-                    "replicas_resources": {
-                        "cpu": _cpu,
-                        "mem": _mem,
-                        "hdd": _hdd,
-                    },
-                }
+    for i in range(retries):
+        async with aiohttp.ClientSession() as session:
+            try:
+                # send request to others' servers
+                data = await request.post()             # application/x-www-form-urlencoded
+                # before packet fowarding
+                _cpu = dict()
+                _mem = dict()
+                _hdd = dict()
+                _timestamp = time.time()
+                for node in route_table:
+                    if node["state"] == "ready" and node["availability"] == "active":
+                        _cpu[node["name"]] = node["cpu_usage"]
+                        _mem[node["name"]] = node["memory"]["memory_percent"]
+                        _hdd[node["name"]] = node["hdd_usage"]
 
-            return web.json_response(response)
-            # add to list for update route_table
-            # for stats in route_table:
-            #     if stats['address'] == url:
-            #         stats['cpu_usage'] = response_data['cpuUsage']
+                url, hostname = get_server_url(route_table=route_table, req_count=req_count, round_robin_index=round_robin_index)
+                async with session.post(
+                    url=url, headers=request.headers, data=data
+                ) as response:
+                    # to Json
+                    data = await response.json()
 
-        # put into queue for sync
-        # await q.put(rt)
+                    # response
+                    response = {
+                        "data": data,
+                        "server": url,
+                        "hostname": hostname,
+                        "timestamp": _timestamp,
+                        "replicas_resources": {
+                            "cpu": _cpu,
+                            "mem": _mem,
+                            "hdd": _hdd,
+                        },
+                    }
+
+                return web.json_response(response)
             
-        except Exception as e:
-            errLog.info(f"{url}")
-            print("393", e)
-            errLog.exception(e)
-            return web.json_response({"error": 1})
+            
+            except Exception as e:
+                errLog.info(f"{url}")
+                print(f"393 tries: {i}", e)
+                errLog.exception(e)
+        await asyncio.sleep(2)
 
 
 
