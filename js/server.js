@@ -27,7 +27,7 @@ app.post('/', (req, res) => {
 	// calculate prime number
 	if (task_type == "C") {
 		// run a new child process	
-		const primeScriptPath = path.join(path.dirname(__filename), 'prime_cal.js')
+		const primeScriptPath = path.join/home/soar/Documents/DockerImageBuild/Dockerfile(path.dirname(__filename), 'prime_cal.js')
 		const primeProcess = fork(primeScriptPath);
 
 		// send message to child process
