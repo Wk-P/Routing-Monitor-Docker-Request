@@ -12,7 +12,7 @@ def send():
         port = 8080
         
         headers = {'task_type': "C"}
-        data = {"number": 80}
+        data = {"number": 1}
 
         return requests.post(url=f"http://{host}:{port}", headers=headers, data=data).json()
 

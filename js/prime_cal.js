@@ -10,7 +10,7 @@ process.on('message', (number) => {
 function isPrime(n) {
     if (n < 2) return false;
     for (let i = 2, sqrt = Math.sqrt(n); i <= sqrt;i++) {
-        if (num % i == 0) return false;
+        if (n % i == 0) return false;
     }
     return true;
 }
