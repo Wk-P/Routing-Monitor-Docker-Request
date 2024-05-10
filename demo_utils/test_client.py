@@ -3,25 +3,24 @@ import requests
 import concurrent.futures
 import time
 import typing
+import pandas as pd
 
 
-
-def send():
+def send(n):
     try:
         host = "10.0.2.7"
         port = 8080
         
         headers = {'task_type': "C"}
-        data = {"number": 10}
+        data = {"number": n}
 
-        return requests.post(url=f"http://{host}:{port}", headers=headers, data=data, timeout=10).json()
+        requests.post(url=f"http://{host}:{port}", headers=headers, data=data).json()
 
     except Exception as e:
         print(e)
 
 
 def process():
-    start_time = time.time()
     print("Request process start.")
     recv_result = 0
     with concurrent.futures.ProcessPoolExecutor() as e:
@@ -36,10 +35,27 @@ def process():
     print(recv_result)
 
     print("Request process closed.")
-    print("response time:", time.time() - start_time, " s")
+
 
 
 
 if __name__ == "__main__":
+
     # process()
-    print(send())
+    print("Running...")
+    numbers = [100000, 10000000]
+    cpu = 0
+    data = []
+    for num in numbers:
+        for _ in range(10):
+            start_time = time.time()
+            send(num)
+            runtime = round(time.time() - start_time, 5)
+            data.append({
+                "number": num,
+                "cpu": cpu, 
+                "time": runtime,
+            })
+        df = pd.DataFrame(data)
+    
+    df.to_excel("cpu0_output.xlsx", index=False)

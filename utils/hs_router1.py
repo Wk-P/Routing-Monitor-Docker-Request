@@ -363,7 +363,8 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
                         _hdd[node["name"]] = node["hdd_usage"]
 
                 url, hostname = get_server_url(route_table=route_table, req_count=req_count, round_robin_index=round_robin_index)
-                print(request.headers)
+                runningLog.info(f"headers: {request.headers}")
+                runningLog.info(f"backend: {url, hostname}")
                 async with session.post(
                     url=url, headers=request.headers, data=data
                 ) as response:
@@ -443,12 +444,12 @@ def server_proc():
     try:
         app = web.Application()
         app.router.add_post('/', reverse_proxy)
-        web.run_app(app=app, host="192.168.56.107", port=8001)
+        web.run_app(app=app, host="10.0.2.9", port=8081)
 
     except asyncio.CancelledError:
         pass
     finally:
-        print("END")
+        print("Server closed")
 
 def hs_proc(route_table: list, manager:multiprocessing.Manager):
     global cpu_limit
@@ -562,13 +563,13 @@ if __name__ == "__main__":
         proc1 = multiprocessing.Process(target=server_proc)
         
         # hs-process
-        proc2 = multiprocessing.Process(target=hs_proc, args=(route_table, manager))
+        # proc2 = multiprocessing.Process(target=hs_proc, args=(route_table, manager))
 
         proc1.start()
-        proc2.start()
+        # proc2.start()
 
         proc1.join()
-        proc2.join()
+        # proc2.join()
     
     session.close()
 
