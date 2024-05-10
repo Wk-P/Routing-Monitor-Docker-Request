@@ -44,7 +44,7 @@ if __name__ == "__main__":
     # process()
     print("Running...")
     numbers = [100000, 10000000]
-    cpu = 0
+    cpu = 50
     data = []
     for num in numbers:
         for _ in range(10):
@@ -58,4 +58,4 @@ if __name__ == "__main__":
             })
         df = pd.DataFrame(data)
     
-    df.to_excel("cpu0_output.xlsx", index=False)
+    df.to_excel("cpu50_output.xlsx", index=False)
