@@ -12,9 +12,9 @@ def send():
         port = 8080
         
         headers = {'task_type': "C"}
-        data = {"number": 1}
+        data = {"number": 10}
 
-        return requests.post(url=f"http://{host}:{port}", headers=headers, data=data).json()
+        return requests.post(url=f"http://{host}:{port}", headers=headers, data=data, timeout=10).json()
 
     except Exception as e:
         print(e)
@@ -27,7 +27,6 @@ def process():
     with concurrent.futures.ProcessPoolExecutor() as e:
         futures:typing.List[concurrent.futures.Future] = []
         for _ in range(1):
-            
             futures.append(e.submit(send))
             
         for future in concurrent.futures.as_completed(futures):
@@ -42,4 +41,5 @@ def process():
 
 
 if __name__ == "__main__":
-    process()
+    # process()
+    print(send())

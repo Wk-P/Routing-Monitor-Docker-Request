@@ -7990,3 +7990,23 @@ ubuntuDockerWorker1: drain
 ubuntuDockerWorker3: drain
 ubuntuDockerWorker2: active
 -- collect_cpu_usage start --
+-- collect_cpu_usage start --
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 0
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+HS down RUNNING...
+Horizontal scaling down
+ubuntuDockerWorker1: drain
+ubuntuDockerWorker3: active
+ubuntuDockerWorker2: active
+-- collect_cpu_usage start --
+cpu_percent => 0
+cpu_percent => 0
+-- collect_cpu_usage end --
+False
+True
+HS down RUNNING...
