@@ -8,13 +8,13 @@ import pandas as pd
 
 def send(n):
     try:
-        host = "10.0.2.7"
-        port = 8080
+        host = "10.0.2.9"
+        port = 8081
         
         headers = {'task_type': "C"}
         data = {"number": n}
 
-        requests.post(url=f"http://{host}:{port}", headers=headers, data=data).json()
+        return requests.post(url=f"http://{host}:{port}", headers=headers, data=data).json()
 
     except Exception as e:
         print(e)
@@ -46,16 +46,17 @@ if __name__ == "__main__":
     numbers = [100000, 10000000]
     cpu = 50
     data = []
-    for num in numbers:
-        for _ in range(10):
-            start_time = time.time()
-            send(num)
-            runtime = round(time.time() - start_time, 5)
-            data.append({
-                "number": num,
-                "cpu": cpu, 
-                "time": runtime,
-            })
-        df = pd.DataFrame(data)
+    print(send(10))
+    # for num in numbers:
+    #     for _ in range(10):
+    #         start_time = time.time()
+    #         send(num)
+    #         runtime = round(time.time() - start_time, 5)
+    #         data.append({
+    #             "number": num,
+    #             "cpu": cpu, 
+    #             "time": runtime,
+    #         })
+    #     df = pd.DataFrame(data)
     
-    df.to_excel("cpu50_output.xlsx", index=False)
+    # df.to_excel("cpu50_output.xlsx", index=False)
