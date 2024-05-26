@@ -1,13 +1,11 @@
-FROM arm64v8/node:22-alpine
+FROM arm64v8/python:3.12.3-alpine3.19
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY ./requirements.txt .
 
-RUN npm install
+RUN pip install -r requirements.txt
 
-COPY . .
+COPY ./server.py .
 
-EXPOSE 8080
-
-CMD ["node", "./server.js"]
+CMD ["python3", "./server.py"]
