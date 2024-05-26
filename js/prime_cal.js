@@ -8,13 +8,9 @@ process.on('message', (number) => {
 
 // prime judgment
 function isPrime(n) {
-    if (n === 1) {
-        return true;
-    }
-    for (let i = 2;i < n;i++) {
-        if (n % i == 0) {
-            return false;
-        }
+    if (n < 2) return false;
+    for (let i = 2, sqrt = Math.sqrt(n); i <= sqrt;i++) {
+        if (n % i == 0) return false;
     }
     return true;
 }

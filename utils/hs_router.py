@@ -187,7 +187,7 @@ def hs(route_table:list, _class):
     runningLog.info(f"HS {_class} RUNNING...")
     password = "123321"
 
-    client = docker.DockerClient(base_url="tcp://10.0.2.15:2375")
+    client = docker.DockerClient(base_url="tcp://10.0.2.9:2375")
     try:
         if _class == "up":
             for index in range(len(route_table)):
@@ -277,7 +277,7 @@ def wait_task_exiting(node_id, client:docker.DockerClient):
 
 def init_route_table(manager:multiprocessing.Manager):
     port = 2375
-    manager_ip = "192.168.56.107"
+    manager_ip = "10.0.2.9"
     swarm_client = docker.DockerClient(base_url=f"tcp://{manager_ip}:{port}")
     swarm_nodes = swarm_client.nodes.list()
     cpu_usage_stats = manager.list()
@@ -363,6 +363,7 @@ async def reverse_proxy(request: aiohttp.web_request.Request):
                         _hdd[node["name"]] = node["hdd_usage"]
 
                 url, hostname = get_server_url(route_table=route_table, req_count=req_count, round_robin_index=round_robin_index)
+                print(request.headers)
                 async with session.post(
                     url=url, headers=request.headers, data=data
                 ) as response:
@@ -442,7 +443,7 @@ def server_proc():
     try:
         app = web.Application()
         app.router.add_post('/', reverse_proxy)
-        web.run_app(app=app, host="192.168.56.107", port=8080)
+        web.run_app(app=app, host="192.168.56.107", port=8001)
 
     except asyncio.CancelledError:
         pass
