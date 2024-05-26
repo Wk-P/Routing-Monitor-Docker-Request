@@ -71,7 +71,7 @@ async def request_handler(request: web.Request):
     usages = info_obj.ips
    
 
-    async with info_obj.session.post(url=url, data=data, headers=headers) as response:
+    async with info_obj.session.post(url=url, json=data, headers=headers) as response:
         
         data = await response.json()
         res = {"success": 1, "response": data, "ip": ip}
