@@ -1,21 +1,19 @@
-import multiprocessing
+import requests
+
+def main():
+    # Prometheus server URL
+    prometheus_url = "http://192.168.0.100:9090/api/v1/query"
+
+    # Prometheus query
+    query = 'sum(100 * (1 - irate(node_cpu_seconds_total{mode="idle"}[5s]))) by (instance)'
+
+    # Connect to Prometheus
+
+    # Query Prometheus
+    result = requests.get(prometheus_url, params={'query': query})
+
+    print(result.json())
+
 
 if __name__ == "__main__":
-    manager = multiprocessing.Manager()
-    _d = manager.dict({
-        "a": manager.dict({
-            "a1": 20,
-        }), 
-        "b": manager.dict({
-            "b1": 40,
-        }),
-    })
-
-    _dd = dict()
-
-    for key in _d.keys():
-        _dd[key] = dict()
-        for k in _d[key].keys():
-            _dd[key] = None
-
-    print(_dd)
+    main()

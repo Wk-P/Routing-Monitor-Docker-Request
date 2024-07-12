@@ -11,7 +11,7 @@ import sys
 recv_sum = 0
 
 
-def to_excel(data):
+def to_excel(data, filename):
     workbook = Workbook()
     sheet = workbook.active
 
@@ -33,13 +33,10 @@ def to_excel(data):
     for row in data:
         sheet.append(row)
 
-    filename = "outputv13"
-
     workbook.save(filename=f"excel2/{filename}.xlsx")
 
 
 def send(n):
-    global recv_sum
     try:
         host = "192.168.0.100"
         port = 8081
@@ -54,12 +51,8 @@ def send(n):
             url=f"http://{host}:{port}", headers=headers, json=data
         ).json()
 
-        print("RESPONSE", response)
-
-        recv_sum += 1
-
         return {
-            "response": response,
+            "data": response,
             "run-time": time.time() - start,
         }
 
@@ -67,44 +60,35 @@ def send(n):
         print(e)
 
 
-def send_process():
-    global recv_sum
+def send_process(requests_sum):
     print("Request process start...")
 
+    args = [random.randint(0, 999999) for _ in range(requests_sum)]
     results = list()
-    requests_numbers = list()
-
-    requests_sum = 100
-
+    futures = list()
     try:
         with concurrent.futures.ProcessPoolExecutor() as e:
-            futures: typing.List[concurrent.futures.Future] = []
-            for _ in range(requests_sum):
-                requests_numbers.append(random.randint(0, 10000000))
-                futures.append(e.submit(send, requests_numbers[-1]))
-                time.sleep(0.2)
+            for arg in args:
+                future = e.submit(send, arg)
+                futures.append(future)
+                time.sleep(5)
 
-            for future in futures:
+            for future in concurrent.futures.as_completed(futures):
                 results.append(future.result())
-                recv_sum += 1
-                # Print progress
-                print(f"\rProgress: {recv_sum}/{requests_sum} tasks completed.", end='')
-                
-        print("\nRequest process closed.")
-
-        print("Sended:", requests_sum)
-        print("Received:", recv_sum)
-
-        return results, requests_numbers
+        return results
     except KeyboardInterrupt:
         print("Process Interrupted.")
         sys.exit(1)
 
 
 if __name__ == "__main__":
+
+    filename = "outputv2_5_wait_5s_3(300)"
+    sum_tasks = 300
+
     # process()
     print("Running...")
-    results, requests_numbers = send_process()
+    results = send_process(sum_tasks)
 
     # | runtime | request-number | response-ip   | 192.168.0.150 | 192.168.0.151 | 192.168.0.152 |
     # | 0.3     | 10000          | 192.168.0.150 | 14.523432     | 14.523432     | 14.523432     | %
@@ -112,33 +96,22 @@ if __name__ == "__main__":
 
     datatable = list()
 
-    print(results)
+    for result in results:
+        data: dict = result.get("data")
+        if data.get('response').get('success'):
+            run_time: float = round(result.get("run-time"), 4)
+            ip = data.get("ip")
+            request_number = float(data.get('response').get('result').get('num'))
+            # request_result = float(data.get("response").get('result').get("sum"))
+            # total_cpu_times = response.get('result').get('user') + response.get('result').get('system')
+            u1 = round(data.get("usages").get("192.168.0.150"), 4)
+            u2 = round(data.get("usages").get("192.168.0.151"), 4)
+            u3 = round(data.get("usages").get("192.168.0.152"), 4)
 
-    # for i in range(len(results)):
-    #     result = results[i]
-    #     if result:
-    #         datatable.append(
-    #             [
-    #                 result["run-time"],
-    #                 requests_numbers[i],
-    #                 result["response"]["ip"],
-    #                 result["response"]["usages"]["192.168.0.150"],
-    #                 result["response"]["usages"]["192.168.0.151"],
-    #                 result["response"]["usages"]["192.168.0.152"],
-    #             ]
-    #         )
-    #     else:
-    #         datatable.append(
-    #             [
-    #                 "-",
-    #                 requests_numbers[i],
-    #                 "-",
-    #                 "-",
-    #                 "-",
-    #                 "-",
-    #             ]
-    #         )
+            datatable.append([run_time, request_number, ip, u1, u2, u3])
 
-    # to_excel(datatable)
+        else:
+            datatable.append(['-', request_number, '-', '-', '-', '-'])
 
-    # print("Cover finished!")
+    to_excel(datatable, filename)
+    print("Cover finished!")
