@@ -4,7 +4,7 @@ import requests
 import time
 import typing
 import random
-from openpyxl import Workbook
+from openpyxl import Workbook # type: ignore
 import sys
 import aiohttp
 import asyncio
