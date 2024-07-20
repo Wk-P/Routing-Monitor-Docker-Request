@@ -9,8 +9,16 @@ import sys
 import aiohttp
 import asyncio
 from aiohttp import ClientTimeout
+import os
 
-def to_excel(data, filename):
+finished_cnt = 0
+requests_sum = 150
+
+def to_excel(data, filename, dirpath):
+
+    if not os.path.exists(dirpath):
+        os.makedirs(dirpath, exist_ok=True)
+
     workbook = Workbook()
     sheet = workbook.active
 
@@ -32,13 +40,12 @@ def to_excel(data, filename):
     for row in data:
         sheet.append(row)
 
-    workbook.save(filename=f"excel3/{filename}.xlsx")
+    workbook.save(filename=f"{dirpath}/{filename}.xlsx")
 
-
-CNT = 0
 
 async def fetch(session: aiohttp.ClientSession, url, number):
-    global CNT
+    global finished_cnt
+    global requests_sum
     data = {"number": number}
     headers = {"task-type": "C"}
     print(data)
@@ -49,8 +56,8 @@ async def fetch(session: aiohttp.ClientSession, url, number):
         data = await response.json()
         data["user_response_time"] = time.time()  - start_time
 
-        print(data, '\n', f'CNT: {CNT}/350')
-        CNT += 1
+        finished_cnt += 1
+        print(f'process information: {finished_cnt}/{requests_sum}')
         return data
 
 
@@ -72,18 +79,18 @@ async def main(args):
 
 
 async def run():
-    requests_sum = 150
-    filename = "nodeWaitTime_jobsNumber_v12_50000_test"
+    global requests_sum
+    filename = "nodeWaitQueueTest"
+    dirpath = "excel4"
     data_table = list()
     # args = [random.randint(0, 1000000) for _ in range(requests_sum)]
-    args = [50000 for _ in range(requests_sum)]
+    args = [500000 for _ in range(requests_sum)]
 
     print("---start fetch---")
 
     responses = await main(args)
 
     if responses:
-        print(responses)
         for response in responses:
             if response.get("success"):
                 data_table.append(
@@ -93,7 +100,7 @@ async def run():
                         response.get("ip"),
                         response.get("process_time"),
                         response.get("request_wait_time"),
-                        response.get('jobs_cnt'),
+                        response.get('waiting_cnt'),
                     ]
                 )
             else:
@@ -101,7 +108,7 @@ async def run():
                     [response.get("user_response_time"), response.get("num"), "-", "-"]
                 )
 
-        to_excel(data_table, filename)
+        to_excel(data_table, filename, dirpath)
         print("Cover finished!")
     else:
         print("Error!")
