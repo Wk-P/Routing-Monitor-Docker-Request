@@ -1,20 +1,19 @@
 # test client
-import glob
-import requests
 import time
 import typing
 import random
 from openpyxl import Workbook # type: ignore
-import sys
 import aiohttp
 import asyncio
-from aiohttp import ClientTimeout
 import os
 
+send_cnt = 0
 finished_cnt = 0
-requests_sum = 150
+requests_sum = 1200
+filename = "response_information_v1(1200)"
+dirpath = "excel4"
 
-def to_excel(data, filename, dirpath):
+def to_excel(data, filename, dirpath, headers):
 
     if not os.path.exists(dirpath):
         os.makedirs(dirpath, exist_ok=True)
@@ -27,14 +26,7 @@ def to_excel(data, filename, dirpath):
     # | 0.5                | 20000          | 192.168.0.151 | 9.5232642     |
 
     sheet.append(
-        [
-            "user_response_time",
-            "request_number",
-            "response_ip",
-            "process_time",
-            "node_wait_time",
-            "jobs_cnt",
-        ]
+        [ header for header in headers ]
     )
 
     for row in data:
@@ -46,15 +38,21 @@ def to_excel(data, filename, dirpath):
 async def fetch(session: aiohttp.ClientSession, url, number):
     global finished_cnt
     global requests_sum
+    global send_cnt
     data = {"number": number}
     headers = {"task-type": "C"}
-    print(data)
+
+    send_cnt += 1
+
+    print(f"Send count: {send_cnt}/{requests_sum}")
 
     start_time = time.time()
 
     async with session.post(url, json=data, headers=headers) as response:
         data = await response.json()
-        data["user_response_time"] = time.time()  - start_time
+        data["total_response_time"] = time.time()  - start_time
+        data['trans_delay'] = data['total_response_time'] - data["wait_time_in_worker_node"] - data["process_in_worker_node"]
+
 
         finished_cnt += 1
         print(f'process information: {finished_cnt}/{requests_sum}')
@@ -79,10 +77,45 @@ async def main(args):
 
 
 async def run():
+    # global variable
     global requests_sum
-    filename = "nodeWaitQueueTest"
-    dirpath = "excel4"
-    data_table = list()
+    global filename
+    global dirpath
+    
+
+    # funciton
+    def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[int, typing.Dict[str, typing.Any], typing.List]:
+        data_table = list()
+        response_keys = list()
+
+        for res in responses:
+            if res:
+                response_keys = list(res.keys())
+
+        try:
+            if responses:
+                for response in responses:
+                    if response.get("success"):
+                        data_table.append(
+                            [value for key, value in response.items()]
+                        )
+                    else:
+                        data_table.append(["-" for _ in range(len(response_keys))])
+                print("--EXIT--")
+                code = 0
+            else:
+                code = 1
+                data_table = None
+        except Exception as e:
+            print(e)
+            code = -1
+            data_table = None
+        finally:
+            return code, data_table, response_keys
+    
+
+
+    # process
     # args = [random.randint(0, 1000000) for _ in range(requests_sum)]
     args = [500000 for _ in range(requests_sum)]
 
@@ -90,28 +123,18 @@ async def run():
 
     responses = await main(args)
 
-    if responses:
-        for response in responses:
-            if response.get("success"):
-                data_table.append(
-                    [
-                        response.get("user_response_time"),
-                        response.get("num"),
-                        response.get("ip"),
-                        response.get("process_time"),
-                        response.get("request_wait_time"),
-                        response.get('waiting_cnt'),
-                    ]
-                )
-            else:
-                data_table.append(
-                    [response.get("user_response_time"), response.get("num"), "-", "-"]
-                )
+    print("---generate data file---")
 
-        to_excel(data_table, filename, dirpath)
-        print("Cover finished!")
+    # write into excel file
+    code, data_table, col_headers = result_parse(responses)
+
+    if data_table:
+        to_excel(data_table, filename, dirpath, col_headers)
     else:
-        print("Error!")
+        print("None data_table")
+
+    print(f"Cover finished\nExit code: {code}")
+
 
 if __name__ == "__main__":
     asyncio.run(run())
