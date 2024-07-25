@@ -13,10 +13,11 @@ from pathlib import Path
 send_cnt = 0
 finished_cnt = 0
 loops = 1
-requests_batch = 150
+requests_batch = 200
 client_name = __file__.split("\\")[-1].split(".")[0]
 all_requests_sum = loops * requests_batch
 
+is_random_request_number = True
 is_test = False
 
 def test():
@@ -25,8 +26,12 @@ def test():
     pass
 
 # filename = "response_information_v1(150)"
-filename = f"{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}"
-dirpath = Path.cwd() / "excel5"
+if is_random_request_number:
+    filename = f"RandomRequestNumber{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}"
+else:
+    filename = f"{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}"
+
+dirpath = Path.cwd() / "excel6"
 
 def to_excel(data, filename, dirpath, headers):
     print(headers)
@@ -100,6 +105,7 @@ async def run():
     global filename
     global dirpath
     global finished_cnt
+    global is_random_request_number
 
     for _ in range(loops):
         # funciton
@@ -135,13 +141,14 @@ async def run():
                 return code, data_table, response_keys
 
         # process
-        # args = [random.randint(0, 1000000) for _ in range(requests_sum)]
-        args = [500000 for _ in range(requests_batch)]
+        if is_random_request_number:
+            args = [random.randint(0, 500000) for _ in range(requests_batch)]
+        else:
+            args = [500000 for _ in range(requests_batch)]
 
         print("---start fetch---")
 
         responses = await main(args)
-
 
         for response in responses:
             for k, v in response.items():
