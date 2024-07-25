@@ -1,18 +1,20 @@
+# -- run in container --
+# DON'T RUN in other enviroment
 import aiohttp
 from aiohttp import web
 from concurrent.futures import ProcessPoolExecutor
-import psutil
+import psutil # type: ignore
 import os
 import time
-import asyncio
 
 
 # Global process pool
 executor = ProcessPoolExecutor()
 
-# jobs counter
-jobs_cnt = 0
-
+# jobs counters
+received_cnt = 0
+processing_cnt = 0
+finished_cnt = 0
 
 def get_cpu_times(pid):
     process = psutil.Process(pid)
@@ -37,6 +39,9 @@ def is_prime(num):
 
 
 def prime_count(num):
+    global processing_cnt
+    processing_cnt += 1
+
     start_time = time.time()
     
     # get child pid
@@ -53,17 +58,25 @@ def prime_count(num):
     # fetch cpu data
     end_user_times, end_system_times = get_cpu_times(child_pid)
     user_times_diff = end_user_times - start_user_times
-    system_times_diff = end_user_times - start_system_times
+    system_times_diff = end_system_times - start_system_times
 
+    processing_cnt -= 1
     return {"num": num, "sum": sum, "user": user_times_diff, "system": system_times_diff, "child_pid": child_pid, "start_process_timestamp": start_time, "process_time": time.time() - start_time}
 
 
-async def handle(request):
-    global jobs_cnt
-    try:
-        # jobs cnt update
-        jobs_cnt += 1
+async def handle(request: web.Request):
+    global received_cnt
+    global processing_cnt
+    global finished_cnt
 
+    received_cnt += 1
+    # update waiting jobs count
+    if received_cnt - processing_cnt - finished_cnt < 0:
+        waiting_cnt = 0
+    else:
+        waiting_cnt = received_cnt - processing_cnt - finished_cnt
+
+    try:
         # time record
         arrival_time = time.time()
         
@@ -77,22 +90,25 @@ async def handle(request):
         
 
         # record current number of jobs
-        jobs_temp_cnt = jobs_cnt
-        jobs_temp_cnt1 = len(asyncio.all_tasks())
+        
+
 
         if task_type == "C":
             # future = executor.submit(prime_count, data["number"])
             # response_data = future.result()
             response_data = prime_count(data['number'])
         
-        jobs_cnt -= 1
 
         # test
         print(response_data)
         
         response_data["request_wait_time"] = response_data["start_process_timestamp"] - arrival_time
-        response_data["jobs_cnt"] = jobs_temp_cnt1
 
+        response_data["waiting_cnt"] = waiting_cnt
+
+        # update finished count
+        processing_cnt -= 1
+        finished_cnt += 1
         return web.json_response(response_data)
     except Exception as e:
         return web.json_response({"error": str(e)})

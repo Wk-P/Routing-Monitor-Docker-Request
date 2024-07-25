@@ -1,0 +1,147 @@
+# test client
+import time
+import typing
+import random
+from openpyxl import Workbook  # type: ignore
+from openpyxl import load_workbook
+import aiohttp
+import asyncio
+import os
+from datetime import datetime
+from pathlib import Path
+
+send_cnt = 0
+finished_cnt = 0
+loops = 1
+requests_batch = 5
+all_requests_sum = loops * requests_batch
+
+# filename = "response_information_v1(150)"
+filename = f"test({requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')})"
+dirpath = Path.cwd() / "excel4"
+
+
+def to_excel(data, filename, dirpath, headers):
+    print(filename, dirpath)
+    if not os.path.exists(dirpath):
+        os.makedirs(dirpath, exist_ok=True)
+
+    file_path = str(dirpath / f"{filename}.xlsx")
+
+    if os.path.exists(file_path):
+        # 如果文件存在，加载工作簿和活动工作表
+        workbook = load_workbook(file_path)
+        sheet = workbook.active
+
+    else:
+        # 如果文件不存在，创建新的工作簿和工作表
+        workbook = Workbook()
+        sheet = workbook.active
+        # 写入表头
+        sheet.append(headers)
+
+    for row in data:
+        sheet.append(row)
+
+    workbook.save(file_path)
+
+
+async def fetch(session: aiohttp.ClientSession, url, number):
+    global finished_cnt
+    global requests_batch
+    global send_cnt
+    data = {"number": number}
+    headers = {"task-type": "C"}
+
+    send_cnt += 1
+
+    print(f"Send count: {send_cnt}/{all_requests_sum}")
+
+    start_time = time.time()
+
+    async with session.post(url, json=data, headers=headers) as response:
+        data = await response.json()
+        data["total_response_time"] = time.time() - start_time
+        data["trans_delay"] = (
+            data["total_response_time"]
+            - data["wait_time_in_worker_node"]
+            - data["process_in_worker_node"]
+        )
+
+        finished_cnt += 1
+        print(f"process information: {finished_cnt}/{requests_batch}")
+        return data
+
+
+async def main(args):
+    host = "192.168.0.100"
+    port = 8081
+    url = f"http://{host}:{port}"
+
+    tasks = list()
+    async with aiohttp.ClientSession(
+        timeout=aiohttp.ClientTimeout(total=None),
+    ) as session:
+        # split
+        tasks = [fetch(session, url, arg) for arg in args]
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+        return responses
+
+
+async def run():
+    # global variable
+    global requests_batch
+    global filename
+    global dirpath
+    global finished_cnt
+
+    # funciton
+    def result_parse(
+        responses: typing.List[typing.Dict[str, typing.Any]]
+    ) -> typing.Tuple[int, typing.Dict[str, typing.Any], typing.List]:
+        data_table = list()
+        response_keys = list()
+
+        for res in responses:
+            print(res)
+            if type(res) is not dict:
+                response_keys = list(res.keys())
+
+        try:
+            if responses:
+                for response in responses:
+                    if response.get("success"):
+                        data_table.append(
+                            [value for key, value in response.items()]
+                        )
+                    else:
+                        data_table.append(["-" for _ in range(len(response_keys))])
+                print("--EXIT--")
+                code = 0
+            else:
+                code = 1
+                data_table = None
+        except Exception as e:
+            print(e)
+            code = -1
+            data_table = None
+        finally:
+            return code, data_table, response_keys
+
+    args = [500000 for _ in range(requests_batch)]
+
+    print("---start fetch---")
+
+    responses = await main(args)
+
+    finished_cnt = 0
+
+    for res in responses:
+        print(res)
+
+
+if __name__ == "__main__":
+    asyncio.run(run())
+
+    pass

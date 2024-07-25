@@ -1,18 +1,11 @@
 import aiohttp
 from aiohttp import web
-import requests
 import time
-import asyncio
 
 
-class Info():
+class WorkerNodeInfo():
     def __init__(self):
-        self.ips = {
-            "192.168.0.150": 0,
-            "192.168.0.151": 0,
-            "192.168.0.152": 0,
-        }
-        self.ipsl = [
+        self.ips = [
             "192.168.0.150",
             "192.168.0.151",
             "192.168.0.152",
@@ -22,91 +15,71 @@ class Info():
         self.current_index = 0
 
     async def start_session(self):
-        self.session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=200), timeout=aiohttp.ClientTimeout(total=None))
-
-
-def query_prometheus(query: str):
-    prometheus_url = "http://192.168.0.100:9090/api/v1/query"
-
-    params = {'query': query}
-
-    response = requests.get(prometheus_url, params=params)
-
-    print(response.status_code)
-
-    if response.status_code == 200:
-        data = response.json()
-        print(data)
-        return data['data']['result']
-    else:
-        print("Error: Unable to fetch data from Prometheus")
-        return None
-
+        self.session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=0), timeout=aiohttp.ClientTimeout(total=None))
 
 
 def url_choose():
     global info_obj
-    ip = None
-    # query_time = 1
-    # query_expression = f"100 * (1 - sum(increase(node_cpu_seconds_total{{mode='idle'}}[{query_time}s])) by (instance) / sum(increase(node_cpu_seconds_total[{query_time}s])) by (instance))"
-    # results = query_prometheus(query_expression)
-    # min_usage = 100
-    # min_usage_index = 0
-
-    # for i in range(len(results)):
-        # info_obj.ips[results[i]['metric']['instance'][:-5]] = float(results[i]['value'][1])
-        # if float(results[i]['value'][1]) < min_usage:
-            # min_usage = float(results[i]['value'][1])
-            # min_usage_index = i
-    
-    # ip = results[min_usage_index]['metric']['instance'][:-5]
-    
-    # round roubin
-    ip = info_obj.ipsl[info_obj.current_index]
-    info_obj.current_index = (info_obj.current_index + 1) % len(info_obj.ipsl)
-
+    ip = info_obj.ips[info_obj.current_index]
+    info_obj.current_index = (info_obj.current_index + 1) % len(info_obj.ips)
     return ip
-
-
-info_obj = Info()
 
 
 async def request_handler(request: web.Request):
     global info_obj
+    global received_cnt
+    global finished_cnt
+
+    index = received_cnt
+    manager_received_timestamp = time.time()
+
+    # index
+    print("index: ", index)
+
+    # received time
+    print("received time: ", time.time())
+    print("received index: ", received_cnt)
+    received_cnt += 1
+
+
 
     ip = url_choose()
     headers = request.headers
     data = await request.json()
     
-    # await asyncio.sleep(3)
+    received_into_manager_node = time.time()
 
     # url choose
     # ip = url_choose()
     url = f"http://{ip}:{info_obj.port}"
-
-    # query_expression = r"100 - (avg by (instance) (irate(node_cpu_seconds_total{job='ubuntuDockerWorker',mode='idle'}[10m])) * 100)"
-    # usages_list = query_prometheus(query_expression)
-   
-    # start = time.time()
-    # await asyncio.sleep(3)
-
     print(f"trans-forward to {ip}")
     
     try:
+        processing_cnt = received_cnt - finished_cnt
         async with info_obj.session.post(url=url, json=data, headers=headers) as response:
-            data = await response.json()
-            print(data)
+            data:dict = await response.json()
+            response_received_timestamp = time.time()
+            process_in_manager_node = response_received_timestamp - received_into_manager_node
             if "error" in data.keys():
                 data["success"] = 0
             else:
                 data["success"] = 1
 
+
+            # update response data
             data["ip"] = ip
-            print("DATA from backend:", data)
-            
-            # usages = info_obj.ips
-            # res.update({'usages': usages})
-            
+            data["wait_time_in_worker_node"] = data.pop("request_wait_time")
+            data['waiting_tasks_in_worker_node'] = data.pop('waiting_cnt')
+            data["process_in_manager_node"] = process_in_manager_node - data['process_time'] - data['wait_time_in_worker_node']
+            data.pop('start_process_timestamp')
+            data['process_in_worker_node'] = data.pop("process_time")
+            data['processing_tasks_in_worker_node'] = processing_cnt
+            data['manager_received_timestamp'] = manager_received_timestamp
+            data['request_ordered_index'] = index
+            data['response_received_timestamp'] = response_received_timestamp
+
+            finished_cnt += 1
+            index += 1
             return web.json_response(data)
 
     
@@ -124,6 +97,10 @@ async def server_app_init():
 
     return app
     
+
+info_obj = WorkerNodeInfo()
+received_cnt = 0
+finished_cnt = 0
 
 
 if __name__ == "__main__":
