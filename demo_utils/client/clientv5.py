@@ -12,7 +12,7 @@ from pathlib import Path
 
 send_cnt = 0
 finished_cnt = 0
-loops = 1
+loops = 4
 requests_batch = 200
 client_name = __file__.split("\\")[-1].split(".")[0]
 all_requests_sum = loops * requests_batch
