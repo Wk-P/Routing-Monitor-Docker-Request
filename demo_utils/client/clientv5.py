@@ -75,7 +75,7 @@ async def fetch(session: aiohttp.ClientSession, url, number):
         data = await response.json()
         data["total_response_time"] = time.time()  - start_time
         data['trans_delay'] = data['total_response_time'] - data["wait_time_in_worker_node"] - data["process_in_worker_node"]
-
+        data["processing_tasks_in_manager_node"] = data.pop('processing_tasks_in_worker_node')
         finished_cnt += 1
         print(f"process information: {finished_cnt}/{requests_batch}")
         return data
