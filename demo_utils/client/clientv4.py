@@ -3,7 +3,7 @@ import time
 import typing
 import random
 from openpyxl import Workbook # type: ignore
-from openpyxl import load_workbook
+from openpyxl import load_workbook # type: ignore
 import aiohttp
 import asyncio
 import os
