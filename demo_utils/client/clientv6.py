@@ -17,8 +17,24 @@ requests_batch = 50
 client_name = __file__.split("\\")[-1].split(".")[0]
 all_requests_sum = loops * requests_batch
 
+
+# 随机生成请求内容开关
 is_random_request_number = True
-is_test = False
+
+
+# 单元代码测试开关
+is_unit_code_test = False
+
+
+# 测试响应请求输出开关 （输出到控制台不写入文件）
+is_test_response_print = False
+
+
+# 单一请求设定开关
+is_single_request_sum = False
+if is_single_request_sum:
+    loops = 1
+    requests_batch = 2
 
 def test():
     # TODO test code
@@ -31,7 +47,11 @@ if is_random_request_number:
 else:
     filename = f"{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}"
 
-dirpath = Path.cwd() / "excel7"
+
+if is_single_request_sum:
+    filename=f"#test"
+
+dirpath = Path.cwd() / "excel8"
 
 def to_excel(data, filename, dirpath, headers):
     print(headers)
@@ -67,6 +87,7 @@ async def fetch(session: aiohttp.ClientSession, url, number):
 
     send_cnt += 1
 
+    print(f"send timestamp: {time.time()}")
     print(f"Send count: {send_cnt}/{all_requests_sum}")
 
     start_time = time.time()
@@ -74,8 +95,6 @@ async def fetch(session: aiohttp.ClientSession, url, number):
     async with session.post(url, json=data, headers=headers) as response:
         data = await response.json()
         data["total_response_time"] = time.time()  - start_time
-        data['trans_delay'] = data['total_response_time'] - data["wait_time_in_worker_node"] - data["process_in_worker_node"]
-        data["processing_tasks_in_manager_node"] = data.pop('processing_tasks_in_worker_node')
         finished_cnt += 1
         print(f"process information: {finished_cnt}/{requests_batch}")
         return data
@@ -86,15 +105,19 @@ async def main(args):
     port = 8081
     url = f"http://{host}:{port}"
 
-
     tasks = list()
+    responses = list()
     async with aiohttp.ClientSession(
         connector=aiohttp.TCPConnector(limit=0),
         timeout=aiohttp.ClientTimeout(total=None),
     ) as session:
         # split
-        tasks = [fetch(session, url, arg) for arg in args]
-        responses = await asyncio.gather(*tasks, return_exceptions=True)
+        for arg in args:
+            task = asyncio.create_task(fetch(session, url, arg))
+            tasks.append(task)
+            await asyncio.sleep(0.2)
+
+        responses = await asyncio.gather(*tasks)        
 
         return responses
 
@@ -159,21 +182,26 @@ async def run():
         # write into excel file
         code, data_table, col_headers = result_parse(responses)
 
-        if data_table:
-            to_excel(data_table, filename, dirpath, col_headers)
+
+
+        if not is_test_response_print:
+            if data_table:
+                to_excel(data_table, filename, dirpath, col_headers)
+            else:
+                print("None data_table")
+
+            finished_cnt = 0
+
+            print(f"Cover finished\nExit code: {code}")
         else:
-            print("None data_table")
-
-        finished_cnt = 0
-
-        print(f"Cover finished\nExit code: {code}")
+            print(code)
+            print(col_headers)
+            print(data_table[-1])
 
 
 if __name__ == "__main__":
-    if is_test:
+    if is_unit_code_test:
         test()
     else:
         asyncio.run(run())
-
-
     pass
