@@ -1,7 +1,8 @@
 import aiohttp
 from aiohttp import web
 import time
-from xgboost import XGBRegressor
+from queue import Queue
+from xgboost import XGBRegressor #type: ignore
 from pathlib import Path
 import threading
 from typing import List, Dict
