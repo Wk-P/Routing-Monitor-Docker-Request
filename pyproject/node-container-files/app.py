@@ -3,7 +3,7 @@
 import aiohttp
 from aiohttp import web
 from concurrent.futures import ProcessPoolExecutor
-import psutil # type: ignore
+import psutil  # type: ignore
 import os
 import time
 
@@ -11,10 +11,12 @@ import time
 # Global process pool
 executor = ProcessPoolExecutor()
 
+
 # jobs counters
 received_cnt = 0
 processing_cnt = 0
 finished_cnt = 0
+
 
 def get_cpu_times(pid):
     process = psutil.Process(pid)
@@ -24,6 +26,7 @@ def get_cpu_times(pid):
 
     return user_times, system_times
 
+
 def is_prime(num):
     if num <= 1:
         return False
@@ -32,9 +35,9 @@ def is_prime(num):
     if num % 2 == 0:
         return False
     for i in range(3, int(num**0.5) + 1, 2):
-        if num % i == 0:    
+        if num % i == 0:
             return False
-        
+
     return True
 
 
@@ -43,10 +46,10 @@ def prime_count(num):
     processing_cnt += 1
 
     start_time = time.time()
-    
+
     # get child pid
     child_pid = os.getpid()
-    
+
     start_user_times, start_system_times = get_cpu_times(child_pid)
 
     sum = 0
@@ -54,14 +57,21 @@ def prime_count(num):
         if is_prime(i):
             sum += 1
 
-
     # fetch cpu data
     end_user_times, end_system_times = get_cpu_times(child_pid)
     user_times_diff = end_user_times - start_user_times
     system_times_diff = end_system_times - start_system_times
 
     processing_cnt -= 1
-    return {"num": num, "sum": sum, "user": user_times_diff, "system": system_times_diff, "child_pid": child_pid, "start_process_timestamp": start_time, "process_time": time.time() - start_time}
+    return {
+        "request_num": num,
+        "return_result": sum,
+        "user_cpu_time": user_times_diff,
+        "system_cpu_time": system_times_diff,
+        "worker_node_child_pid": child_pid,
+        "worker_node_start_process_timestamp": start_time,
+        "real_process_time": time.time() - start_time,
+    }
 
 
 async def handle(request: web.Request):
@@ -79,32 +89,29 @@ async def handle(request: web.Request):
     try:
         # time record
         arrival_time = time.time()
-        
-        response_data = None
 
+        response_data = {}
 
         headers = request.headers
         data = await request.json()
-    
+
         task_type = headers["task-type"]
-        
 
         # record current number of jobs
-        
-
 
         if task_type == "C":
             # future = executor.submit(prime_count, data["number"])
             # response_data = future.result()
-            response_data = prime_count(data['number'])
-        
+            response_data = prime_count(data["number"])
 
         # test
         print(response_data)
-        
-        response_data["request_wait_time"] = response_data["start_process_timestamp"] - arrival_time
 
-        response_data["waiting_cnt"] = waiting_cnt
+        response_data["wait_time_on_worker_node"] = (
+            response_data["worker_node_start_process_timestamp"] - arrival_time
+        )
+
+        response_data["waiting_queue_length_on_worker_node"] = waiting_cnt
 
         # update finished count
         processing_cnt -= 1
