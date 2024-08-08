@@ -1,7 +1,6 @@
 import aiohttp
 from aiohttp import web
 import time
-from queue import Queue
 from xgboost import XGBRegressor
 from pathlib import Path
 import threading
