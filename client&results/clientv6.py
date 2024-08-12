@@ -13,7 +13,7 @@ from pathlib import Path
 send_cnt = 0
 finished_cnt = 0
 loops = 1
-requests_batch = 50
+requests_batch = 500
 client_name = __file__.split("\\")[-1].split(".")[0]
 all_requests_sum = loops * requests_batch
 
@@ -51,7 +51,7 @@ else:
 if is_single_request_sum:
     filename=f"#test"
 
-dirpath = Path.cwd() / "excel8"
+dirpath = Path.cwd() / "excel9"
 
 def to_excel(data, filename, dirpath, headers):
     print(headers)
@@ -108,14 +108,13 @@ async def main(args):
     tasks = list()
     responses = list()
     async with aiohttp.ClientSession(
-        connector=aiohttp.TCPConnector(limit=0),
+        connector=aiohttp.TCPConnector(limit=None),
         timeout=aiohttp.ClientTimeout(total=None),
     ) as session:
         # split
         for arg in args:
             task = asyncio.create_task(fetch(session, url, arg))
             tasks.append(task)
-            await asyncio.sleep(0.2)
 
         responses = await asyncio.gather(*tasks)        
 
@@ -149,8 +148,6 @@ async def run():
                             data_table.append(
                                 [value for key, value in response.items()]
                             )
-                        else:
-                            data_table.append(["-" for _ in range(len(response_keys))])
                     print("--EXIT--")
                     code = 0
                 else:
@@ -173,9 +170,9 @@ async def run():
 
         responses = await main(args)
 
-        for response in responses:
-            for k, v in response.items():
-                print(f"[{k}]: {v}")
+        # for response in responses:
+        #     for k, v in response.items():
+        #         print(f"[{k}]: {v}")
 
         print("---generate data file---")
 
