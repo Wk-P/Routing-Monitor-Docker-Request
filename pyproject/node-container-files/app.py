@@ -1,12 +1,11 @@
 # -- run in container --
 # DON'T RUN in other enviroment
-import aiohttp
 from aiohttp import web
 from concurrent.futures import ProcessPoolExecutor
 import psutil  # type: ignore
 import os
 import time
-
+import traceback
 
 # Global process pool
 executor = ProcessPoolExecutor()
@@ -42,6 +41,7 @@ def is_prime(num):
 
 
 def prime_count(num):
+
     global processing_cnt
     processing_cnt += 1
 
@@ -63,21 +63,34 @@ def prime_count(num):
     system_times_diff = end_system_times - start_system_times
 
     processing_cnt -= 1
-    return {
-        "request_num": num,
-        "return_result": sum,
-        "user_cpu_time": user_times_diff,
-        "system_cpu_time": system_times_diff,
-        "worker_node_child_pid": child_pid,
-        "worker_node_start_process_timestamp": start_time,
-        "real_process_time": time.time() - start_time,
-    }
+    return {"request_num": num, "return_result": sum, "user_cpu_time": user_times_diff, "system_cpu_time": system_times_diff, "worker_node_child_pid": child_pid, "worker_node_start_process_timestamp": start_time, "real_process_time": time.time() - start_time}
 
 
 async def handle(request: web.Request):
     global received_cnt
     global processing_cnt
     global finished_cnt
+
+    def get_disk_usage():
+        partitions = psutil.disk_partitions()
+        print("Disk Partitions and Usage:")
+        for partition in partitions:
+            usage = psutil.disk_usage(partition.mountpoint)
+        return {
+            "unit": "bytes",
+            "total/limit": usage.total,
+            "used": usage.used,
+            "free": usage.free,
+        }
+
+    def get_mem_usage():
+        virtual_memory = psutil.virtual_memory()
+        return {
+            "unit": "bytes",
+            "total/limit": virtual_memory.total,
+            "used": virtual_memory.used,
+            "free": virtual_memory.free
+        }
 
     received_cnt += 1
     # update waiting jobs count
@@ -88,37 +101,33 @@ async def handle(request: web.Request):
 
     try:
         # time record
-        arrival_time = time.time()
-
-        response_data = {}
-
         headers = request.headers
-        data = await request.json()
-
         task_type = headers["task-type"]
+        response_data = dict()
 
         # record current number of jobs
-
         if task_type == "C":
+            data = await request.json()
+            arrival_time = time.time()
+            response_data = {}
+            # update finished count
+            processing_cnt -= 1
+            finished_cnt += 1
             # future = executor.submit(prime_count, data["number"])
             # response_data = future.result()
-            response_data = prime_count(data["number"])
+            response_data = prime_count(data['number'])
+            response_data["wait_time_on_worker_node"] = response_data["worker_node_start_process_timestamp"] - arrival_time
+            response_data["waiting_queue_length_on_worker_node"] = waiting_cnt
+        elif task_type == "PS":
+            disk_stats = get_disk_usage()
+            mem_stats = get_mem_usage()
+            response_data['disk_stats'] = disk_stats
+            response_data['mem_stats'] = mem_stats
 
-        # test
-        print(response_data)
-
-        response_data["wait_time_on_worker_node"] = (
-            response_data["worker_node_start_process_timestamp"] - arrival_time
-        )
-
-        response_data["waiting_queue_length_on_worker_node"] = waiting_cnt
-
-        # update finished count
-        processing_cnt -= 1
-        finished_cnt += 1
         return web.json_response(response_data)
     except Exception as e:
-        return web.json_response({"error": str(e)})
+        error_message = traceback.format_exc()
+        return web.json_response({"error": error_message}, status=500)
 
 
 if __name__ == "__main__":

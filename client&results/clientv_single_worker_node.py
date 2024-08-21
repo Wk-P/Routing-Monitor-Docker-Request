@@ -2,7 +2,7 @@
 import time
 import typing
 import random
-from openpyxl import Workbook # type: ignore
+from openpyxl import Workbook  # type: ignore
 from openpyxl import load_workbook
 import aiohttp
 import asyncio
@@ -12,8 +12,12 @@ from pathlib import Path
 
 send_cnt = 0
 finished_cnt = 0
-loops = 1
-requests_batch = 50
+loops = 50
+requests_batch = 200
+
+task_interval = 0.1
+batch_interval = 0.03
+
 client_name = __file__.split("\\")[-1].split(".")[0]
 all_requests_sum = loops * requests_batch
 
@@ -32,26 +36,26 @@ is_test_response_print = False
 
 # 单一请求设定开关
 is_single_request_sum = False
-if is_single_request_sum:
-    loops = 1
-    requests_batch = 2
+
 
 def test():
     # TODO test code
-
+    print(filename)
     pass
+
 
 # filename = "response_information_v1(150)"
 if is_random_request_number:
-    filename = f"RandomRequestNumber{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}"
+    filename = f'''RandomRequestNumber{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}'''
 else:
-    filename = f"{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}"
+    filename = f'''{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}'''
 
 
 if is_single_request_sum:
-    filename=f"#test"
+    filename = f"#test"
 
-dirpath = Path.cwd() / "excel_single_worker_v1"
+dirpath = Path.cwd() / "excel_prediction_v1"
+
 
 def to_excel(data, filename, dirpath, headers):
     print(headers)
@@ -78,10 +82,14 @@ def to_excel(data, filename, dirpath, headers):
     workbook.save(file_path)
 
 
-async def fetch(session: aiohttp.ClientSession, url, number):
+async def fetch(session: aiohttp.ClientSession, url, number, delay):
     global finished_cnt
     global requests_batch
     global send_cnt
+    global loops
+
+    await asyncio.sleep(delay)
+
     data = {"number": number}
     headers = {"task-type": "C"}
 
@@ -94,9 +102,10 @@ async def fetch(session: aiohttp.ClientSession, url, number):
 
     async with session.post(url, json=data, headers=headers) as response:
         data = await response.json()
-        data["total_response_time"] = time.time()  - start_time
+        data["total_response_time"] = time.time() - start_time
         finished_cnt += 1
-        print(f"process information: {finished_cnt}/{requests_batch}")
+        print(f"process information: {finished_cnt}/{all_requests_sum}")
+        print(data)
         return data
 
 
@@ -112,12 +121,12 @@ async def main(args):
         timeout=aiohttp.ClientTimeout(total=None),
     ) as session:
         # split
-        for arg in args:
-            task = asyncio.create_task(fetch(session, url, arg))
+        for i, arg in enumerate(args):
+            delay = i * task_interval
+            task = asyncio.create_task(fetch(session, url, arg, delay))
             tasks.append(task)
-            await asyncio.sleep(0.2)
-
-        responses = await asyncio.gather(*tasks)        
+        response = await asyncio.gather(*tasks)
+        responses.append(response)
 
         return responses
 
@@ -150,7 +159,8 @@ async def run():
                                 [value for key, value in response.items()]
                             )
                         else:
-                            data_table.append(["-" for _ in range(len(response_keys))])
+                            data_table.append(
+                                ["-" for _ in range(len(response_keys))])
                     print("--EXIT--")
                     code = 0
                 else:
@@ -174,34 +184,36 @@ async def run():
         responses = await main(args)
 
         for response in responses:
-            for k, v in response.items():
-                print(f"[{k}]: {v}")
+            for res in response:
+                for k, v in res.items():
+                    print(f"[{k}]: {v}")
 
         print("---generate data file---")
 
         # write into excel file
-        code, data_table, col_headers = result_parse(responses)
+        for response in responses:
+            code, data_table, col_headers = result_parse(response)
 
+            if not is_test_response_print:
+                if data_table:
+                    to_excel(data_table, filename, dirpath, col_headers)
+                else:
+                    print("None data_table")
 
-
-        if not is_test_response_print:
-            if data_table:
-                to_excel(data_table, filename, dirpath, col_headers)
+                print(f"Cover finished\nExit code: {code}")
             else:
-                print("None data_table")
-
-            finished_cnt = 0
-
-            print(f"Cover finished\nExit code: {code}")
-        else:
-            print(code)
-            print(col_headers)
-            print(data_table[-1])
+                print(code)
+                print(col_headers)
+                print(data_table[-1])
 
 
 if __name__ == "__main__":
     if is_unit_code_test:
         test()
     else:
+        if is_single_request_sum:
+            loops = 1
+            requests_batch = 2
+
         asyncio.run(run())
     pass
