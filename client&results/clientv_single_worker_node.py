@@ -9,32 +9,37 @@ import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
+import math
 
 send_cnt = 0
 finished_cnt = 0
-loops = 50
-requests_batch = 200
+loops = 1
+requests_batch = 400
 
-task_interval = 0.1
-batch_interval = 0.03
+task_interval = 1
+batch_interval = 1
 
 client_name = __file__.split("\\")[-1].split(".")[0]
 all_requests_sum = loops * requests_batch
 
 
-# 随机生成请求内容开关
+random_int_max = 500000
+random_int_min = 10
+
+
+# random request number switch
 is_random_request_number = True
 
 
-# 单元代码测试开关
+# unit code test switch
 is_unit_code_test = False
 
 
-# 测试响应请求输出开关 （输出到控制台不写入文件）
+# response console print withou excel
 is_test_response_print = False
 
 
-# 单一请求设定开关
+# single request for test
 is_single_request_sum = False
 
 
@@ -65,15 +70,12 @@ def to_excel(data, filename, dirpath, headers):
     file_path = str(dirpath / f"{filename}.xlsx")
 
     if os.path.exists(file_path):
-        # 如果文件存在，加载工作簿和活动工作表
         workbook = load_workbook(file_path)
         sheet = workbook.active
 
     else:
-        # 如果文件不存在，创建新的工作簿和工作表
         workbook = Workbook()
         sheet = workbook.active
-        # 写入表头
         sheet.append(headers)
 
     for row in data:
@@ -140,6 +142,7 @@ async def run():
     global is_random_request_number
 
     for _ in range(loops):
+        
         # funciton
         def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[int, typing.Dict[str, typing.Any], typing.List]:
             data_table = list()
@@ -173,9 +176,12 @@ async def run():
             finally:
                 return code, data_table, response_keys
 
+
         # process
         if is_random_request_number:
-            args = [random.randint(0, 500000) for _ in range(requests_batch)]
+            # args = [random.randint(0, 500000) for _ in range(requests_batch)]
+            args = [math.floor(random.uniform(
+                random_int_min * 10, random_int_max * 10) / 10) for _ in range(requests_batch)]
         else:
             args = [500000 for _ in range(requests_batch)]
 
