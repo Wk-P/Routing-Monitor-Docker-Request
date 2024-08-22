@@ -13,11 +13,11 @@ import math
 
 send_cnt = 0
 finished_cnt = 0
-loops = 5
-requests_batch = 15
+loops = 3
+requests_batch = 150
 
-task_interval = 1
-batch_interval = 1
+task_interval = 0.3
+batch_interval = 2
 
 client_name = __file__.split("\\")[-1].split(".")[0]
 all_requests_sum = loops * requests_batch
@@ -59,7 +59,7 @@ else:
 if is_single_request_sum:
     filename = f"#test"
 
-dirpath = Path.cwd() / "sub_processing_v1"
+dirpath = Path.cwd() / "sub_processing_v2"
 
 
 def to_excel(data, filename, dirpath, headers):
