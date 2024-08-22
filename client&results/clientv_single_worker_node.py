@@ -16,7 +16,7 @@ finished_cnt = 0
 loops = 3
 requests_batch = 150
 
-task_interval = 0.3
+task_interval = 0.5
 batch_interval = 2
 
 client_name = __file__.split("\\")[-1].split(".")[0]
