@@ -13,8 +13,8 @@ import math
 
 send_cnt = 0
 finished_cnt = 0
-loops = 50
-requests_batch = 30
+loops = 5
+requests_batch = 15
 
 task_interval = 1
 batch_interval = 1
@@ -59,7 +59,7 @@ else:
 if is_single_request_sum:
     filename = f"#test"
 
-dirpath = Path.cwd() / "excel_prediction_v2"
+dirpath = Path.cwd() / "sub_processing_v1"
 
 
 def to_excel(data, filename, dirpath, headers):
@@ -133,6 +133,8 @@ async def main(args):
         return responses
 
 
+
+
 async def run():
     # global variable
     global requests_batch
@@ -189,10 +191,7 @@ async def run():
 
         responses = await main(args)
 
-        for response in responses:
-            for res in response:
-                for k, v in res.items():
-                    print(f"[{k}]: {v}")
+        print(len(responses[0]))
 
         print("---generate data file---")
 
@@ -209,8 +208,6 @@ async def run():
                 print(f"Cover finished\nExit code: {code}")
             else:
                 print(code)
-                print(col_headers)
-                print(data_table[-1])
 
 
 if __name__ == "__main__":
