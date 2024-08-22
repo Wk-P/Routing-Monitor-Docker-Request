@@ -13,8 +13,8 @@ import math
 
 send_cnt = 0
 finished_cnt = 0
-loops = 1
-requests_batch = 400
+loops = 50
+requests_batch = 30
 
 task_interval = 1
 batch_interval = 1
@@ -59,7 +59,7 @@ else:
 if is_single_request_sum:
     filename = f"#test"
 
-dirpath = Path.cwd() / "excel_prediction_v1"
+dirpath = Path.cwd() / "excel_prediction_v2"
 
 
 def to_excel(data, filename, dirpath, headers):
