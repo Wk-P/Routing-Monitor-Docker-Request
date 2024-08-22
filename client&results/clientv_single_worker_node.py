@@ -42,6 +42,10 @@ is_test_response_print = False
 # single request for test
 is_single_request_sum = False
 
+if is_single_request_sum:
+    loops = 1
+    requests_batch = 2
+    all_requests_sum = loops * requests_batch
 
 def test():
     # TODO test code
@@ -59,7 +63,7 @@ else:
 if is_single_request_sum:
     filename = f"#test"
 
-dirpath = Path.cwd() / "sub_processing_v2"
+dirpath = Path.cwd() / "sub_processing_v3"
 
 
 def to_excel(data, filename, dirpath, headers):
@@ -107,7 +111,6 @@ async def fetch(session: aiohttp.ClientSession, url, number, delay):
         data["total_response_time"] = time.time() - start_time
         finished_cnt += 1
         print(f"process information: {finished_cnt}/{all_requests_sum}")
-        print(data)
         return data
 
 
@@ -127,7 +130,7 @@ async def main(args):
             delay = i * task_interval
             task = asyncio.create_task(fetch(session, url, arg, delay))
             tasks.append(task)
-        response = await asyncio.gather(*tasks)
+        response = await asyncio.gather(*tasks, return_exceptions=True)
         responses.append(response)
 
         return responses
@@ -214,9 +217,5 @@ if __name__ == "__main__":
     if is_unit_code_test:
         test()
     else:
-        if is_single_request_sum:
-            loops = 1
-            requests_batch = 2
-
         asyncio.run(run())
     pass
