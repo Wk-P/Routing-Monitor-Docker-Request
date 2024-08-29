@@ -13,10 +13,10 @@ import math
 
 send_cnt = 0
 finished_cnt = 0
-loops = 3
-requests_batch = 150
+loops = 1
+requests_batch = 100
 
-task_interval = 0.5
+task_interval = 0.4
 batch_interval = 2
 
 client_name = __file__.split("\\")[-1].split(".")[0]
@@ -44,7 +44,7 @@ is_single_request_sum = False
 
 if is_single_request_sum:
     loops = 1
-    requests_batch = 2
+    requests_batch = 50
     all_requests_sum = loops * requests_batch
 
 def test():
@@ -55,15 +55,15 @@ def test():
 
 # filename = "response_information_v1(150)"
 if is_random_request_number:
-    filename = f'''RandomRequestNumber{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}'''
+    filename = f'''RAND{client_name}-L{loops}-RB{requests_batch}-DT{datetime.ctime(datetime.now()).replace(' ', '').replace(':', '')}'''
 else:
-    filename = f'''{client_name}#loops{loops}#requests_batch{requests_batch}#{datetime.ctime(datetime.now()).replace(' ', '-').replace(':', '-')}'''
+    filename = f'''{client_name}-L{loops}-RB{requests_batch}-DT{datetime.ctime(datetime.now()).replace(' ', '').replace(':', '')}'''
 
 
 if is_single_request_sum:
     filename = f"#test"
 
-dirpath = Path.cwd() / "sub_processing_v3"
+dirpath = Path.cwd() / "RS1"
 
 
 def to_excel(data, filename, dirpath, headers):
@@ -76,7 +76,6 @@ def to_excel(data, filename, dirpath, headers):
     if os.path.exists(file_path):
         workbook = load_workbook(file_path)
         sheet = workbook.active
-
     else:
         workbook = Workbook()
         sheet = workbook.active
@@ -101,8 +100,8 @@ async def fetch(session: aiohttp.ClientSession, url, number, delay):
 
     send_cnt += 1
 
-    print(f"send timestamp: {time.time()}")
-    print(f"Send count: {send_cnt}/{all_requests_sum}")
+    print(f"send timestamp: {time.time()}", end='\t')
+    print(f"Send count: {send_cnt}/{all_requests_sum}, {round(100 * send_cnt/all_requests_sum, 2)}%")
 
     start_time = time.time()
 
@@ -110,7 +109,8 @@ async def fetch(session: aiohttp.ClientSession, url, number, delay):
         data = await response.json()
         data["total_response_time"] = time.time() - start_time
         finished_cnt += 1
-        print(f"process information: {finished_cnt}/{all_requests_sum}")
+        print(f"process timestamp: {time.time()}", end='\t')
+        print(f"process information: {finished_cnt}/{all_requests_sum}, {round(100 * finished_cnt/all_requests_sum, 2)}%")
         return data
 
 
@@ -135,7 +135,38 @@ async def main(args):
 
         return responses
 
+# funciton
+def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[int, typing.Dict[str, typing.Any], typing.List]:
+    data_table = list()
+    response_keys = list()
 
+    for res in responses:
+        if type(res) is dict:
+            response_keys = list(res.keys())
+        else:
+            raise Exception("Error")
+
+    try:
+        if responses:
+            for response in responses:
+                if response.get("success"):
+                    data_table.append(
+                        [value for key, value in response.items()]
+                    )
+                else:
+                    data_table.append(
+                        ["-" for _ in range(len(response_keys))])
+            print("--EXIT--")
+            code = 0
+        else:
+            code = 1
+            data_table = None
+    except Exception as e:
+        print(e)
+        code = -1
+        data_table = None
+    finally:
+        return code, data_table, response_keys
 
 
 async def run():
@@ -147,44 +178,8 @@ async def run():
     global is_random_request_number
 
     for _ in range(loops):
-        
-        # funciton
-        def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[int, typing.Dict[str, typing.Any], typing.List]:
-            data_table = list()
-            response_keys = list()
-
-            for res in responses:
-                if type(res) is dict:
-                    response_keys = list(res.keys())
-                else:
-                    raise Exception("Error")
-
-            try:
-                if responses:
-                    for response in responses:
-                        if response.get("success"):
-                            data_table.append(
-                                [value for key, value in response.items()]
-                            )
-                        else:
-                            data_table.append(
-                                ["-" for _ in range(len(response_keys))])
-                    print("--EXIT--")
-                    code = 0
-                else:
-                    code = 1
-                    data_table = None
-            except Exception as e:
-                print(e)
-                code = -1
-                data_table = None
-            finally:
-                return code, data_table, response_keys
-
-
         # process
         if is_random_request_number:
-            # args = [random.randint(0, 500000) for _ in range(requests_batch)]
             args = [math.floor(random.uniform(
                 random_int_min * 10, random_int_max * 10) / 10) for _ in range(requests_batch)]
         else:
@@ -194,7 +189,10 @@ async def run():
 
         responses = await main(args)
 
-        print(len(responses[0]))
+        for response in responses[0]:
+            for k, v in response.items():
+                if k == "real_wait_time" or k == "predict_wait_time":
+                    print(k, v)
 
         print("---generate data file---")
 
