@@ -2,9 +2,9 @@ import aiohttp
 from aiohttp import web
 import time
 from datetime import datetime
-from xgboost import Booster
+from xgboost import Booster             # type: ignore  
 from pathlib import Path
-import xgboost
+import xgboost                  # type: ignore
 import traceback
 import asyncio
 
