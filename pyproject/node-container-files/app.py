@@ -1,21 +1,14 @@
-# -- run in container --
-# DON'T RUN in other enviroment
 from aiohttp import web
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import psutil  # type: ignore
 import os
 import time
 import traceback
+import asyncio
 
 # Global process pool
-executor = ProcessPoolExecutor()
-
-
-# jobs counters
-received_cnt = 0
-processing_cnt = 0
-finished_cnt = 0
-
+thread_executor = ThreadPoolExecutor(max_workers=1)
+process_executor = ProcessPoolExecutor(max_workers=1)
 
 def get_cpu_times(pid):
     process = psutil.Process(pid)
@@ -24,7 +17,6 @@ def get_cpu_times(pid):
     system_times = cpu_times.system
 
     return user_times, system_times
-
 
 def is_prime(num):
     if num <= 1:
@@ -36,17 +28,11 @@ def is_prime(num):
     for i in range(3, int(num**0.5) + 1, 2):
         if num % i == 0:
             return False
-
     return True
 
-
 def prime_count(num):
-
-    global processing_cnt
-    processing_cnt += 1
-
     start_time = time.time()
-
+    
     # get child pid
     child_pid = os.getpid()
 
@@ -62,75 +48,41 @@ def prime_count(num):
     user_times_diff = end_user_times - start_user_times
     system_times_diff = end_system_times - start_system_times
 
-    processing_cnt -= 1
-    return {"request_num": num, "return_result": sum, "user_cpu_time": user_times_diff, "system_cpu_time": system_times_diff, "worker_node_child_pid": child_pid, "worker_node_start_process_timestamp": start_time, "real_process_time": time.time() - start_time}
+    return {"request_num": num, "return_result": sum, "user_cpu_time": user_times_diff, "system_cpu_time": system_times_diff, "real_process_time": time.time() - start_time, "start_process_time": start_time, "finish_time": time.time()}
 
 
 async def handle(request: web.Request):
-    global received_cnt
-    global processing_cnt
-    global finished_cnt
-
-    def get_disk_usage():
-        partitions = psutil.disk_partitions()
-        print("Disk Partitions and Usage:")
-        for partition in partitions:
-            usage = psutil.disk_usage(partition.mountpoint)
-        return {
-            "unit": "bytes",
-            "total/limit": usage.total,
-            "used": usage.used,
-            "free": usage.free,
-        }
-
-    def get_mem_usage():
-        virtual_memory = psutil.virtual_memory()
-        return {
-            "unit": "bytes",
-            "total/limit": virtual_memory.total,
-            "used": virtual_memory.used,
-            "free": virtual_memory.free
-        }
-
-    received_cnt += 1
-    # update waiting jobs count
-    if received_cnt - processing_cnt - finished_cnt < 0:
-        waiting_cnt = 0
-    else:
-        waiting_cnt = received_cnt - processing_cnt - finished_cnt
+    data = await request.json()
 
     try:
-        # time record
-        headers = request.headers
-        task_type = headers["task-type"]
-        response_data = dict()
+        # Run the blocking task
+        loop = asyncio.get_event_loop()
+        response_data = await loop.run_in_executor(thread_executor, prime_count, data["number"])
+        # response_data = await loop.run_in_executor(process_executor, prime_count, data["number"])
 
-        # record current number of jobs
-        if task_type == "C":
-            data = await request.json()
-            arrival_time = time.time()
-            response_data = {}
-            # update finished count
-            processing_cnt -= 1
-            finished_cnt += 1
-            # future = executor.submit(prime_count, data["number"])
-            # response_data = future.result()
-            response_data = prime_count(data['number'])
-            response_data["wait_time_on_worker_node"] = response_data["worker_node_start_process_timestamp"] - arrival_time
-            response_data["waiting_queue_length_on_worker_node"] = waiting_cnt
-        elif task_type == "PS":
-            disk_stats = get_disk_usage()
-            mem_stats = get_mem_usage()
-            response_data['disk_stats'] = disk_stats
-            response_data['mem_stats'] = mem_stats
-
-        return web.json_response(response_data)
+        return web.json_response(response_data, status=200)
     except Exception as e:
         error_message = traceback.format_exc()
         return web.json_response({"error": error_message}, status=500)
 
+async def main():
+    global lock
+    lock = asyncio.Lock()
 
-if __name__ == "__main__":
     app = web.Application()
     app.router.add_post("", handle)
-    web.run_app(app, host="0.0.0.0", port=8080)
+
+    # Run the web application
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    await site.start()
+
+    # Keep the application running
+    while True:
+        # Adjust as needed for your application's lifecycle
+        await asyncio.sleep(3600)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+

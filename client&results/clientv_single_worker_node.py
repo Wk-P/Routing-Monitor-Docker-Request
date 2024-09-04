@@ -14,10 +14,15 @@ import math
 send_cnt = 0
 finished_cnt = 0
 loops = 1
-requests_batch = 100
+requests_batch = 50
 
-task_interval = 0.4
-batch_interval = 2
+task_interval = 0.3
+
+
+if loops == 1:
+    batch_interval = 0
+else:
+    batch_interval = 2
 
 client_name = __file__.split("\\")[-1].split(".")[0]
 all_requests_sum = loops * requests_batch
@@ -44,8 +49,9 @@ is_single_request_sum = False
 
 if is_single_request_sum:
     loops = 1
-    requests_batch = 50
+    requests_batch = 10
     all_requests_sum = loops * requests_batch
+
 
 def test():
     # TODO test code
@@ -63,7 +69,7 @@ else:
 if is_single_request_sum:
     filename = f"#test"
 
-dirpath = Path.cwd() / "RS1"
+dirpath = Path.cwd() / "RS6"
 
 
 def to_excel(data, filename, dirpath, headers):
@@ -109,6 +115,7 @@ async def fetch(session: aiohttp.ClientSession, url, number, delay):
         data = await response.json()
         data["total_response_time"] = time.time() - start_time
         finished_cnt += 1
+        print(start_time)
         print(f"process timestamp: {time.time()}", end='\t')
         print(f"process information: {finished_cnt}/{all_requests_sum}, {round(100 * finished_cnt/all_requests_sum, 2)}%")
         return data
@@ -121,6 +128,7 @@ async def main(args):
 
     tasks = list()
     responses = list()
+
     async with aiohttp.ClientSession(
         connector=aiohttp.TCPConnector(limit=0),
         timeout=aiohttp.ClientTimeout(total=None),
@@ -136,6 +144,8 @@ async def main(args):
         return responses
 
 # funciton
+
+
 def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[int, typing.Dict[str, typing.Any], typing.List]:
     data_table = list()
     response_keys = list()
@@ -189,17 +199,14 @@ async def run():
 
         responses = await main(args)
 
-        for response in responses[0]:
-            for k, v in response.items():
-                if k == "real_wait_time" or k == "predict_wait_time":
-                    print(k, v)
-
         print("---generate data file---")
 
         # write into excel file
         for response in responses:
-            code, data_table, col_headers = result_parse(response)
+            for res in response:
+                print(res)
 
+            code, data_table, col_headers = result_parse(response)
             if not is_test_response_print:
                 if data_table:
                     to_excel(data_table, filename, dirpath, col_headers)
