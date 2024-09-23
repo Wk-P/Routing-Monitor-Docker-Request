@@ -2,63 +2,43 @@ import aiohttp
 from aiohttp import web
 import time
 from datetime import datetime
-from xgboost import Booster             # type: ignore  
-from pathlib import Path
-import xgboost                  # type: ignore
 import traceback
 import asyncio
+import logging
+from pathlib import Path
+logging.basicConfig(filename=str(Path.cwd() / 'log' /'server-output.log'), level=logging.INFO, filemode='w')
 
 # multi IP addresses
-is_multi_ip = False
-
 class WorkerNodeInfo:
-    def __init__(self, multi_ip=True):
+    def __init__(self, multi_ip=False):
         if multi_ip:
             self.ips = [
                 "192.168.0.150",
                 "192.168.0.151",
                 "192.168.0.152",
             ]
-            # self.cnt_group = {
-            #     "192.168.0.150": {
-            #         'waiting_time': 0,
-            #         'received': 0,
-            #         'processing': 0,
-            #         'finished': 0,
-            #     },
-            #     "192.168.0.151": {
-            #         'waiting_time': 0,
-            #         'received': 0,
-            #         'processing': 0,
-            #         'finished': 0,
-            #     },
-            #     "192.168.0.152": {
-            #         'waiting_time': 0,
-            #         'received': 0,
-            #         'processing': 0,
-            #         'finished': 0,
-            #     },
-            # }
         else:
             self.ips = [
                 "192.168.0.150",
             ]
-            self.cnt_group = {
-                "192.168.0.150": {
-                    'received': 0,
-                    'processing': 0,
-                    'finished': 0,
-                },
-            }
+
+        self.cnt_group = {ip: {'received': 0, 'processing': 0, 'finished': 0} for ip in self.ips}
+        self.locks = {ip: asyncio.Lock() for ip in self.ips}
 
         self.port = 8080
-        self.session = None
+        self.sessions = None
         self.current_index = 0
 
     async def start_session(self):
-        self.session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(
-            limit=0), timeout=aiohttp.ClientTimeout(total=None))
+        self.sessions = {ip: aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(limit=0),
+            timeout=aiohttp.ClientTimeout(total=None)  # Custom timeout per session
+        ) for ip in self.ips}
 
+
+    async def close_sessions(self):
+        for session in self.sessions.values():
+            await session.close()
 
 def url_choose():
     global info_obj
@@ -69,16 +49,14 @@ def url_choose():
 
 
 async def request_handler(request: web.Request):
-    global info_obj
-    global _lock
-    global loop
+    global info_obj, loop
     # global xgboost_proc_model
 
     manager_received_timestamp = time.time()
     request_data = await request.json()
 
     # received time
-    print("received time: ", manager_received_timestamp)
+    logging.info(f"received time: {manager_received_timestamp}\n")
 
     # # predict request process time
     # _X = xgboost.DMatrix([[request_data['number']]])
@@ -89,7 +67,7 @@ async def request_handler(request: web.Request):
 
     # predict_waiting_time = 0
 
-    async with _lock:
+    async with info_obj.locks[ip]:  
         info_obj.cnt_group[ip]['received'] += 1
         info_obj.cnt_group[ip]['processing'] = info_obj.cnt_group[ip]['received'] - info_obj.cnt_group[ip]['finished']
         sub_processing_cnt = info_obj.cnt_group[ip]['processing']
@@ -97,18 +75,15 @@ async def request_handler(request: web.Request):
     url = f"http://{ip}:{info_obj.port}"
     headers = request.headers
 
-    print(f"trans-forward to {ip}")
-
+    logging.info(f"trans-forward to {ip}\n")
 
     try:
-        manager_transforward_timestamp = time.time()
-        async with info_obj.session.post(url=url, json=request_data, headers=headers) as response:
-            async with _lock:
+        data = dict()
+        async with info_obj.sessions[ip].post(url=url, json=request_data, headers=headers) as response:
+            data: dict = await response.json()
+            async with info_obj.locks[ip]:
                 info_obj.cnt_group[ip]['finished'] += 1
                 info_obj.cnt_group[ip]['processing'] -= 1
-
-            data: dict = await response.json()
-            response_received_timestamp = time.time()
             if "error" in data.keys():
                 data["success"] = 0
             else:
@@ -117,35 +92,40 @@ async def request_handler(request: web.Request):
             # update response data
             data["choosen_ip"] = ip
             data['processed_time'] = data.pop("real_process_time")
+            # data['jobs_on_worker_node'] = info_obj.cnt_group[ip]['processing']
             data['jobs_on_worker_node'] = sub_processing_cnt
 
-            data['worker_wait_time'] = response_received_timestamp - manager_received_timestamp - data['processed_time']
-            print("-" * 40)
-            print(data)
-            print(f"{'processing jobs:':<50}{sub_processing_cnt:<20}")
-            print(f"{'worker wait time:':<50}{data['worker_wait_time']:<20}")
-            print(f"{'info_obj.cnt_group:':<50}{info_obj.cnt_group}")
-            print("-" * 40)
-
+            data['worker_wait_time'] =  data['start_process_time'] - manager_received_timestamp
+            logging.info(f'{"-" * 40}')
+            logging.info(f'{data}\n')
+            logging.info(f"{'processing jobs:':<50}{sub_processing_cnt:<20}\n")
+            logging.info(f"""{'info_obj.cnt_group[ip]["processing"]:':<50}{info_obj.cnt_group[ip]['processing']:<20}\n""")
+            logging.info(f"{'worker wait time:':<50}{data['worker_wait_time']:<20}\n")
+            logging.info(f"{'info_obj.cnt_group:':<50}{info_obj.cnt_group}\n")
+            logging.info(f"{'Datetime:':<50}{datetime.ctime(datetime.now()) :<20}\n")
+            logging.info(f'{"-" * 40}\n')
 
             return web.json_response(data)
 
-    except Exception as e:
+    except Exception:
         error_message = traceback.format_exc()
         return web.json_response({"error": error_message, "data": data}, status=500)
 
+
+async def on_shutdown(app):
+    await info_obj.close_sessions()
 
 async def server_app_init():
     global info_obj
     app = web.Application()
     app.router.add_post("", request_handler)
     app.on_startup.append(lambda app: info_obj.start_session())
+    app.on_cleanup.append(on_shutdown)
 
     return app
 
 
-info_obj = WorkerNodeInfo(multi_ip=is_multi_ip)
-_lock = asyncio.Lock()
+info_obj = WorkerNodeInfo(multi_ip=False)
 sum_waiting_time = 0
 loop = asyncio.get_event_loop()
 

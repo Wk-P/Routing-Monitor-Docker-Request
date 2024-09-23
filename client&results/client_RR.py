@@ -1,5 +1,4 @@
 # test client
-import re
 import time
 import typing
 import random
@@ -11,7 +10,55 @@ import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
-import math
+import logging
+
+logging.basicConfig(filename = str(Path.cwd() / 'logs' / f'{__file__.split('.')[0]}-output.log'), level=logging.INFO, filemode='w')
+
+class ClientParams:
+    def __init__(self, *args, **kw) -> None:
+        self.send_cnt = 0
+        self.finished_cnt = 0
+        self.requests_sum = kw.get('requests_sum')
+        self.task_interval = kw.get('task_interval')
+        self.random_int_max = kw.get("random_int_max")
+        self.random_int_min = kw.get('random_int_min')
+        self.group_limit = kw.get('group_limit')
+        self.group_interval = kw.get('group_interval')
+        self.loops = kw.get('loops')
+        self.loop_interval = kw.get('loop_interval')
+        self.loops_time = list()
+        self.save_file_path = kw.get('save_file_path')
+
+        # random request number switch
+        self.is_random_request_number = kw.get("is_random_request_number")
+        # unit code test switch
+        self.is_unit_code_test = kw.get('is_unit_code_test')
+        # response console print withou excel
+        self.is_test_response_print = kw.get('is_test_response_print')
+        # single request for test
+        self.is_single_request_sum = kw.get('is_single_request_sum')
+        # request number data from file
+        self.is_read_from_file = kw.get('is_read_from_file')
+
+        self.client_name = __file__.split("\\")[-1].split(".")[0]
+        
+        if self.is_single_request_sum:
+            self.requests_sum = 1
+
+        if self.is_read_from_file:
+            self._args = read_numbers_from_file()
+            if self.requests_sum < len(self._args):
+                self._args = self._args[:self.requests_sum]
+
+        if self.is_random_request_number:
+            self.filename = f'''RAND{self.client_name}''' + kw.get('filenamekw')
+        else:
+            self.filename = f'''{self.client_name}''' + kw.get('filenamekw')
+
+        if self.is_single_request_sum:
+            self.filename = f"#test"
+
+        self.dirpath = kw.get('dirpath')
 
 def read_numbers_from_file():
     with open('args.txt', 'r') as file:
@@ -21,94 +68,33 @@ def read_numbers_from_file():
 
 def test():
     # TODO test code
+    print(Path.cwd())
     pass
 
-
-class ClientParams:
-    def __init__(self, *args, **kw) -> None:
-        self.send_cnt = 0
-        self.finished_cnt = 0
-        self.loops = kw.get('loops')
-        self.group = kw.get('group')
-        self.sum_args_min = kw.get("sum_args_min")
-        self.sum_args_max = kw.get("sum_args_max")
-        self.tasks_batches = kw.get('_sum_requests')
-        self.task_interval = kw.get('task_interval')
-        self.group_interval = kw.get('group_interval')
-        self.loops_interval = kw.get('loops_interval')
-        if self.loops < 2:
-            self.loops_interval = 0
-        
-        if self.group_interval < 2:
-            self.group_interval = 0
-
-        if self.task_interval < 2:
-            self.task_interval = 0
-
-        self.client_name = __file__.split("\\")[-1].split(".")[0]
-        self.all_requests_sum = self.loops * self.tasks_batches * self.group
-
-        self.random_int_max = kw.get("random_int_max")
-        self.random_int_min = kw.get('random_int_min')
-
-        # random request number switch
-        self.is_random_request_number = kw.get("is_random_request_number")
-
-        # unit code test switch
-        self.is_unit_code_test = kw.get('is_unit_code_test')
-
-        # response console print withou excel
-        self.is_test_response_print = kw.get('is_test_response_print')
-
-        # single request for test
-        self.is_single_request_sum = kw.get('is_single_request_sum')
-
-        # request number data from file
-        self.is_read_from_file = kw.get('is_read_from_file')
-
-
-        if self.is_single_request_sum:
-            self.loops = 1
-            self.tasks_batches = [20]
-            self.all_requests_sum = self.loops * self.tasks_batches * self.group
-        
-        if self.is_read_from_file:
-            self._args = read_numbers_from_file()
-            self.all_requests_sum = self.tasks_batches
-
-        if self.is_random_request_number:
-            self.filename = f'''RAND{self.client_name}-L{self.loops}-G{self.group}-RB{self.tasks_batches}''' + kw.get('filenamekw')
-        else:
-            self.filename = f'''{self.client_name}-L{self.loops}-G{self.group}-RB{self.tasks_batches}''' + kw.get('filenamekw')
-
-        if self.is_single_request_sum:
-            self.filename = f"#test"
-
-        self.dirpath = kw.get('dirpath')
+REQUESTS_SUM = 500
+LOOPS = 10
 
 client_params = ClientParams(
-    loops = 1,
-    group = 1,
-    task_interval = 0.3,
-    loops_interval = 4,
-    group_interval = 5,
-    sum_args_min = 1,
-    sum_args_max = 500,
-    _sum_requests = 400,
+    task_interval = 0,
+    requests_sum = REQUESTS_SUM,
+    group_limit = 20,
+    group_interval = 0.5,
+    loops = LOOPS,
+    loop_interval = 2,
     is_random_request_number = False,
     is_unit_code_test = False,
     is_test_response_print = False,
     is_single_request_sum = False,
     is_read_from_file = True,
-    dirpath = Path.cwd() / "RR-RSN5",
+    dirpath = Path.cwd() / f"{REQUESTS_SUM}_train_data",
     random_int_max = 500000,
     random_int_min = 1,
-    filenamekw = f'''-DT{datetime.ctime(datetime.now()).replace(' ', '').replace(':', '')}'''
+    filenamekw = f'''-DT{datetime.ctime(datetime.now()).replace(' ', '').replace(':', '')}''',
+    save_file_path = Path.cwd() / 'time_records'/ 'records3' /'record(RR).txt',
 )
 
 
 def to_excel(data, filename, dirpath, headers):
-    print(headers)
     if not os.path.exists(dirpath):
         os.makedirs(dirpath, exist_ok=True)
 
@@ -136,21 +122,23 @@ async def fetch(session: aiohttp.ClientSession, url, number):
 
     client_params.send_cnt += 1
 
-    print(f"send timestamp: {time.time()}", end='\t')
-    print(f"Send count: {client_params.send_cnt}/{client_params.all_requests_sum}, {round(100 * client_params.send_cnt/client_params.all_requests_sum, 2)}%")
-
+    logging.info(f"send timestamp: {time.time()} \t")
+    logging.info(f"Send count: {client_params.send_cnt}/{client_params.requests_sum}, {round(100 * client_params.send_cnt/client_params.requests_sum, 2)}%\n")
 
     start_time = time.time()
-
-    async with session.post(url, json=data, headers=headers) as response:
-        data = await response.json()
-        data["total_response_time"] = time.time() - start_time
-        client_params.finished_cnt += 1
-        print(f"{'start timestamp:':<50}{start_time:<20}")
-        print(f"{'process timestamp:':<50}{time.time():<20}", end='\t')
-        hint_str = f"{client_params.finished_cnt}/{client_params.all_requests_sum}, {round(100 * client_params.finished_cnt/client_params.all_requests_sum, 2)}%"
-        print(f"{'process information:':<50}{hint_str:<20}")
-        return data
+    try:
+        async with session.post(url, json=data, headers=headers) as response:
+            data = await response.json()
+            data["total_response_time"] = time.time() - start_time
+            client_params.finished_cnt += 1
+            logging.info(f"{'start timestamp:':<50}{start_time:<20}\n")
+            logging.info(f"{'process timestamp:':<50}{time.time():<20}\t")
+            hint_str = f"{client_params.finished_cnt}/{client_params.requests_sum}, {round(100 * client_params.finished_cnt/client_params.requests_sum, 2)}%"
+            logging.info(f"{'process information:':<50}{hint_str:<20}\n")
+            return data
+    except Exception as e:
+        print(e)
+        print('*' * 20, datetime.ctime(datetime.now()), '*' * 20)
 
 
 async def main(args):
@@ -166,16 +154,18 @@ async def main(args):
         timeout=aiohttp.ClientTimeout(total=None),
     ) as session:
         # split
-        for i, arg in enumerate(args):
-            # delay = i * client_params.task_interval
+        # _index = 0
+        for arg in args:
+            # if _index == client_params.group_limit:
+            #     _index = 0
+            #     await asyncio.sleep(client_params.group_interval)
             task = asyncio.create_task(fetch(session, url, arg))
             tasks.append(task)
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(client_params.task_interval)
+            # _index += 1
 
-        responses = await asyncio.gather(*tasks)
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
         return responses
-
-# funciton
 
 
 def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[int, typing.Dict[str, typing.Any], typing.List]:
@@ -214,51 +204,57 @@ def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing
 async def run():
     # global variable
     global client_params
+    args = list()
+    
+    for loop_i in range(client_params.loops):
+        loop_time = time.time()
 
-    for _il in range(client_params.loops):
-        responses_list = list()
-        for _ig in range(client_params.group):
-            args = list()
-            if not client_params.is_read_from_file:
-                
-                # sum of tasks for every group -> _tks
-                if client_params.is_random_request_number:
-                    args += [math.floor(random.uniform(
-                        client_params.random_int_min * 10, client_params.random_int_max * 10) / 10) for _ in range(client_params.all_requests_sum)]
-                else:
-                    args += [500000 for _ in range(client_params.all_requests_sum)]
+        if not client_params.is_read_from_file:
+            # sum of tasks for every group -> _tks
+            if client_params.is_random_request_number:
+                args = [random.randint(client_params.random_int_min, client_params.random_int_max) for _ in range(client_params.requests_sum)]
             else:
-                args = client_params._args[:client_params.all_requests_sum]
-            print("---start fetch---")
-
-            responses = await main(args)
-
-            await asyncio.sleep(client_params.group_interval)
-
-            print("---generate data file---")
-
-            responses_list.append(responses)
-
+                args = [500000 for _ in range(client_params.requests_sum)]
+            
+        else:
+            args = client_params._args
+        
+        print("---start fetch---")
+        responses = await main(args)
+        print("---generate data file---")
+        
         # write into excel file
-        for responses in responses_list:
-            code, data_table, col_headers = result_parse(responses)
-            if not client_params.is_test_response_print:
-                if data_table:
-                    to_excel(data_table, client_params.filename, client_params.dirpath, col_headers)
-                else:
-                    print("None data_table")
+        # code, data_table, col_headers = result_parse(responses)
+        # if not client_params.is_test_response_print:
+        #     if data_table:
+        #         to_excel(data_table, client_params.filename, client_params.dirpath, col_headers)
+        #     else:
+        #         print("None data_table")
+        # else:
+        #     print(code)
+        logging.info(f'loop [{loop_i}]')
+        print(f'LOOP [{loop_i}]')
 
-                print(f"Cover finished\nExit code: {code}, group {_ig}")
-            else:
-                print(code)
+        client_params.loops_time.append(time.time() - loop_time)
+        await asyncio.sleep(client_params.loop_interval)
 
+    # write record to file
+    try:
+        if client_params.save_file_path:
+            with open(client_params.save_file_path, 'w', encoding='utf-8') as records_file:
+                for record in client_params.loops_time:
+                    records_file.write(f"{record}\n")
+        else:
+            raise Exception("No save file name")
+    except Exception as e:
+        print(e)
 
 if __name__ == "__main__":
     if client_params.is_unit_code_test:
         test()
     else:
-        PR_start = time.time()
+        RR_start = time.time()
         asyncio.run(run())
-        PR_end = time.time()
-        print(f"{'RR total time:':<40}{PR_end - PR_start:<20}s")
+        RR_end = time.time()
+        print(f"{'RR total time:':<40}{RR_end - RR_start:<20}s")
     pass
