@@ -12,6 +12,8 @@ from datetime import datetime
 from pathlib import Path
 import logging
 
+import time_graph.generate_graph as figplt
+
 logging.basicConfig(filename = str(Path.cwd() / 'logs' / f'{__file__.split('.')[0]}-output.log'), level=logging.INFO, filemode='w')
 
 class ClientParams:
@@ -64,7 +66,7 @@ def test():
     # TODO test code
     pass
 
-REQUESTS_SUM = 2
+REQUESTS_SUM = 50
 
 client_params = ClientParams(
     task_interval = 0,
@@ -193,6 +195,10 @@ def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing
 
 
 async def run():
+
+    ORG_start = time.time()
+
+
     # global variable
     global client_params
     args = list()
@@ -210,7 +216,34 @@ async def run():
     responses = await main(args)
     print("---generate data file---")
     
-    print(responses)
+    real_total = []
+    pred_total = []
+    before_forward_time = []
+    worker_wait_time = []
+
+    end_line = f"\n{'-' * 40}\n"
+    for response in responses:
+        for k, v in response.items():
+            print(k, v)
+            if k == 'total_response_time':
+                real_total.append(v)
+            elif k == 'total_response_time_prediction':
+                pred_total.append(v)
+            elif k == 'before_forward_time':
+                before_forward_time.append(v)
+            elif k == 'worker_wait_time':
+                worker_wait_time.append(v)
+            else:
+                pass
+        print(end_line)
+    
+    ORG_end = time.time()
+    print(f"{'OGR total time:':<40}{ORG_end - ORG_start:<20}s")
+    
+    figplt.main(figplt.Data(real_total, 'real total'),
+                figplt.Data(pred_total, 'pred total'))
+
+
 
     # write into excel file
     code, data_table, col_headers = result_parse(responses)
@@ -226,8 +259,5 @@ if __name__ == "__main__":
     if client_params.is_unit_code_test:
         test()
     else:
-        ORG_start = time.time()
         asyncio.run(run())
-        ORG_end = time.time()
-        print(f"{'OGR total time:':<40}{ORG_end - ORG_start:<20}s")
     pass
