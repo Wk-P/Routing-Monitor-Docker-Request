@@ -1,0 +1,16 @@
+INFO:root:send timestamp: 1727163959.0194204 	
+INFO:root:Send count: 1/2, 50.0%
+
+INFO:root:send timestamp: 1727163959.5325727 	
+INFO:root:Send count: 2/2, 100.0%
+
+INFO:root:start timestamp:                                  1727163959.0194204  
+
+INFO:root:process timestamp:                                1727163967.29004    	
+INFO:root:process information:                              1/2, 50.0%          
+
+INFO:root:start timestamp:                                  1727163959.5325727  
+
+INFO:root:process timestamp:                                1727163969.0969262  	
+INFO:root:process information:                              2/2, 100.0%         
+
