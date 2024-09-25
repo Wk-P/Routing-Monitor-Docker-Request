@@ -1,7 +1,9 @@
 # test client
+from operator import index
 import time
 import typing
 import random
+from matplotlib.pyplot import figlegend
 from numpy import broadcast_shapes
 from openpyxl import Workbook  # type: ignore
 from openpyxl import load_workbook
@@ -66,14 +68,14 @@ def test():
     # TODO test code
     pass
 
-REQUESTS_SUM = 50
+REQUESTS_SUM = 10
 
 client_params = ClientParams(
     task_interval = 0,
     requests_sum = REQUESTS_SUM,
     group_limit = 1,
     group_interval = 0.5,
-    is_random_request_number = True,
+    is_random_request_number = False,
     is_unit_code_test = False,
     is_test_response_print = False,
     is_single_request_sum = False,
@@ -105,7 +107,7 @@ def to_excel(data, filename, dirpath, headers):
     workbook.save(file_path)
 
 
-async def fetch(session: aiohttp.ClientSession, url, number):
+async def fetch(session: aiohttp.ClientSession, url, number, task_index):
     global client_params
 
     data = {"number": number}
@@ -123,6 +125,7 @@ async def fetch(session: aiohttp.ClientSession, url, number):
             print(f'Reponse status: {response.status}')
             response_data = await response.json()
             response_data["total_response_time"] = time.time() - start_time
+            response_data['task_index'] = task_index
             client_params.finished_cnt += 1
             logging.info(f"{'start timestamp:':<50}{start_time:<20}\n")
             logging.info(f"{'process timestamp:':<50}{time.time():<20}\t")
@@ -149,12 +152,14 @@ async def main(args):
         # split
         _index = 0
         for arg in args:
-            if _index == client_params.group_limit:
-                _index = 0
-                await asyncio.sleep(client_params.group_interval)
-            task = asyncio.create_task(fetch(session, url, arg))
+            # if _index == client_params.group_limit:
+            #     _index = 0
+            #     await asyncio.sleep(client_params.group_interval)
+
+            task = asyncio.create_task(fetch(session, url, arg, _index))
             tasks.append(task)
             await asyncio.sleep(client_params.task_interval)
+            print(_index)
             _index += 1
 
         responses = await asyncio.gather(*tasks, return_exceptions=True)
@@ -195,7 +200,7 @@ def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing
 
 
 async def run():
-
+    global pic_index
     ORG_start = time.time()
 
 
@@ -218,31 +223,59 @@ async def run():
     
     real_total = []
     pred_total = []
+    processed_time = []
     before_forward_time = []
-    worker_wait_time = []
-
+    real_task_wait_time = []
+    pred_task_wait_time = []
+    before_forward_timestamps = []
+    start_process_timestamps = []
+    worker_accepted_timestamps = []
     end_line = f"\n{'-' * 40}\n"
     for response in responses:
         for k, v in response.items():
-            print(k, v)
-            if k == 'total_response_time':
-                real_total.append(v)
-            elif k == 'total_response_time_prediction':
-                pred_total.append(v)
-            elif k == 'before_forward_time':
-                before_forward_time.append(v)
-            elif k == 'worker_wait_time':
-                worker_wait_time.append(v)
+            if k == 'number' or k == 'task_index':
+                print(k, v)
             else:
-                pass
+                if k == 'total_response_time':
+                    real_total.append(v)
+                elif k == 'total_response_time_prediction':
+                    pred_total.append(v)
+                elif k == 'before_forward_time':
+                    before_forward_time.append(v)
+                elif k == 'real_task_wait_time':
+                    real_task_wait_time.append(v)
+                elif k == 'pred_task_wait_time':
+                    pred_task_wait_time.append(v)    
+                elif k == 'before_forward_timestamp':
+                    before_forward_timestamps.append(v % 1000)
+                elif k == 'start_process_time':
+                    start_process_timestamps.append(v % 1000)
+                elif k == 'worker_accepted_timestamp':
+                    worker_accepted_timestamps.append(v % 1000)
+                elif k == 'processed_time':
+                    processed_time.append(v)
+                else:
+                    pass
         print(end_line)
     
+    print(real_total)
+    print(pred_total)
+    print(processed_time)
+    print(before_forward_time)
+    print(real_task_wait_time)
+    print(pred_task_wait_time)
+    print(before_forward_timestamps)
+    print(start_process_timestamps)
+    print(worker_accepted_timestamps)
+
     ORG_end = time.time()
     print(f"{'OGR total time:':<40}{ORG_end - ORG_start:<20}s")
     
-    figplt.main(figplt.Data(real_total, 'real total'),
-                figplt.Data(pred_total, 'pred total'))
-
+    figplt.main([[figplt.Data(real_total, 'real total'), figplt.Data(pred_total, 'pred total'), figplt.Data(processed_time, 'process')], [figplt.Data(real_task_wait_time, 'real wait time'), figplt.Data(pred_task_wait_time, 'pred wait time') ], 
+                [figplt.Data(worker_accepted_timestamps, 'WAT-ST'), figplt.Data(start_process_timestamps, 'SPT-ST'), figplt.Data(before_forward_timestamps, 'BFT-ST')]], 
+                ['real total - pred total - process', 'real - pred (task wait time)', 'accepted - start - before'], fig_name=pic_index)
+    
+    pic_index += 1
 
 
     # write into excel file
@@ -255,9 +288,12 @@ async def run():
     else:
         print(code)
 
+
+pic_index = 0
 if __name__ == "__main__":
     if client_params.is_unit_code_test:
         test()
     else:
-        asyncio.run(run())
+        for i in range(10):
+            asyncio.run(run())
     pass

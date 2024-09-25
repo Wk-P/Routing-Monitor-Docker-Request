@@ -8,51 +8,68 @@ class Data:
         self.label = label
 
 
-def main(*data_sets: Data):
-    # 打印每个数据集的平均值
-    for data_set in data_sets:
-        print_avg(data_set.data, data_set.label)
+def main(data_sets_groups: typing.List[typing.List[Data]], titles: typing.List[str], fig_name=None):
+    num_groups = len(data_sets_groups)  # 数据集组数量，即要并列显示的图的数量
 
-    # 提取标签和数据
-    labels = [data_set.label for data_set in data_sets]
-    data_values = [data_set.data for data_set in data_sets]
+    # 创建并列的子图
+    fig, axs = plt.subplots(1, num_groups, figsize=(5 * num_groups, 5), squeeze=False)  # 每行 num_groups 个子图
+    axs = axs.flatten()
 
-    # 设置柱状图宽度和位置
-    num_bars = len(data_values[0])  # 每个数据集中的数据点数量
-    x = np.arange(num_bars)  # x 轴的刻度位置
-    width = 0.8 / len(data_sets)  # 每个柱的宽度（根据数据集数量调整）
+    # 遍历每组数据并在对应的子图中绘制
+    for idx, (data_sets, title) in enumerate(zip(data_sets_groups, titles)):
+        ax = axs[idx]
 
-    # 创建柱状图
-    fig, ax = plt.subplots()
+        # 打印每个数据集的平均值
+        for data_set in data_sets:
+            print_avg(data_set.data, data_set.label)
 
-    # 绘制柱状图
-    for i, (data, label) in enumerate(zip(data_values, labels)):
-        bars = ax.bar(x + i * width, data, width, label=label)
+        # 提取标签和数据
+        labels = [data_set.label for data_set in data_sets]
+        data_values = [data_set.data for data_set in data_sets]
 
-        # 显示数值在每个柱顶端
-        add_values(bars)
+        # 设置柱状图宽度和位置
+        num_bars = len(data_values[0])  # 每个数据集中的数据点数量
+        x = np.arange(num_bars)  # x 轴的刻度位置
+        width = 0.8 / len(data_sets)  # 每个柱的宽度（根据数据集数量调整）
 
-    # 添加一些文本标签
-    ax.set_xlabel('Data Sets')
-    ax.set_ylabel('Values')
-    ax.set_title('Bar chart comparison between data sets')
-    ax.set_xticks(x + width * (len(data_sets) - 1) / 2)  # 调整 x 轴刻度
-    ax.set_xticklabels([f'{i+1}' for i in range(num_bars)])  # 适配数据点数量
-    ax.legend()
+        # 绘制柱状图
+        for i, (data, label) in enumerate(zip(data_values, labels)):
+            bars = ax.bar(x + i * width, data, width, label=label)
 
-    # 调整布局并显示图形
+            # 显示数值在每个柱顶端
+            add_values(bars, ax)
+
+        # 添加一些文本标签
+        ax.set_xlabel('Data Sets')
+        ax.set_ylabel('Values')
+        ax.set_title(title)  # 为每个子图添加标题
+        ax.set_xticks(x + width * (len(data_sets) - 1) / 2)  # 调整 x 轴刻度
+        ax.set_xticklabels([f'{i+1}' for i in range(num_bars)])  # 适配数据点数量
+        ax.legend()
+
+        # 自动调整纵轴范围
+        all_data = [value for data in data_values for value in data]  # 获取所有数据点
+        max_value = max(all_data)
+        min_value = min(all_data)
+        ax.set_ylim(min_value - (max_value - min_value) * 0.1, max_value + (max_value - min_value) * 0.1)  # 纵轴范围稍微大于最大值，留出空间
+
+    # 调整布局并显示所有子图
     plt.tight_layout()
-    plt.show()
-
+    if fig_name:
+        plt.savefig(f"pic{fig_name}.png")
+    else:
+        plt.savefig(f"picnoname.png")
 
 def print_avg(data: typing.List[float | int], name: str):
     print(f'{name:<20} {np.average(data):<50}')
 
 
-def add_values(bars):
+def add_values(bars, ax):
     for bar in bars:
         yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2, yval, round(yval, 2), ha='center', va='bottom')
+        # 格式化显示数字，只保留一位小数
+        formatted_value = f"{yval:.1f}"  # 修改这里以控制小数位数
+        ax.text(bar.get_x() + bar.get_width() / 2, yval + 0.1, formatted_value, ha='center', va='bottom')
 
 
 # 示例使用
@@ -60,4 +77,6 @@ if __name__ == "__main__":
     data1 = Data([3, 5, 1, 2], 'Data Set 1')
     data2 = Data([4, 7, 2, 3], 'Data Set 2')
     data3 = Data([5, 2, 8, 6], 'Data Set 3')  # 添加第三个数据集
-    main(data1, data2, data3)  # 调用 main 函数，支持多个数据集
+
+    # 并列显示两张图，每张图有一个标题
+    main([[data1, data2, data3], [data1]], ["Group 1: Comparison", "Group 2: Single Data Set"])
