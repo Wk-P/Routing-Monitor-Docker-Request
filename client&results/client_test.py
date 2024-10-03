@@ -71,7 +71,7 @@ def test():
 REQUESTS_SUM = 10
 
 client_params = ClientParams(
-    task_interval = 0,
+    task_interval = 0.03,
     requests_sum = REQUESTS_SUM,
     group_limit = 1,
     group_interval = 0.5,
