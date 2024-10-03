@@ -13,10 +13,11 @@ import os
 from datetime import datetime
 from pathlib import Path
 import logging
+import matplotlib.pyplot as plt
 
 import time_graph.generate_graph as figplt
 
-logging.basicConfig(filename = str(Path.cwd() / 'logs' / f'{__file__.split('.')[0]}-output.log'), level=logging.INFO, filemode='w')
+logging.basicConfig(filename = str(Path.cwd() / 'logs' / f'{__file__.split(".")[0]}-output.log'), level=logging.INFO, filemode='w')
 
 class ClientParams:
     def __init__(self, *args, **kw) -> None:
@@ -229,6 +230,11 @@ async def run():
     pred_task_wait_time = []
     before_forward_timestamps = []
     start_process_timestamps = []
+    all_rewards_list = []
+    losses_list = []
+    q_values_list = []
+
+
     end_line = f"\n{'-' * 40}\n"
     for response in responses:
         for k, v in response.items():
@@ -249,6 +255,12 @@ async def run():
                 start_process_timestamps.append(v % 1000)
             elif k == 'processed_time':
                 processed_time.append(v)
+            elif k == 'all_rewards':
+                all_rewards_list.append(v)
+            elif k == 'losses':
+                losses_list.append(v)
+            elif k == 'q_values':
+                q_values_list.append(v)
             else:
                 pass
         print(end_line)
@@ -269,6 +281,17 @@ async def run():
     figplt.main([[figplt.Data(real_total, 'real total'), figplt.Data(pred_total, 'pred total'), figplt.Data(processed_time, 'process')], [figplt.Data(real_task_wait_time, 'real wait time'), figplt.Data(pred_task_wait_time, 'pred wait time') ], 
                 [ figplt.Data(start_process_timestamps, 'SPT-ST'), figplt.Data(before_forward_timestamps, 'BFT-ST')]], 
                 ['real total - pred total - process', 'real - pred (task wait time)', 'start - before'], fig_name=pic_index, fig_dir_path=pic_dir_path)
+    
+
+
+    fig, ax = plt.subplots(3, 1, figsize=(10, 15))
+    # 学习曲线
+    ax[0].plot(all_rewards_list)
+    # 损失曲线
+    ax[1].plot(losses_list)
+    # Q 值曲线
+    ax[2].plot(q_values_list)
+    plt.show()
     
     pic_index += 1
 
