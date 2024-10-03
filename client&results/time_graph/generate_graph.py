@@ -1,3 +1,4 @@
+from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import typing
@@ -8,7 +9,7 @@ class Data:
         self.label = label
 
 
-def main(data_sets_groups: typing.List[typing.List[Data]], titles: typing.List[str], fig_name=None):
+def main(data_sets_groups: typing.List[typing.List[Data]], titles: typing.List[str], fig_name=0, fig_dir_path=None):
     num_groups = len(data_sets_groups)  # 数据集组数量，即要并列显示的图的数量
 
     # 创建并列的子图
@@ -55,21 +56,22 @@ def main(data_sets_groups: typing.List[typing.List[Data]], titles: typing.List[s
 
     # 调整布局并显示所有子图
     plt.tight_layout()
-    if fig_name:
-        plt.savefig(f"pic{fig_name}.png")
+    if fig_name != 0 or fig_dir_path:
+        plt.savefig(Path(fig_dir_path) / f"fig{fig_name}.png")
     else:
-        plt.savefig(f"picnoname.png")
+        plt.show()
 
 def print_avg(data: typing.List[float | int], name: str):
     print(f'{name:<20} {np.average(data):<50}')
 
 
-def add_values(bars, ax):
-    for bar in bars:
+def add_values(bars, ax, offset=0.2):
+    for i, bar in enumerate(bars):
         yval = bar.get_height()
         # 格式化显示数字，只保留一位小数
-        formatted_value = f"{yval:.1f}"  # 修改这里以控制小数位数
-        ax.text(bar.get_x() + bar.get_width() / 2, yval + 0.1, formatted_value, ha='center', va='bottom')
+        formatted_value = f"{yval:.1f}"  # 控制小数位数
+        # 动态调整偏移量，i 为当前柱子的索引
+        ax.text(bar.get_x() + bar.get_width() / 2, yval + offset + i * 0.1, formatted_value, ha='center', va='bottom', fontsize=8)
 
 
 # 示例使用

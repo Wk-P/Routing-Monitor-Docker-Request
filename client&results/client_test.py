@@ -75,7 +75,7 @@ client_params = ClientParams(
     requests_sum = REQUESTS_SUM,
     group_limit = 1,
     group_interval = 0.5,
-    is_random_request_number = False,
+    is_random_request_number = True,
     is_unit_code_test = False,
     is_test_response_print = False,
     is_single_request_sum = False,
@@ -229,33 +229,28 @@ async def run():
     pred_task_wait_time = []
     before_forward_timestamps = []
     start_process_timestamps = []
-    worker_accepted_timestamps = []
     end_line = f"\n{'-' * 40}\n"
     for response in responses:
         for k, v in response.items():
-            if k == 'number' or k == 'task_index':
-                print(k, v)
+            print(k ,v)
+            if k == 'total_response_time':
+                real_total.append(v)
+            elif k == 'total_response_time_prediction':
+                pred_total.append(v)
+            elif k == 'before_forward_time':
+                before_forward_time.append(v)
+            elif k == 'real_task_wait_time':
+                real_task_wait_time.append(v)
+            elif k == 'pred_task_wait_time':
+                pred_task_wait_time.append(v)    
+            elif k == 'before_forward_timestamp':
+                before_forward_timestamps.append(v % 1000)
+            elif k == 'start_process_time':
+                start_process_timestamps.append(v % 1000)
+            elif k == 'processed_time':
+                processed_time.append(v)
             else:
-                if k == 'total_response_time':
-                    real_total.append(v)
-                elif k == 'total_response_time_prediction':
-                    pred_total.append(v)
-                elif k == 'before_forward_time':
-                    before_forward_time.append(v)
-                elif k == 'real_task_wait_time':
-                    real_task_wait_time.append(v)
-                elif k == 'pred_task_wait_time':
-                    pred_task_wait_time.append(v)    
-                elif k == 'before_forward_timestamp':
-                    before_forward_timestamps.append(v % 1000)
-                elif k == 'start_process_time':
-                    start_process_timestamps.append(v % 1000)
-                elif k == 'worker_accepted_timestamp':
-                    worker_accepted_timestamps.append(v % 1000)
-                elif k == 'processed_time':
-                    processed_time.append(v)
-                else:
-                    pass
+                pass
         print(end_line)
     
     print(real_total)
@@ -266,14 +261,14 @@ async def run():
     print(pred_task_wait_time)
     print(before_forward_timestamps)
     print(start_process_timestamps)
-    print(worker_accepted_timestamps)
 
     ORG_end = time.time()
     print(f"{'OGR total time:':<40}{ORG_end - ORG_start:<20}s")
     
+    
     figplt.main([[figplt.Data(real_total, 'real total'), figplt.Data(pred_total, 'pred total'), figplt.Data(processed_time, 'process')], [figplt.Data(real_task_wait_time, 'real wait time'), figplt.Data(pred_task_wait_time, 'pred wait time') ], 
-                [figplt.Data(worker_accepted_timestamps, 'WAT-ST'), figplt.Data(start_process_timestamps, 'SPT-ST'), figplt.Data(before_forward_timestamps, 'BFT-ST')]], 
-                ['real total - pred total - process', 'real - pred (task wait time)', 'accepted - start - before'], fig_name=pic_index)
+                [ figplt.Data(start_process_timestamps, 'SPT-ST'), figplt.Data(before_forward_timestamps, 'BFT-ST')]], 
+                ['real total - pred total - process', 'real - pred (task wait time)', 'start - before'], fig_name=pic_index, fig_dir_path=pic_dir_path)
     
     pic_index += 1
 
@@ -289,11 +284,15 @@ async def run():
         print(code)
 
 
+loop = 1
+# pic_index = 1
+# pic_dir_path = Path.cwd() / 'figs' / 'fig2'
 pic_index = 0
+pic_dir_path = None
 if __name__ == "__main__":
     if client_params.is_unit_code_test:
         test()
     else:
-        for i in range(10):
+        for i in range(loop):
             asyncio.run(run())
     pass
