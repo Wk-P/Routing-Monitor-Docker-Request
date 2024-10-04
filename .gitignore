@@ -3,3 +3,5 @@
 /packages
 /utils/__pycache__/*
 /logs/*
+*.log
+*.pyc
