@@ -69,8 +69,8 @@ def test():
     # TODO test code
     pass
 
-REQUESTS_SUM = 10
-
+REQUESTS_SUM = 100
+LOOPS = 50
 client_params = ClientParams(
     task_interval = 0.03,
     requests_sum = REQUESTS_SUM,
@@ -199,9 +199,9 @@ def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing
     finally:
         return code, data_table, response_keys
 
-
+rewards = 0
 async def run():
-    global pic_index
+    global pic_index, rewards
     ORG_start = time.time()
 
 
@@ -231,8 +231,7 @@ async def run():
     before_forward_timestamps = []
     start_process_timestamps = []
     all_rewards_list = []
-    losses_list = []
-    q_values_list = []
+
 
 
     end_line = f"\n{'-' * 40}\n"
@@ -240,30 +239,36 @@ async def run():
         for k, v in response.items():
             print(k ,v)
             if k == 'total_response_time':
+                print(k ,v)
                 real_total.append(v)
             elif k == 'total_response_time_prediction':
+                print(k ,v)
                 pred_total.append(v)
             elif k == 'before_forward_time':
+                print(k ,v)
                 before_forward_time.append(v)
             elif k == 'real_task_wait_time':
+                print(k ,v)
                 real_task_wait_time.append(v)
             elif k == 'pred_task_wait_time':
+                print(k ,v)
                 pred_task_wait_time.append(v)    
             elif k == 'before_forward_timestamp':
+                print(k ,v)
                 before_forward_timestamps.append(v % 1000)
             elif k == 'start_process_time':
+                print(k ,v)
                 start_process_timestamps.append(v % 1000)
             elif k == 'processed_time':
+                print(k ,v)
                 processed_time.append(v)
-            elif k == 'all_rewards':
+            elif k == 'rewards':
+                print(k ,v)
                 all_rewards_list.append(v)
-            elif k == 'losses':
-                losses_list.append(v)
-            elif k == 'q_values':
-                q_values_list.append(v)
+                rewards = sum(all_rewards_list)
             else:
                 pass
-        print(end_line)
+    print(end_line)
     
     print(real_total)
     print(pred_total)
@@ -276,39 +281,34 @@ async def run():
 
     ORG_end = time.time()
     print(f"{'OGR total time:':<40}{ORG_end - ORG_start:<20}s")
+
     
     
-    figplt.main([[figplt.Data(real_total, 'real total'), figplt.Data(pred_total, 'pred total'), figplt.Data(processed_time, 'process')], [figplt.Data(real_task_wait_time, 'real wait time'), figplt.Data(pred_task_wait_time, 'pred wait time') ], 
-                [ figplt.Data(start_process_timestamps, 'SPT-ST'), figplt.Data(before_forward_timestamps, 'BFT-ST')]], 
-                ['real total - pred total - process', 'real - pred (task wait time)', 'start - before'], fig_name=pic_index, fig_dir_path=pic_dir_path,
-                direction='column')
+    
+    # figplt.main([[figplt.Data(real_total, 'real total'), figplt.Data(pred_total, 'pred total'), figplt.Data(processed_time, 'process')], [figplt.Data(real_task_wait_time, 'real wait time'), figplt.Data(pred_task_wait_time, 'pred wait time') ], 
+    #             [ figplt.Data(start_process_timestamps, 'SPT-ST'), figplt.Data(before_forward_timestamps, 'BFT-ST')]], 
+    #             ['real total - pred total - process', 'real - pred (task wait time)', 'start - before'], fig_name=pic_index, fig_dir_path=pic_dir_path,
+    #             direction='column')
     
 
-
-    fig, ax = plt.subplots(3, 1, figsize=(10, 15))
-    # 学习曲线
-    ax[0].plot(all_rewards_list)
-    # 损失曲线
-    ax[1].plot(losses_list)
-    # Q 值曲线
-    ax[2].plot(q_values_list)
-    plt.show()
     
+
     pic_index += 1
 
 
     # write into excel file
     code, data_table, col_headers = result_parse(responses)
-    if not client_params.is_test_response_print:
-        if data_table:
-            to_excel(data_table, client_params.filename, client_params.dirpath, col_headers)
-        else:
-            print("None data_table")
-    else:
-        print(code)
+
+    # if not client_params.is_test_response_print:
+    #     if data_table:
+    #         to_excel(data_table, client_params.filename, client_params.dirpath, col_headers)
+    #     else:
+    #         print("None data_table")
+    # else:
+    #     print(code)
 
 
-loop = 1
+
 # pic_index = 1
 # pic_dir_path = Path.cwd() / 'figs' / 'fig2'
 pic_index = 0
@@ -317,6 +317,14 @@ if __name__ == "__main__":
     if client_params.is_unit_code_test:
         test()
     else:
-        for i in range(loop):
+        all_rewards = []
+        for i in range(LOOPS):
             asyncio.run(run())
+            if len(all_rewards) < 1:
+                    all_rewards.append(rewards)
+            else:
+               all_rewards.append(all_rewards[-1] + rewards)
+
+        plt.plot(all_rewards)
+        plt.show()
     pass
