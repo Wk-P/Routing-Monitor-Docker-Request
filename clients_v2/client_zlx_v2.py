@@ -64,11 +64,15 @@ async def main():
     global TASKS_SUM
     client = CustomClient(loop=1, loop_interval=1, tasks=gen_tasks(is_random=True, n=TASKS_SUM), task_interval=0, single_url=URL)
 
-    await client.run_tasks()
+    for loop in range(client.loops):
+        
+        await client.run_tasks()
 
-    for response in client.responses:
-        for k, v in response.items():
-            print(k, v)
+        for response in client.responses:
+            for k, v in response.items():
+                print(k, v)
+
+        await asyncio.sleep(client.loop_interval)    
 
 if __name__ == "__main__":
     asyncio.run(main())
