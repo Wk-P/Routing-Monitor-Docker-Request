@@ -13,10 +13,11 @@ import os
 from datetime import datetime
 from pathlib import Path
 import logging
+import matplotlib.pyplot as plt
 
 import time_graph.generate_graph as figplt
 
-logging.basicConfig(filename = str(Path.cwd() / 'logs' / f'{__file__.split('.')[0]}-output.log'), level=logging.INFO, filemode='w')
+logging.basicConfig(filename = str(Path.cwd() / 'logs' / f'{__file__.split(".")[0]}-output.log'), level=logging.INFO, filemode='w')
 
 class ClientParams:
     def __init__(self, *args, **kw) -> None:
@@ -68,6 +69,7 @@ def test():
     # TODO test code
     pass
 
+LOOPS = 1
 REQUESTS_SUM = 10
 
 client_params = ClientParams(
@@ -229,6 +231,11 @@ async def run():
     pred_task_wait_time = []
     before_forward_timestamps = []
     start_process_timestamps = []
+    all_rewards_list = []
+    losses_list = []
+    q_values_list = []
+
+
     end_line = f"\n{'-' * 40}\n"
     for response in responses:
         for k, v in response.items():
@@ -249,6 +256,12 @@ async def run():
                 start_process_timestamps.append(v % 1000)
             elif k == 'processed_time':
                 processed_time.append(v)
+            elif k == 'all_rewards':
+                all_rewards_list.append(v)
+            elif k == 'losses':
+                losses_list.append(v)
+            elif k == 'q_values':
+                q_values_list.append(v)
             else:
                 pass
         print(end_line)
@@ -269,7 +282,8 @@ async def run():
     figplt.main([[figplt.Data(real_total, 'real total'), figplt.Data(pred_total, 'pred total'), figplt.Data(processed_time, 'process')], [figplt.Data(real_task_wait_time, 'real wait time'), figplt.Data(pred_task_wait_time, 'pred wait time') ], 
                 [ figplt.Data(start_process_timestamps, 'SPT-ST'), figplt.Data(before_forward_timestamps, 'BFT-ST')]], 
                 ['real total - pred total - process', 'real - pred (task wait time)', 'start - before'], fig_name=pic_index, fig_dir_path=pic_dir_path,
-                direction='row')
+                direction='column')
+    
     
     pic_index += 1
 
@@ -285,7 +299,6 @@ async def run():
         print(code)
 
 
-loop = 1
 # pic_index = 1
 # pic_dir_path = Path.cwd() / 'figs' / 'fig2'
 pic_index = 0
@@ -294,6 +307,6 @@ if __name__ == "__main__":
     if client_params.is_unit_code_test:
         test()
     else:
-        for i in range(loop):
+        for i in range(LOOPS):
             asyncio.run(run())
     pass
