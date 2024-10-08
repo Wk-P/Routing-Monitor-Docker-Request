@@ -33,6 +33,7 @@ class CustomClient:
         self.responses: List[dict] = list()
 
     async def run_task(self, task: Task):
+        print(task.data)
         async with self.session.post(url=task.url, json=task.data, headers=task.headers) as response:
             response_data = await response.json()
             
@@ -45,7 +46,7 @@ class CustomClient:
             print(f"Send Task {index}")
             index += 1
 
-        self.responses = await asyncio.gather(*self.tasks_corotine_list)
+        self.responses = await asyncio.gather(*self.tasks_corotine_list, return_exceptions=True)
 
 def gen_tasks(is_random: bool, n, *args):
     global URL, HEADERS
