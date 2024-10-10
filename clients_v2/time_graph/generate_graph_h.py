@@ -80,7 +80,7 @@ def add_values(bars, ax, offset=0.2, horizontal=False):
         else:
             yval = bar.get_height()
             formatted_value = f"{yval:.1f}"
-            ax.text(bar.get_x() + bar.get_width() / 2, yval + offset + i * 0.1, formatted_value, ha='center', va='bottom', fontsize=8)
+            ax.text(bar.get_x() + bar.get_width() / 2, yval + offset + 0.1, formatted_value, ha='center', va='bottom', fontsize=8)
 
 
 # 示例使用

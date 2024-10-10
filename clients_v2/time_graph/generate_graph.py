@@ -75,7 +75,7 @@ def add_values(bars, ax, offset=0.2):
         # 格式化显示数字，只保留一位小数
         formatted_value = f"{yval:.1f}"  # 控制小数位数
         # 动态调整偏移量，i 为当前柱子的索引
-        ax.text(bar.get_x() + bar.get_width() / 2, yval + offset + i * 0.1, formatted_value, ha='center', va='bottom', fontsize=8)
+        ax.text(bar.get_x() + bar.get_width() / 2, yval + offset + 0.1, formatted_value, ha='center', va='bottom', fontsize=8)
 
 
 # 示例使用
