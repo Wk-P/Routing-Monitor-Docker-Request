@@ -17,14 +17,16 @@ import matplotlib.pyplot as plt
 
 import time_graph.generate_graph as figplt
 
+# 로깅 설정: 로그 파일 저장 경로 및 설정
 logging.basicConfig(filename = str(Path.cwd() / 'logs' / f'{__file__.split(".")[0]}-output.log'), level=logging.INFO, filemode='w')
 
+# 클라이언트 파라미터 설정 클래스
 class ClientParams:
     def __init__(self, *args, **kw) -> None:
-        self.send_cnt = 0
-        self.finished_cnt = 0
-        self.requests_sum = kw.get('requests_sum')
-        self.task_interval = kw.get('task_interval')
+        self.send_cnt = 0                                         # 전송된 요청 수
+        self.finished_cnt = 0                                     # 처리 완료된 요청 수
+        self.requests_sum = kw.get('requests_sum')                # 요청 총합
+        self.task_interval = kw.get('task_interval')              # task를 발송하는 간격
         self.random_int_max = kw.get("random_int_max")
         self.random_int_min = kw.get('random_int_min')
         self.group_limit = kw.get('group_limit')
@@ -41,6 +43,7 @@ class ClientParams:
         # request number data from file
         self.is_read_from_file = kw.get('is_read_from_file')
 
+        # 클라이언트 이름 설정
         self.client_name = __file__.split("\\")[-1].split(".")[0]
         
         if self.is_single_request_sum:
@@ -59,6 +62,7 @@ class ClientParams:
 
         self.dirpath = kw.get('dirpath')
 
+# 파일에서 숫자 불러오기
 def read_numbers_from_file():
     with open('args.txt', 'r') as file:
         args_from_file = [int(line.strip()) for line in file]
@@ -69,8 +73,9 @@ def test():
     # TODO test code
     pass
 
+
 REQUESTS_SUM = 100
-LOOPS = 50
+LOOPS = 20
 client_params = ClientParams(
     task_interval = 0.03,
     requests_sum = REQUESTS_SUM,
@@ -82,52 +87,55 @@ client_params = ClientParams(
     is_single_request_sum = False,
     is_read_from_file = False,
     dirpath = Path.cwd() / f"{REQUESTS_SUM}_train_data",
-    random_int_max = 500000,
+    random_int_max = 300000,
     random_int_min = 1,
     filenamekw = f'''-DT{datetime.ctime(datetime.now()).replace(' ', '').replace(':', '')}'''
 )
 
-
+# 데이터를 엑셀 파일로 저장하는 함수
 def to_excel(data, filename, dirpath, headers):
     if not os.path.exists(dirpath):
         os.makedirs(dirpath, exist_ok=True)
 
     file_path = str(dirpath / f"{filename}.xlsx")
 
+    # 파일이 이미 존재하는 경우 불러오기, 그렇지 않으면 새로 생성
     if os.path.exists(file_path):
         workbook = load_workbook(file_path)
         sheet = workbook.active
     else:
         workbook = Workbook()
         sheet = workbook.active
-        sheet.append(headers)
+        sheet.append(headers)     # 헤더 추가
 
+    # 데이터 추가
     for row in data:
         sheet.append(row)
 
     workbook.save(file_path)
 
-
+# 요청을 보내는 비동기 함수
 async def fetch(session: aiohttp.ClientSession, url, number, task_index):
     global client_params
 
-    data = {"number": number}
-    headers = {"task-type": "C"}
+    data = {"number": number}         # 요청 데이터
+    headers = {"task-type": "C"}      # 요청 헤더
 
-    client_params.send_cnt += 1
+    client_params.send_cnt += 1       # 전송 카운트 증가
 
-    logging.info(f"send timestamp: {time.time()} \t")
+    logging.info(f"send timestamp: {time.time()} \t")     # 전송 시간 로깅
     logging.info(f"Send count: {client_params.send_cnt}/{client_params.requests_sum}, {round(100 * client_params.send_cnt/client_params.requests_sum, 2)}%\n")
 
-    start_time = time.time()
+    start_time = time.time()          # 시작 시간을 기록
     try:
         response_data = dict()
+        # 비동기로 요청 보내기
         async with session.post(url, json=data, headers=headers) as response:
             print(f'Reponse status: {response.status}')
-            response_data = await response.json()
-            response_data["total_response_time"] = time.time() - start_time
-            response_data['task_index'] = task_index
-            client_params.finished_cnt += 1
+            response_data = await response.json()                             # 응답을 JSON 형태로 받기
+            response_data["total_response_time"] = time.time() - start_time   # 총 응답 시간을 계산
+            response_data['task_index'] = task_index                          # 작업 인덱스 기록
+            client_params.finished_cnt += 1                                   # 완료 카운트 증가
             logging.info(f"{'start timestamp:':<50}{start_time:<20}\n")
             logging.info(f"{'process timestamp:':<50}{time.time():<20}\t")
             hint_str = f"{client_params.finished_cnt}/{client_params.requests_sum}, {round(100 * client_params.finished_cnt/client_params.requests_sum, 2)}%"
@@ -139,19 +147,21 @@ async def fetch(session: aiohttp.ClientSession, url, number, task_index):
 
 
 async def main(args):
-    host = "192.168.0.100"
-    port = 8100
+    host = "192.168.0.100"              # 서버 호스트
+    port = 8100                         # 서버 포트
     url = f"http://{host}:{port}"
 
-    tasks = list()
-    responses = list()
+    tasks = list()                      # 비동기 작업 리스트
+    responses = list()                  # 응답 리스트
 
+    # 비동기 클라이언트 세션 설정
     async with aiohttp.ClientSession(
         connector=aiohttp.TCPConnector(limit=0),
         timeout=aiohttp.ClientTimeout(total=None),
     ) as session:
         # split
         _index = 0
+        # 요청마다 비동기 task 생성
         for arg in args:
             # if _index == client_params.group_limit:
             #     _index = 0
@@ -159,18 +169,20 @@ async def main(args):
 
             task = asyncio.create_task(fetch(session, url, arg, _index))
             tasks.append(task)
-            await asyncio.sleep(client_params.task_interval)
+            await asyncio.sleep(client_params.task_interval)    # task 간격만큼 대기
             print(_index)
             _index += 1
 
-        responses = await asyncio.gather(*tasks, return_exceptions=True)
+        responses = await asyncio.gather(*tasks, return_exceptions=True)   # 모든 task를 모아서 실행
         return responses
 
 
+# 결과를 처리하고 엑셀 파일로 저장할 데이터를 파싱하는 함수
 def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[int, typing.Dict[str, typing.Any], typing.List]:
-    data_table = list()
-    response_keys = list()
+    data_table = list()        # 데이터 테이블
+    response_keys = list()     # 응답 키
 
+    # 응답 파싱
     for res in responses:
         if type(res) is dict:
             response_keys = list(res.keys())
@@ -186,7 +198,7 @@ def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing
                     )
                 else:
                     data_table.append(
-                        ["-" for _ in range(len(response_keys))])
+                        ["-" for _ in range(len(response_keys))])   # 실패 시 빈 데이터 추가
             print("--EXIT--")
             code = 0
         else:
@@ -199,7 +211,9 @@ def result_parse(responses: typing.List[typing.Dict[str, typing.Any]]) -> typing
     finally:
         return code, data_table, response_keys
 
+# 보상 값을 위한 전역 변수
 rewards = 0
+# 실행 함수
 async def run():
     global pic_index, rewards
     ORG_start = time.time()
@@ -207,9 +221,9 @@ async def run():
 
     # global variable
     global client_params
-    args = list()
+    args = list()                # 요청 인자를 담을 리스트
     if not client_params.is_read_from_file:
-        # sum of tasks for every group -> _tks
+        # sum of tasks for every group -> _tks    각 그룹에 대한 task 생성
         if client_params.is_random_request_number:
             args = [random.randint(client_params.random_int_min, client_params.random_int_max) for _ in range(client_params.requests_sum)]
         else:
@@ -219,9 +233,10 @@ async def run():
         args = client_params._args
     
     print("---start fetch---")
-    responses = await main(args)
+    responses = await main(args)  # 비동기 요청 실행
     print("---generate data file---")
     
+    # 응답에서 각 데이터 추출
     real_total = []
     pred_total = []
     processed_time = []
@@ -270,6 +285,7 @@ async def run():
                 pass
     print(end_line)
     
+    # 결과 출력
     print(real_total)
     print(pred_total)
     print(processed_time)
@@ -279,7 +295,7 @@ async def run():
     print(before_forward_timestamps)
     print(start_process_timestamps)
 
-    ORG_end = time.time()
+    ORG_end = time.time()    # 종료 시간을 기록
     print(f"{'OGR total time:':<40}{ORG_end - ORG_start:<20}s")
 
     
@@ -293,19 +309,19 @@ async def run():
 
     
 
-    pic_index += 1
+    pic_index += 1   # 그래프 이미지 인덱스 증가
 
 
     # write into excel file
     code, data_table, col_headers = result_parse(responses)
 
-    # if not client_params.is_test_response_print:
-    #     if data_table:
-    #         to_excel(data_table, client_params.filename, client_params.dirpath, col_headers)
-    #     else:
-    #         print("None data_table")
-    # else:
-    #     print(code)
+    if not client_params.is_test_response_print:
+        if data_table:
+            to_excel(data_table, client_params.filename, client_params.dirpath, col_headers)
+        else:
+            print("None data_table")
+    else:
+        print(code)
 
 
 
@@ -320,11 +336,9 @@ if __name__ == "__main__":
         all_rewards = []
         for i in range(LOOPS):
             asyncio.run(run())
-            if len(all_rewards) < 1:
-                    all_rewards.append(rewards)
-            else:
-               all_rewards.append(all_rewards[-1] + rewards)
-
+            all_rewards.append(rewards)
+           
+        # 보상 값을 그래프로 출력
         plt.plot(all_rewards)
         plt.show()
     pass
