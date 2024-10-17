@@ -16,9 +16,9 @@ def main(data_sets_groups: typing.List[typing.List[Data]], titles: typing.List[s
 
     # 创建并列的子图
     if direction == 'row':
-        fig, axs = plt.subplots(1, num_groups, figsize=(5 * num_groups, 5), squeeze=False)  # 每行 num_groups 个子图
+        fig, axs = plt.subplots(1, num_groups, figsize=(10 * num_groups, 10), squeeze=False)  # 每行 num_groups 个子图
     elif direction == 'column':
-        fig, axs = plt.subplots(num_groups, 1, figsize=(5, 5 * num_groups), squeeze=False)  # 垂直排列
+        fig, axs = plt.subplots(num_groups, 1, figsize=(10, 10 * num_groups), squeeze=False)  # 垂直排列
     
     axs = axs.flatten()
 
@@ -37,7 +37,7 @@ def main(data_sets_groups: typing.List[typing.List[Data]], titles: typing.List[s
         # 设置柱状图宽度和位置
         num_bars = len(data_values[0])  # 每个数据集中的数据点数量
         y = np.arange(num_bars)  # y 轴的刻度位置
-        height = 0.8 / len(data_sets)  # 每个柱的宽度（根据数据集数量调整）
+        height = 0.35 / len(data_sets)  # 每个柱的宽度（根据数据集数量调整）
 
         # 绘制水平柱状图
         for i, (data, label) in enumerate(zip(data_values, labels)):
@@ -80,7 +80,7 @@ def add_values(bars, ax, offset=0.2, horizontal=False):
         else:
             yval = bar.get_height()
             formatted_value = f"{yval:.1f}"
-            ax.text(bar.get_x() + bar.get_width() / 2, yval + offset + 0.1, formatted_value, ha='center', va='bottom', fontsize=8)
+            ax.text(bar.get_x() + bar.get_width() / 2, yval + offset, formatted_value, ha='center', va='bottom', fontsize=8)
 
 
 # 示例使用
