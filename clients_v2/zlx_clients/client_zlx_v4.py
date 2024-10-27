@@ -56,17 +56,13 @@ class CustomClient:
 def gen_tasks(is_random: bool, n, *args, **kwargs):
     global URL, HEADERS
 
-    x_n = kwargs.get('x_n') or 1
     num_args = kwargs.get('num_args')
     tasks = list()
     headers = HEADERS
     url: str = URL
     if is_random:
-        for i in range(n):
-            if i % 3 == 0:
-                data = {"number": x_n * random.randint(TASK_NUMBER_RANGE[0], TASK_NUMBER_RANGE[1])}
-            else:
-                data  = {"number": random.randint(TASK_NUMBER_RANGE[0], TASK_NUMBER_RANGE[1])}
+        for _ in range(n):
+            data = {"number": random.randint(TASK_NUMBER_RANGE[0], TASK_NUMBER_RANGE[1])}
             tasks.append(Task(url=url, headers=headers, data=data))
     else:
         tasks = [Task(url=url, headers=headers, data={"number": arg}) for arg in num_args]
@@ -138,7 +134,7 @@ async def main():
 
 
 
-TASK_NUMBER_RANGE = (100000, 500000)
+TASK_NUMBER_RANGE = (10, 500000)
 TASKS_SUM = 100
 TASK_INTERVAL = 1
 LOOPS = 1

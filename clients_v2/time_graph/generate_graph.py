@@ -1,86 +1,114 @@
-from pathlib import Path
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 import numpy as np
-import typing
 
-class Data:
-    def __init__(self, data: typing.List[float | int], label: str):
-        self.data = data
-        self.label = label
+class Cavans:
+    def __init__(self, **kwargs):
+        x_list = kwargs.get("x_list", [])        
+        y_lists = kwargs.get("y_lists", [])
+        titles = kwargs.get("titles", [])
+        xlabels = kwargs.get("xlabels", [])
+        ylabels = kwargs.get("ylabels", [])
+        legends = kwargs.get("legends", [])
+        figsize = kwargs.get('figsize')
+        self.params: list[dict] = []
+
+        if len(x_list) != len(y_lists) or len(x_list) != len(titles) or len(x_list) != len(xlabels) or len(x_list) != len(ylabels):
+            raise Exception("Length of x list and y list is not same")
+            
+
+        for i in range(len(x_list)):
+            self.params.append({
+                "x": x_list[i],
+                "y_lists": y_lists[i],
+                "title": titles[i],
+                "xlabel": xlabels[i],
+                "ylabel": ylabels[i],
+            })
 
 
-def main(data_sets_groups: typing.List[typing.List[Data]], titles: typing.List[str], fig_name=0, fig_dir_path=None, direction='row'):
-    num_groups = len(data_sets_groups)  # 数据集组数量，即要并列显示的图的数量
+        # Figure 对象
+        self.ax: list[Axes]
+        self.fig, self.ax = plt.subplots(ncols=len(self.params), figsize=(16 * len(self.params), 9))
 
-    # 根据 direction 参数确定子图的行列排列方式
-    if direction == 'row':
-        fig, axs = plt.subplots(1, num_groups, figsize=(10 * num_groups, 10), squeeze=False)  # 水平排列
-    elif direction == 'column':
-        fig, axs = plt.subplots(num_groups, 1, figsize=(10, 10 * num_groups), squeeze=False)  # 垂直排列
+        if len(self.params) == 1:
+            self.ax = [self.ax]
 
-    axs = axs.flatten()
+        # ax上绘制条形图
+        if len(self.params) > 0:
+            for i, param in enumerate(self.params):
+                x = np.arange(len(param['x']))
+                bar_width = 0.3
+                num_bars = len(param.get('y_lists'))
 
-    # 遍历每组数据并在对应的子图中绘制
-    for idx, (data_sets, title) in enumerate(zip(data_sets_groups, titles)):
-        ax = axs[idx]
+                for j, y in enumerate(param['y_lists']):
+                    self.ax[i].bar(x + j * bar_width, y, bar_width)
 
+                # 旋转标签
+                tick_positions = np.arange(0, len(param['x']), 5)  # 每隔5个显示一个标签
+                tick_labels = param['x'][::5]  # 每隔5个取一个标签
 
-        # 提取标签和数据
-        labels = [data_set.label for data_set in data_sets]
-        data_values = [data_set.data for data_set in data_sets]
+                self.ax[i].set_xticks(tick_positions + bar_width * (num_bars - 1) / 2)
+                self.ax[i].set_xticklabels(tick_labels, rotation=45, ha='right')
 
-        # 设置柱状图宽度和位置
-        num_bars = len(data_values[0])  # 每个数据集中的数据点数量
-        x = np.arange(num_bars)  # x 轴的刻度位置
-        width = 0.35 / len(data_sets)  # 每个柱的宽度（根据数据集数量调整）
+                self.ax[i].set_title(param['title'])
+                self.ax[i].set_xlabel(param['xlabel'])
+                self.ax[i].set_ylabel(param['ylabel'])
 
-        # 绘制柱状图
-        for i, (data, label) in enumerate(zip(data_values, labels)):
-            bars = ax.bar(x + i * width, data, width, label=label)
+                # 添加图例
+                self.ax[i].legend(legends)
 
-            # 显示数值在每个柱顶端
-            add_values(bars, ax)
-
-        # 添加一些文本标签
-        ax.set_xlabel('Data Sets')
-        ax.set_ylabel('Values')
-        ax.set_title(title)  # 为每个子图添加标题
-        ax.set_xticks(x + width * (len(data_sets) - 1) / 2)  # 调整 x 轴刻度
-        ax.set_xticklabels([f'{i+1}' for i in range(num_bars)])  # 适配数据点数量
-        ax.legend()
-
-        # 自动调整纵轴范围
-        all_data = [value for data in data_values for value in data]  # 获取所有数据点
-        max_value = max(all_data)
-        min_value = min(all_data)
-        ax.set_ylim(min_value - (max_value - min_value) * 0.1, max_value + (max_value - min_value) * 0.1)  # 纵轴范围稍微大于最大值，留出空间
-
-    # 调整布局并显示所有子图
-    plt.tight_layout()
-    if fig_name != 0 or fig_dir_path:
-        plt.savefig(Path(fig_dir_path) / f"fig_{fig_name}.png")
-    else:
+    def show(self):
+        plt.tight_layout()
         plt.show()
 
-def print_avg(data: typing.Dict):
-    for key, value in data.items():
-        print(f'{key:<20}: {np.average(value):<50}')
+
+    def save(self, path):
+        self.fig.savefig(path)
 
 
-def add_values(bars, ax, offset=0):
-    for i, bar in enumerate(bars):
-        yval = bar.get_height()
-        # 格式化显示数字，只保留一位小数
-        formatted_value = f"{yval:.1f}"  # 控制小数位数
-        # 动态调整偏移量，i 为当前柱子的索引
-        ax.text(bar.get_x() + bar.get_width() / 2, yval + offset, formatted_value, ha='center', va='bottom', fontsize=8)
-
-
-# 示例使用
 if __name__ == "__main__":
-    data1 = Data([3, 5, 1, 2], 'Data Set 1')
-    data2 = Data([4, 7, 2, 3], 'Data Set 2')
-    data3 = Data([5, 2, 8, 6], 'Data Set 3')  # 添加第三个数据集
+    data= {
+        "x_list": [
+            ['A', 'B', 'C', 'D'], 
+            ['A', 'B', 'C', 'D'], 
+            ['A', 'B', 'C', 'D'], 
+        ],
+        "y_lists": [
+            [
+                # 一张图
+                [40, 20, 10, 30], 
+                [10, 20, 30, 10],
+            ],
+            [
+                # 一张图
+                [40, 20, 10, 30], 
+                [10, 20, 30, 10],
+            ],
+            [
+                # 一张图
+                [40, 20, 10, 30], 
+                [10, 20, 30, 10],
+            ],
+        ],
+        "titles": [
+            "Chart1", "Chart2", "Chart3"
+        ],
+        "xlabels": [
+            "Category1",
+            "Category2",
+            "Category3",
+        ],
+        "ylabels": [
+            "Value1", 
+            "Value2", 
+            "Value3", 
+        ],
+        "legends": [
+            "A",
+            "B",
+        ]
+    }
 
-    # 并列显示两张图，每张图有一个标题
-    main([[data1, data2, data3], [data1]], ["Group 1: Comparison", "Group 2: Single Data Set"], direction='column')
+    cavans = Cavans(**data)
+    cavans.show()
