@@ -4,7 +4,7 @@ import asyncio
 import random
 from typing import List
 import time
-from clients_v2.time_graph.generate_graph import Cavans
+from clients_v2.time_graph.generate_graph import BarChartCanvas, Canvas
 from pathlib import Path
 
 
@@ -110,7 +110,7 @@ async def main():
 
     print(time_results)
 
-    # Cavans
+    # Canvas
     data = {
         "x_list": [
             [task for task in range(TASKS_SUM)]
@@ -133,8 +133,8 @@ async def main():
             name for name in time_results.keys()
         ]
     }
-    cavans = Cavans(**data)
-    cavans.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / f'fig_{time.strftime("%X")}'.replace(':', ''))
+    canvas = BarChartCanvas(**data)
+    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / f'fig_{time.strftime("%X")}'.replace(':', ''))
 
 
 
