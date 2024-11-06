@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 import numpy as np
+from pathlib import Path
 
 class BarChartCanvas:
     def __init__(self, **kwargs):
@@ -135,6 +136,8 @@ class LinearChartCanvas:
 
 
     def save(self, path):
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
         self.fig.savefig(path)
 
 

@@ -18,7 +18,8 @@ def get_cpu_times(pid):
 
     return user_times, system_times
 
-def is_prime(num):
+# CPU-intensive task: Prime number count
+def is_prime(self, num):
     if num <= 1:
         return False
     if num == 2:
@@ -30,7 +31,7 @@ def is_prime(num):
             return False
     return True
 
-def prime_count(num):
+def prime_count(self, num):
     start_time = time.time()
     
     # get child pid
@@ -40,7 +41,7 @@ def prime_count(num):
 
     sum = 0
     for i in range(2, num):
-        if is_prime(i):
+        if self.is_prime(i):
             sum += 1
 
     # fetch cpu data
@@ -51,15 +52,45 @@ def prime_count(num):
     return {"request_num": num, "return_result": sum, "user_cpu_time": user_times_diff, "system_cpu_time": system_times_diff, "real_process_time": time.time() - start_time, "start_process_time": start_time, "finish_time": time.time()}
 
 
+
+# MEM-intensive task: merge sort algorithm
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    
+    mid = len(arr) // 2
+    left_half = merge_sort(arr[:mid])
+    right_half = merge_sort(arr[mid:])
+
+
+    merged = left_half + right_half
+    merged.sort()
+
+    return merged
+
+# DISK-intensive
+
+
 async def handle(request: web.Request):
     data = await request.json()
+
+    # distinguish task type
+    headers = request.headers
+    task_type = headers['task-type']
+
 
     try:
         # Run the blocking task
         loop = asyncio.get_event_loop()
-        response_data = await loop.run_in_executor(thread_executor, prime_count, data["number"])
-        # response_data = await loop.run_in_executor(process_executor, prime_count, data["number"])
-
+        if task_type == 'CPU':
+            response_data = await loop.run_in_executor(thread_executor, prime_count, data["number"])
+        elif task_type == 'MEM':
+            response_data = await loop.run_in_executor(thread_executor, prime_count, data["number_list"])
+        elif task_type == 'HDD':
+            pass
+        else:
+            raise Exception("Task type error")
+        
         return web.json_response(response_data, status=200)
     except Exception as e:
         error_message = traceback.format_exc()

@@ -5,7 +5,7 @@ from typing import List
 import time
 from clients_v2.time_graph.generate_graph import BarChartCanvas, LinearChartCanvas
 from pathlib import Path
-import sys
+import numpy as np
 
 
 class Task:
@@ -50,7 +50,16 @@ class CustomClient:
             await asyncio.sleep(self.task_interval)
             index += 1
 
-        self.responses = await asyncio.gather(*self.tasks_corotine_list, return_exceptions=True)
+        # request order
+        # self.responses = await asyncio.gather(*self.tasks_corotine_list, return_exceptions=True)
+
+
+        # response order
+        self.responses = []
+        for completed_task in asyncio.as_completed(self.tasks_corotine_list):
+            result = await completed_task
+            self.responses.append(result)
+            # print("Received Task Result:", result)
 
 
 def gen_tasks(is_random: bool, n, *args, **kwargs):
@@ -80,13 +89,49 @@ def result_parse(results: dict):
 
 
 
+def gen_tasks_poisson_1(n, *args, **kwargs):
+    global URL, HEADERS, TASK_NUMBER_RANGE
+    TASK_NUMBER_LAMBDA = (TASK_NUMBER_RANGE[0] + TASK_NUMBER_RANGE[1]) // 2
+    tasks = list()
+    headers = HEADERS
+    url: str = URL
+    # 使用泊松分布生成 num_args 列表
+    num_args = np.random.poisson(lam=TASK_NUMBER_LAMBDA, size=n).tolist()
+    # 生成任务列表
+    tasks = [Task(url=url, headers=headers, data={"number": arg}) for arg in num_args]
+    
+    return tasks
+
+
+def gen_tasks_poisson_2(n, *args, **kwargs):
+    tasks = list()
+    headers = HEADERS
+    url: str = URL
+    # 使用泊松分布波动生成任务参数
+    num_args = [
+        int(np.random.poisson(lam=150000)) if num % 3 != 0 else int(np.random.poisson(lam=450000))
+        for num in range(n)
+    ]
+    tasks = [Task(url=url, headers=headers, data={"number": arg}) for arg in num_args]
+
+    return tasks
 
 async def main(tasks_sum: int):
     global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE
 
     time_results = {algo_name: [] for algo_name in ALGO_NAMES}
+    
+    # random
     # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
-    tasks = gen_tasks(is_random=True, n=tasks_sum, x_n=5)
+    # tasks = gen_tasks(is_random=True, n=tasks_sum, x_n=5)
+
+    # poisson 1
+    tasks = gen_tasks_poisson_1(n=tasks_sum)
+    
+    # poisson 2
+    # tasks gen_tasks_poisson_2(n=tasks_sum)
+    
+    
     for algo_name in ALGO_NAMES:
         HEADERS['algo_name'] = algo_name
 
@@ -123,21 +168,21 @@ async def main(tasks_sum: int):
         "ylabels": [
             "Response Time"
         ],
-        "smooth": True,
-        "window_size": int(tasks_sum * 0.1),
+        "smooth": False,
+        "window_size": 1,
         "legends": [
             name for name in time_results.keys()
         ]
     }
     # canvas = BarChartCanvas(**data)
     canvas = LinearChartCanvas(**data)
-    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig12-1' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
+    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig16' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
 
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
-TASKS_SUM = [200]
-TASK_INTERVAL = 1
+TASKS_SUM = [20, 50, 80]
+TASK_INTERVAL = 0.1
 LOOPS = 1
 LOOP_INTERVAL = 2
 MANAGER_AGENT_IP = "192.168.0.100"
@@ -146,7 +191,7 @@ URL = f"http://{MANAGER_AGENT_IP}:{MANAGER_AGENT_PORT}"
 HEADERS = {"task-type": "C"}
 FINISH_CNT = 0
 LOOP_FINISH_CNT = 0
-ALGO_NAMES = ['proposed', 'round-robin']
+ALGO_NAMES = ['proposed', 'round-robin', 'leatest']
 
 
 if __name__ == "__main__":
