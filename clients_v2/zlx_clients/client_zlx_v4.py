@@ -85,8 +85,8 @@ async def main(tasks_sum: int):
     global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE
 
     time_results = {algo_name: [] for algo_name in ALGO_NAMES}
-    tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
-    # tasks = gen_tasks(is_random=True, n=tasks_sum, x_n=5)
+    # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
+    tasks = gen_tasks(is_random=True, n=tasks_sum, x_n=5)
     for algo_name in ALGO_NAMES:
         HEADERS['algo_name'] = algo_name
 
@@ -131,12 +131,12 @@ async def main(tasks_sum: int):
     }
     # canvas = BarChartCanvas(**data)
     canvas = LinearChartCanvas(**data)
-    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig11' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
+    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig12-1' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
 
 
 
-TASK_NUMBER_RANGE = (10, 500000)
-TASKS_SUM = [50, 100, 200, 400]
+TASK_NUMBER_RANGE = (100000, 500000)
+TASKS_SUM = [200]
 TASK_INTERVAL = 1
 LOOPS = 1
 LOOP_INTERVAL = 2
