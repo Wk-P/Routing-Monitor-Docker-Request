@@ -51,15 +51,14 @@ class CustomClient:
             index += 1
 
         # request order
-        # self.responses = await asyncio.gather(*self.tasks_corotine_list, return_exceptions=True)
+        self.responses = await asyncio.gather(*self.tasks_corotine_list, return_exceptions=True)
 
 
-        # response order
-        self.responses = []
-        for completed_task in asyncio.as_completed(self.tasks_corotine_list):
-            result = await completed_task
-            self.responses.append(result)
-            # print("Received Task Result:", result)
+        # # response order
+        # self.responses = []
+        # for completed_task in asyncio.as_completed(self.tasks_corotine_list):
+        #     result = await completed_task
+        #     self.responses.append(result)
 
 
 def gen_tasks(is_random: bool, n, *args, **kwargs):
@@ -126,10 +125,10 @@ async def main(tasks_sum: int):
     # tasks = gen_tasks(is_random=True, n=tasks_sum, x_n=5)
 
     # poisson 1
-    tasks = gen_tasks_poisson_1(n=tasks_sum)
+    # tasks = gen_tasks_poisson_1(n=tasks_sum)
     
     # poisson 2
-    # tasks gen_tasks_poisson_2(n=tasks_sum)
+    tasks = gen_tasks_poisson_2(n=tasks_sum)
     
     
     for algo_name in ALGO_NAMES:
@@ -168,15 +167,15 @@ async def main(tasks_sum: int):
         "ylabels": [
             "Response Time"
         ],
-        "smooth": False,
-        "window_size": 1,
+        "smooth": True,
+        "window_size": 2,
         "legends": [
             name for name in time_results.keys()
         ]
     }
     # canvas = BarChartCanvas(**data)
     canvas = LinearChartCanvas(**data)
-    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig16' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
+    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig18' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
 
 
 
