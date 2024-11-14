@@ -47,6 +47,7 @@ class CustomClient:
         for task in self.tasks:
             self.tasks_corotine_list.append(asyncio.create_task(self.run_task(task, tasks_sum)))
             print(f"\rSend Task {index + 1}")
+            print(f"Task number {task.data.get('number')}")
             await asyncio.sleep(self.task_interval)
             index += 1
 
@@ -106,9 +107,10 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
     tasks = list()
     headers = HEADERS
     url: str = URL
+
     # 使用泊松分布波动生成任务参数
     num_args = [
-        int(np.random.poisson(lam=150000)) if num % 9 != 0 else int(np.random.poisson(lam=450000))
+        int(np.random.poisson(lam=200000)) if num % 3 != 0 else int(np.random.poisson(lam=500000))
         for num in range(n)
     ]
     tasks = [Task(url=url, headers=headers, data={"number": arg}) for arg in num_args]
@@ -118,17 +120,17 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
 async def main(tasks_sum: int):
     global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE
 
-    time_results = {algo_name: [] for algo_name in ALGO_NAMES}
+    time_results = { algo_name: [] for algo_name in ALGO_NAMES }
     
     # random
     # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
     # tasks = gen_tasks(is_random=True, n=tasks_sum, x_n=5)
 
     # poisson 1
-    # tasks = gen_tasks_poisson_1(n=tasks_sum)
+    tasks = gen_tasks_poisson_1(n=tasks_sum)
     
     # poisson 2
-    tasks = gen_tasks_poisson_2(n=tasks_sum)
+    # tasks = gen_tasks_poisson_2(n=tasks_sum)
     
     
     for algo_name in ALGO_NAMES:
@@ -175,13 +177,13 @@ async def main(tasks_sum: int):
     }
     # canvas = BarChartCanvas(**data)
     canvas = LinearChartCanvas(**data)
-    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig18' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
+    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig_v2' / f'fig_{time.strftime("%X")}_{tasks_sum}_poisson_1_v3'.replace(':', ''))
 
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
 TASKS_SUM = [20, 50, 80]
-TASK_INTERVAL = 0.1
+TASK_INTERVAL = 1
 LOOPS = 1
 LOOP_INTERVAL = 2
 MANAGER_AGENT_IP = "192.168.0.100"

@@ -106,6 +106,7 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
     tasks = list()
     headers = HEADERS
     url: str = URL
+
     # 使用泊松分布波动生成任务参数
     num_args = [
         int(np.random.poisson(lam=150000)) if num % 9 != 0 else int(np.random.poisson(lam=450000))
@@ -118,7 +119,7 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
 async def main(tasks_sum: int):
     global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE
 
-    time_results = {algo_name: [] for algo_name in ALGO_NAMES}
+    time_results = { algo_name: [] for algo_name in ALGO_NAMES }
     
     # random
     # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
@@ -175,7 +176,7 @@ async def main(tasks_sum: int):
     }
     # canvas = BarChartCanvas(**data)
     canvas = LinearChartCanvas(**data)
-    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig18' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
+    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig19' / f'fig_{time.strftime("%X")}_{tasks_sum}'.replace(':', ''))
 
 
 
