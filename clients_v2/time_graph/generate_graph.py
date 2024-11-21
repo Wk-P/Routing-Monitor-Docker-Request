@@ -71,6 +71,8 @@ class BarChartCanvas:
 
 
     def save(self, path):
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
         self.fig.savefig(path)
 
 
@@ -216,4 +218,5 @@ def barcharttest():
 
 
 if __name__ == "__main__":
-    linearcharttest()
+    # linearcharttest()
+    barcharttest()

@@ -1,3 +1,6 @@
+#  Test for poisson distribution to three algorithm
+
+
 import aiohttp
 import asyncio
 import random
@@ -6,6 +9,15 @@ import time
 from clients_v2.time_graph.generate_graph import BarChartCanvas, LinearChartCanvas
 from pathlib import Path
 import numpy as np
+import logging
+
+# log file config
+PARENT_DIR = Path(__file__).parent
+log_path = PARENT_DIR / 'logs' / f"{Path(__file__).stem}.log"
+
+log_path.parent.mkdir(parents=True, exist_ok=True)
+log_path.touch(exist_ok=True)
+logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
 
 
 class Task:
@@ -17,7 +29,6 @@ class Task:
 
 class CustomClient:
     def __init__(self, **kw):
-        self.loops = kw.get('loops') or 0
         self.loop_interval = kw.get('loop_interval') or 0
 
         self.tasks: List[Task] = kw.get('tasks')
@@ -30,7 +41,7 @@ class CustomClient:
         self.responses: List[dict] = list()
 
     async def run_task(self, task: Task, tasks_sum: int):
-        global FINISH_CNT, LOOPS, LOOP_FINISH_CNT
+        global FINISH_CNT, LOOPS, LOOP_FINISH_CNT, ERROR
 
         # recoard task start time
         start = time.time()
@@ -38,8 +49,12 @@ class CustomClient:
             response_data = await response.json()
             FINISH_CNT += 1
             LOOP_FINISH_CNT += 1
-            print(f"\r{FINISH_CNT}/{tasks_sum * LOOPS} {LOOP_FINISH_CNT}/{tasks_sum}")
+            print(f"\r{FINISH_CNT}/{tasks_sum * len(ALGO_NAMES) * LOOPS} {LOOP_FINISH_CNT}/{tasks_sum}")
+            print(f"\r{100 * FINISH_CNT/(tasks_sum * len(ALGO_NAMES) * LOOPS):.2f}% {100 * LOOP_FINISH_CNT/tasks_sum:.2f}%")
             response_data['response_time'] = time.time() - start        # recoard task end time
+
+            logging.info(f"DIFF: {response_data['pred_task_wait_time'] - response_data['real_task_wait_time']}")
+            ERROR.append(response_data['pred_task_wait_time'] - response_data['real_task_wait_time'])
             return response_data
 
     async def run_tasks(self, tasks_sum: int):
@@ -47,7 +62,6 @@ class CustomClient:
         for task in self.tasks:
             self.tasks_corotine_list.append(asyncio.create_task(self.run_task(task, tasks_sum)))
             print(f"\rSend Task {index + 1}")
-            print(f"Task number {task.data.get('number')}")
             await asyncio.sleep(self.task_interval)
             index += 1
 
@@ -96,8 +110,10 @@ def gen_tasks_poisson_1(n, *args, **kwargs):
     headers = HEADERS
     url: str = URL
     # 使用泊松分布生成 num_args 列表
+    # generate num_args list with poisson
     num_args = np.random.poisson(lam=TASK_NUMBER_LAMBDA, size=n).tolist()
     # 生成任务列表
+    # generate tasks list
     tasks = [Task(url=url, headers=headers, data={"number": arg}) for arg in num_args]
     
     return tasks
@@ -109,6 +125,7 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
     url: str = URL
 
     # 使用泊松分布波动生成任务参数
+    # generate task request number with poisson
     num_args = [
         int(np.random.poisson(lam=200000)) if num % 3 != 0 else int(np.random.poisson(lam=500000))
         for num in range(n)
@@ -117,43 +134,44 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
 
     return tasks
 
-async def main(tasks_sum: int):
+async def main(tasks_sum: List[int]):
     global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE
 
     time_results = { algo_name: [] for algo_name in ALGO_NAMES }
     
     # random
     # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
-    tasks = gen_tasks(is_random=True, n=tasks_sum)
+    
 
     # poisson 1
-    # tasks = gen_tasks_poisson_1(n=tasks_sum)
+    tasks = gen_tasks_poisson_1(n=tasks_sum)
     
     # poisson 2
     # tasks = gen_tasks_poisson_2(n=tasks_sum)
     
-    
-    for algo_name in ALGO_NAMES:
-        HEADERS['algo_name'] = algo_name
+    client = CustomClient(loop_interval=LOOP_INTERVAL, task_interval=TASK_INTERVAL, single_url=URL)
+    for tasks_sum in TASKS_SUM:
+        client.tasks = tasks
 
-        client = CustomClient(loops=LOOPS, loop_interval=LOOP_INTERVAL, tasks=tasks, task_interval=TASK_INTERVAL, single_url=URL)
-        for loop in range(client.loops):
-            print(f"LOOP: {loop + 1} | ALGO_NAME: {algo_name}")
+        
+        for algo_name in ALGO_NAMES:
+            start_time = time.time()
+            HEADERS['algo_name'] = algo_name
+            
+            start_time = time.time()
+
+            print(f"LOOP: {TASKS_SUM.index(tasks_sum) + 1} | ALGO_NAME: {algo_name}")
             await client.run_tasks(tasks_sum)
             await asyncio.sleep(client.loop_interval)    
             LOOP_FINISH_CNT = 0
 
-        await client.session.close()
-
-        FINISH_CNT = 0
+            time_results[algo_name].append(time.time() - start_time)
+    await client.session.close()
         
-        for response_data in client.responses:
-            time_results[algo_name].append(response_data['response_time'])
-
     # Canvas
     data = {
         "x_list": [
-            [task for task in range(tasks_sum)]
+            [loop for loop in range(LOOPS)]
         ],
         "y_lists": [
             result_parse(time_results),
@@ -164,28 +182,29 @@ async def main(tasks_sum: int):
             "Respons time comparison",
         ],
         "xlabels": [
-            "Tasks Index",
+            "Loops Index",
         ],
         "ylabels": [
             "Response Time"
         ],
-        "smooth": True,
+        "smooth": False,
         "window_size": 2,
         "legends": [
             name for name in time_results.keys()
         ]
     }
-    # canvas = BarChartCanvas(**data)
-    canvas = LinearChartCanvas(**data)
-    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig_v2' / f'fig_{time.strftime("%X")}_{tasks_sum}_poisson_1_v3'.replace(':', ''))
-
+    canvas = BarChartCanvas(**data)
+    # canvas = LinearChartCanvas(**data)
+    
+    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig_v2' / 'poisson_n' / f'fig_{time.strftime("%X")}_{tasks_sum}_random_v5'.replace(':', ''))
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
-TASKS_SUM = [20, 50, 80]
-TASK_INTERVAL = 1
-LOOPS = 1
-LOOP_INTERVAL = 2
+TASKS_SUM = [30]
+# TASKS_SUM = [1000]
+TASK_INTERVAL = 0
+LOOPS = 4
+LOOP_INTERVAL = 0
 MANAGER_AGENT_IP = "192.168.0.100"
 MANAGER_AGENT_PORT = 8199
 URL = f"http://{MANAGER_AGENT_IP}:{MANAGER_AGENT_PORT}"
@@ -194,7 +213,34 @@ FINISH_CNT = 0
 LOOP_FINISH_CNT = 0
 ALGO_NAMES = ['proposed', 'round-robin', 'leatest']
 
+ERROR = []
+
 
 if __name__ == "__main__":
-    for t_sum in TASKS_SUM:
-        asyncio.run(main(t_sum))
+    for loop in range(LOOPS):
+        asyncio.run(main(TASKS_SUM))
+
+        # ERROR BarChart
+        data= {
+            "x_list": [
+                [n for n in range(len(ERROR))], 
+            ],
+            "y_lists": [
+                [ ERROR ],
+            ],
+            "titles": [
+                "Difference of time for real and pred",
+            ],
+            "xlabels": [
+                "Seconds",
+            ],
+            "ylabels": [
+                "Task Index", 
+            ],
+            "legends": [
+                "Difference of time",
+            ],
+        }
+
+        canvas = BarChartCanvas(**data)
+        canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig_test' / 'diff')
