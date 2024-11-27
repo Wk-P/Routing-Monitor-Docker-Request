@@ -39,15 +39,16 @@ class BarChartCanvas:
         if len(self.params) > 0:
             for i, param in enumerate(self.params):
                 x = np.arange(len(param['x']))
-                bar_width = 0.3
                 num_bars = len(param.get('y_lists'))
+                bar_width = 0.1
 
                 for j, y in enumerate(param['y_lists']):
                     self.ax[i].bar(x + j * bar_width, y, bar_width)
 
                 # 旋转标签
                 # 间隔
-                gap = int(len(param['x']) / 20)
+                gap = max(1, len(param['x']) // 20)
+
 
                 if gap == 0:
                     gap = 1

@@ -40,6 +40,8 @@ class CustomClient:
 
         self.responses: List[dict] = list()
 
+        self.loops = kw.get("loops", 1)
+
     async def run_task(self, task: Task, tasks_sum: int):
         global FINISH_CNT, LOOPS, LOOP_FINISH_CNT, ERROR
 
@@ -49,8 +51,8 @@ class CustomClient:
             response_data = await response.json()
             FINISH_CNT += 1
             LOOP_FINISH_CNT += 1
-            print(f"\r{FINISH_CNT}/{tasks_sum * len(ALGO_NAMES) * LOOPS} {LOOP_FINISH_CNT}/{tasks_sum}")
-            print(f"\r{100 * FINISH_CNT/(tasks_sum * len(ALGO_NAMES) * LOOPS):.2f}% {100 * LOOP_FINISH_CNT/tasks_sum:.2f}%")
+            print(f"\r{FINISH_CNT}/{tasks_sum * len(ALGO_NAMES) * LOOPS} {LOOP_FINISH_CNT}/{len(self.tasks)}")
+            print(f"\r{100 * FINISH_CNT/(tasks_sum * len(ALGO_NAMES) * LOOPS):.2f}% {100 * LOOP_FINISH_CNT/len(self.tasks):.2f}%")
             response_data['response_time'] = time.time() - start        # recoard task end time
 
             logging.info(f"DIFF: {response_data['pred_task_wait_time'] - response_data['real_task_wait_time']}")
@@ -136,33 +138,36 @@ async def main(tasks_sum: List[int]):
 
     time_results = { algo_name: [] for algo_name in ALGO_NAMES }
     
-    client = CustomClient(loop_interval=LOOP_INTERVAL, task_interval=TASK_INTERVAL, single_url=URL)
-    for tasks_sum in TASKS_SUM:
-        # random
-        # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
-        
+    client = CustomClient(loops=LOOPS, loop_interval=LOOP_INTERVAL, task_interval=TASK_INTERVAL, single_url=URL)
 
-        # poisson 1
-        tasks = gen_tasks_poisson_1(n=tasks_sum)
-        
-        # poisson 2
-        # tasks = gen_tasks_poisson_2(n=tasks_sum)
-
-        client.tasks = tasks
-        
-        for algo_name in ALGO_NAMES:
-            print(f"ALGO_NAME: {algo_name}")
-
-            start_time = time.time()
-            HEADERS['algo_name'] = algo_name
+    for loop in range(LOOPS):
+        for tasks_sum in TASKS_SUM:
+            # random
+            # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
             
-            start_time = time.time()
 
-            await client.run_tasks(tasks_sum)
-            await asyncio.sleep(client.loop_interval)    
-            LOOP_FINISH_CNT = 0
+            # poisson 1
+            tasks = gen_tasks_poisson_1(n=tasks_sum)
+            
+            # poisson 2
+            # tasks = gen_tasks_poisson_2(n=tasks_sum)
 
-            time_results[algo_name].append(time.time() - start_time)
+            client.tasks = tasks
+            
+            for algo_name in ALGO_NAMES:
+                print(f"ALGO_NAME: {algo_name}")
+
+                start_time = time.time()
+                HEADERS['algo_name'] = algo_name
+                
+                start_time = time.time()
+
+                await client.run_tasks(sum(TASKS_SUM))
+                await asyncio.sleep(client.loop_interval)    
+                LOOP_FINISH_CNT = 0
+
+                time_results[algo_name].append(time.time() - start_time)
+
     await client.session.close()
         
     # Canvas
@@ -193,13 +198,13 @@ async def main(tasks_sum: List[int]):
     canvas = BarChartCanvas(**data)
     # canvas = LinearChartCanvas(**data)
     
-    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_clients' / 'figs' / 'fig_v2' / 'poisson_v1_4' / f'fig_{time.strftime("%X")}_{tasks_sum}_random_v16'.replace(':', ''))
+    canvas.save(PARENT_DIR / 'figs' / 'fig_v2' / 'lowest_score_test_v1' / f'fig_{time.strftime("%X")}_{tasks_sum}_random_v_t1'.replace(':', ''))
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
-TASKS_SUM = [50, 100]
+TASKS_SUM = [10]
 # TASKS_SUM = [1000]
-TASK_INTERVAL = 0.3
+TASK_INTERVAL = 0.2
 LOOPS = 2
 LOOP_INTERVAL = 5
 MANAGER_AGENT_IP = "192.168.0.100"
@@ -208,12 +213,12 @@ URL = f"http://{MANAGER_AGENT_IP}:{MANAGER_AGENT_PORT}"
 HEADERS = {"task-type": "C"}
 FINISH_CNT = 0
 LOOP_FINISH_CNT = 0
-ALGO_NAMES = ['proposed', 'round-robin', 'leatest']
+ALGO_NAMES = ['shortest', 'round-robin', 'leatest', 'lowest-score']
 
 ERROR = []
 
 
-def error_graph(error_list):
+def error_graph(error_list, loop):
     # ERROR BarChart
     data= {
         "x_list": [
@@ -240,38 +245,12 @@ def error_graph(error_list):
     canvas.save(Path.cwd() / 'clients_v2' / '' / 'fig_test' / f'diff_v4_{loop}')
 
 
-
 if __name__ == "__main__":
     for loop in range(LOOPS):
-
         print(f"LOOP: {loop + 1}")
         asyncio.run(main(TASKS_SUM))
 
-        # ERROR BarChart
-        # data= {
-        #     "x_list": [
-        #         [n for n in range(len(ERROR))], 
-        #     ],
-        #     "y_lists": [
-        #         [ ERROR ],
-        #     ],
-        #     "titles": [
-        #         "Difference of time for real and pred",
-        #     ],
-        #     "xlabels": [
-        #         "Task Index",
-        #     ],
-        #     "ylabels": [
-        #         "Seconds", 
-        #     ],
-        #     "legends": [
-        #         "Difference of time",
-        #     ],
-        # }
+        error_graph(ERROR, loop)
 
-        # canvas = BarChartCanvas(**data)
-        # canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig_test' / f'diff_v4_{loop}')
-
-        error_graph(ERROR)
-
+    # print(PARENT_DIR)
     pass
