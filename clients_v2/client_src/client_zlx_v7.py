@@ -12,7 +12,7 @@ import numpy as np
 import logging
 
 # log file config
-PARENT_DIR = Path(__file__).parent
+PARENT_DIR = Path(__file__).parent.parent
 log_path = PARENT_DIR / 'logs' / f"{Path(__file__).stem}.log"
 
 log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -126,10 +126,7 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
 
     # 使用泊松分布波动生成任务参数
     # generate task request number with poisson
-    num_args = [
-        int(np.random.poisson(lam=200000)) if num % 3 != 0 else int(np.random.poisson(lam=500000))
-        for num in range(n)
-    ]
+    num_args = [ int(np.random.poisson(lam=200000)) if num % 3 != 0 else int(np.random.poisson(lam=500000)) for num in range(n) ]
     tasks = [Task(url=url, headers=headers, data={"number": arg}) for arg in num_args]
 
     return tasks
@@ -139,28 +136,28 @@ async def main(tasks_sum: List[int]):
 
     time_results = { algo_name: [] for algo_name in ALGO_NAMES }
     
-    # random
-    # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
-    
-
-    # poisson 1
-    tasks = gen_tasks_poisson_1(n=tasks_sum)
-    
-    # poisson 2
-    # tasks = gen_tasks_poisson_2(n=tasks_sum)
-    
     client = CustomClient(loop_interval=LOOP_INTERVAL, task_interval=TASK_INTERVAL, single_url=URL)
     for tasks_sum in TASKS_SUM:
-        client.tasks = tasks
+        # random
+        # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
+        
 
+        # poisson 1
+        tasks = gen_tasks_poisson_1(n=tasks_sum)
+        
+        # poisson 2
+        # tasks = gen_tasks_poisson_2(n=tasks_sum)
+
+        client.tasks = tasks
         
         for algo_name in ALGO_NAMES:
+            print(f"ALGO_NAME: {algo_name}")
+
             start_time = time.time()
             HEADERS['algo_name'] = algo_name
             
             start_time = time.time()
 
-            print(f"LOOP: {TASKS_SUM.index(tasks_sum) + 1} | ALGO_NAME: {algo_name}")
             await client.run_tasks(tasks_sum)
             await asyncio.sleep(client.loop_interval)    
             LOOP_FINISH_CNT = 0
@@ -196,15 +193,15 @@ async def main(tasks_sum: List[int]):
     canvas = BarChartCanvas(**data)
     # canvas = LinearChartCanvas(**data)
     
-    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig_v2' / 'poisson_n' / f'fig_{time.strftime("%X")}_{tasks_sum}_random_v5'.replace(':', ''))
+    canvas.save(Path.cwd() / 'clients_v2' / 'zlx_clients' / 'figs' / 'fig_v2' / 'poisson_v1_4' / f'fig_{time.strftime("%X")}_{tasks_sum}_random_v16'.replace(':', ''))
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
-TASKS_SUM = [30]
+TASKS_SUM = [50, 100]
 # TASKS_SUM = [1000]
-TASK_INTERVAL = 0
-LOOPS = 4
-LOOP_INTERVAL = 0
+TASK_INTERVAL = 0.3
+LOOPS = 2
+LOOP_INTERVAL = 5
 MANAGER_AGENT_IP = "192.168.0.100"
 MANAGER_AGENT_PORT = 8199
 URL = f"http://{MANAGER_AGENT_IP}:{MANAGER_AGENT_PORT}"
@@ -216,31 +213,65 @@ ALGO_NAMES = ['proposed', 'round-robin', 'leatest']
 ERROR = []
 
 
+def error_graph(error_list):
+    # ERROR BarChart
+    data= {
+        "x_list": [
+            [n for n in range(len(error_list))], 
+        ],
+        "y_lists": [
+            [ error_list ],
+        ],
+        "titles": [
+            "Difference of time for real and pred",
+        ],
+        "xlabels": [
+            "Task Index",
+        ],
+        "ylabels": [
+            "Seconds", 
+        ],
+        "legends": [
+            "Difference of time",
+        ],
+    }
+
+    canvas = BarChartCanvas(**data)
+    canvas.save(Path.cwd() / 'clients_v2' / '' / 'fig_test' / f'diff_v4_{loop}')
+
+
+
 if __name__ == "__main__":
     for loop in range(LOOPS):
+
+        print(f"LOOP: {loop + 1}")
         asyncio.run(main(TASKS_SUM))
 
         # ERROR BarChart
-        data= {
-            "x_list": [
-                [n for n in range(len(ERROR))], 
-            ],
-            "y_lists": [
-                [ ERROR ],
-            ],
-            "titles": [
-                "Difference of time for real and pred",
-            ],
-            "xlabels": [
-                "Seconds",
-            ],
-            "ylabels": [
-                "Task Index", 
-            ],
-            "legends": [
-                "Difference of time",
-            ],
-        }
+        # data= {
+        #     "x_list": [
+        #         [n for n in range(len(ERROR))], 
+        #     ],
+        #     "y_lists": [
+        #         [ ERROR ],
+        #     ],
+        #     "titles": [
+        #         "Difference of time for real and pred",
+        #     ],
+        #     "xlabels": [
+        #         "Task Index",
+        #     ],
+        #     "ylabels": [
+        #         "Seconds", 
+        #     ],
+        #     "legends": [
+        #         "Difference of time",
+        #     ],
+        # }
 
-        canvas = BarChartCanvas(**data)
-        canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig_test' / 'diff')
+        # canvas = BarChartCanvas(**data)
+        # canvas.save(Path.cwd() / 'clients_v2' / 'zlx_figs' / 'fig_test' / f'diff_v4_{loop}')
+
+        error_graph(ERROR)
+
+    pass
