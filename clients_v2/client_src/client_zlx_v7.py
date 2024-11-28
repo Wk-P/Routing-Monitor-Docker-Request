@@ -136,11 +136,12 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
 async def main(tasks_sum: List[int]):
     global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE
 
-    time_results = { algo_name: [] for algo_name in ALGO_NAMES }
-    
-    client = CustomClient(loops=LOOPS, loop_interval=LOOP_INTERVAL, task_interval=TASK_INTERVAL, single_url=URL)
-
     for loop in range(LOOPS):
+        
+        time_results = { algo_name: [] for algo_name in ALGO_NAMES }
+        
+        client = CustomClient(loops=LOOPS, loop_interval=LOOP_INTERVAL, task_interval=TASK_INTERVAL, single_url=URL)
+
         for tasks_sum in TASKS_SUM:
             # random
             # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
@@ -168,41 +169,43 @@ async def main(tasks_sum: List[int]):
 
                 time_results[algo_name].append(time.time() - start_time)
 
-    await client.session.close()
+        # Canvas
+        data = {
+            "x_list": [
+                [loop for loop in range(LOOPS)]
+            ],
+            "y_lists": [
+                result_parse(time_results),
+                # more figures
+                # ...
+            ],
+            "titles": [
+                "Respons time comparison",
+            ],
+            "xlabels": [
+                "Loops Index",
+            ],
+            "ylabels": [
+                "Response Time"
+            ],
+            "smooth": False,
+            "window_size": 2,
+            "legends": [
+                name for name in time_results.keys()
+            ]
+        }
+        canvas = BarChartCanvas(**data)
+        # canvas = LinearChartCanvas(**data)
         
-    # Canvas
-    data = {
-        "x_list": [
-            [loop for loop in range(LOOPS)]
-        ],
-        "y_lists": [
-            result_parse(time_results),
-            # more figures
-            # ...
-        ],
-        "titles": [
-            "Respons time comparison",
-        ],
-        "xlabels": [
-            "Loops Index",
-        ],
-        "ylabels": [
-            "Response Time"
-        ],
-        "smooth": False,
-        "window_size": 2,
-        "legends": [
-            name for name in time_results.keys()
-        ]
-    }
-    canvas = BarChartCanvas(**data)
-    # canvas = LinearChartCanvas(**data)
+        canvas.save(PARENT_DIR / 'figs' / 'fig_v2' / 'lowest_score_test_v3' / f'fig_{time.strftime("%X")}_{tasks_sum}_random_v_t1'.replace(':', ''))
+
+        await client.session.close()
+        
     
-    canvas.save(PARENT_DIR / 'figs' / 'fig_v2' / 'lowest_score_test_v1' / f'fig_{time.strftime("%X")}_{tasks_sum}_random_v_t1'.replace(':', ''))
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
-TASKS_SUM = [10]
+TASKS_SUM = [10, 20]
 # TASKS_SUM = [1000]
 TASK_INTERVAL = 0.2
 LOOPS = 2
@@ -242,15 +245,10 @@ def error_graph(error_list, loop):
     }
 
     canvas = BarChartCanvas(**data)
-    canvas.save(Path.cwd() / 'clients_v2' / '' / 'fig_test' / f'diff_v4_{loop}')
+    canvas.save(Path.cwd() / 'clients_v2' / 'figs' / 'fig_test' / f'diff_v4_{loop}')
 
 
 if __name__ == "__main__":
-    for loop in range(LOOPS):
-        print(f"LOOP: {loop + 1}")
-        asyncio.run(main(TASKS_SUM))
+    asyncio.run(main(TASKS_SUM))
 
-        error_graph(ERROR, loop)
-
-    # print(PARENT_DIR)
     pass
