@@ -173,44 +173,33 @@ def barcharttest():
     data= {
         "x_list": [
             ['A', 'B', 'C', 'D'], 
-            ['A', 'B', 'C', 'D'], 
-            ['A', 'B', 'C', 'D'], 
         ],
         "y_lists": [
             [
                 # 一张图
                 [40, 20, 10, 30], 
                 [10, 20, 30, 10],
+                [50, 40, 20, 10],
+                [60, 30, 10, 20],
             ],
-            [
-                # 一张图
-                [40, 20, 10, 30], 
-                [10, 20, 30, 10],
-            ],
-            [
-                # 一张图
-                [40, 20, 10, 30], 
-                [10, 20, 30, 10],
-            ],
+            # ...
         ],
         "titles": [
-            "Chart1", "Chart2", "Chart3"
+            "Chart1",
         ],
         "xlabels": [
             "Category1",
-            "Category2",
-            "Category3",
         ],
         "ylabels": [
             "Value1", 
-            "Value2", 
-            "Value3", 
         ],
         "legends": [
             "A",
             "B",
+            "C",
+            "D"
         ],
-        "smooth": True,
+        "smooth": False,
         "window_size": 10
     }
 

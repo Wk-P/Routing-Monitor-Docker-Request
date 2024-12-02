@@ -1,6 +1,7 @@
 #  Test for poisson distribution to three algorithm
 
 
+from asyncio import windows_events
 import aiohttp
 import asyncio
 import random
@@ -18,6 +19,10 @@ log_path = PARENT_DIR / 'logs' / f"{Path(__file__).stem}.log"
 log_path.parent.mkdir(parents=True, exist_ok=True)
 log_path.touch(exist_ok=True)
 logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
+
+
+
+pic_path = (PARENT_DIR / 'figs' / f'fig_diff_response_time_v{time.strftime("%X").replace(':', '')}')
 
 
 class Task:
@@ -134,10 +139,10 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
     return tasks
 
 async def main(tasks_sum: List[int]):
-    global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE
+    global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE, TASKS_SUM
 
     for loop in range(LOOPS):
-        
+
         time_results = { algo_name: [] for algo_name in ALGO_NAMES }
         
         client = CustomClient(loops=LOOPS, loop_interval=LOOP_INTERVAL, task_interval=TASK_INTERVAL, single_url=URL)
@@ -169,13 +174,14 @@ async def main(tasks_sum: List[int]):
 
                 time_results[algo_name].append(time.time() - start_time)
 
+        print(time_results)
         # Canvas
         data = {
             "x_list": [
-                [loop for loop in range(LOOPS)]
+                [ tasks for tasks in TASKS_SUM ]
             ],
             "y_lists": [
-                result_parse(time_results),
+                result_parse(time_results)
                 # more figures
                 # ...
             ],
@@ -197,7 +203,9 @@ async def main(tasks_sum: List[int]):
         canvas = BarChartCanvas(**data)
         # canvas = LinearChartCanvas(**data)
         
-        canvas.save(PARENT_DIR / 'figs' / 'fig_v2' / 'lowest_score_test_v3' / f'fig_{time.strftime("%X")}_{tasks_sum}_random_v_t1'.replace(':', ''))
+        canvas.save(pic_path / f'l{LOOPS}_fig_random_v_t{loop}')
+
+        error_graph(ERROR, loop, pic_path)
 
         await client.session.close()
         
@@ -205,10 +213,10 @@ async def main(tasks_sum: List[int]):
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
-TASKS_SUM = [10, 20]
+TASKS_SUM = [20, 50, 100, 200, 500]
 # TASKS_SUM = [1000]
 TASK_INTERVAL = 0.2
-LOOPS = 2
+LOOPS = 5
 LOOP_INTERVAL = 5
 MANAGER_AGENT_IP = "192.168.0.100"
 MANAGER_AGENT_PORT = 8199
@@ -221,7 +229,7 @@ ALGO_NAMES = ['shortest', 'round-robin', 'leatest', 'lowest-score']
 ERROR = []
 
 
-def error_graph(error_list, loop):
+def error_graph(error_list, loop, _pic_path):
     # ERROR BarChart
     data= {
         "x_list": [
@@ -242,10 +250,13 @@ def error_graph(error_list, loop):
         "legends": [
             "Difference of time",
         ],
+        "figsize": (18, 12),
+        "smooth": False,
+        "window_size": 1,
     }
 
-    canvas = BarChartCanvas(**data)
-    canvas.save(Path.cwd() / 'clients_v2' / 'figs' / 'fig_test' / f'diff_v4_{loop}')
+    canvas = LinearChartCanvas(**data)
+    canvas.save(_pic_path / f'diff__{loop}')
 
 
 if __name__ == "__main__":
