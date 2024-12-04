@@ -11,6 +11,7 @@ from clients_v2.time_graph.generate_graph import BarChartCanvas, LinearChartCanv
 from pathlib import Path
 import numpy as np
 import logging
+import datetime
 
 # log file config
 PARENT_DIR = Path(__file__).parent.parent
@@ -22,7 +23,7 @@ logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
 
 
 
-pic_path = (PARENT_DIR / 'figs' / f'fig_diff_response_time_v{time.strftime("%X").replace(':', '')}')
+pic_path = (PARENT_DIR / 'figs' / f'{datetime.datetime.ctime(datetime.datetime.now()).replace(':', '').replace(' ', '_')}')
 
 
 class Task:
@@ -209,14 +210,14 @@ async def main(tasks_sum: List[int]):
 
         await client.session.close()
         
-    
+
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
-TASKS_SUM = [20, 50, 100, 200, 500]
+TASKS_SUM = [10, 20, 30]
 # TASKS_SUM = [1000]
 TASK_INTERVAL = 0.2
-LOOPS = 5
+LOOPS = 5 
 LOOP_INTERVAL = 5
 MANAGER_AGENT_IP = "192.168.0.100"
 MANAGER_AGENT_PORT = 8199
@@ -263,3 +264,4 @@ if __name__ == "__main__":
     asyncio.run(main(TASKS_SUM))
 
     pass
+
