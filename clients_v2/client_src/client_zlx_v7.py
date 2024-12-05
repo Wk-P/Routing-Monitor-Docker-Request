@@ -48,7 +48,7 @@ class CustomClient:
 
         self.loops = kw.get("loops", 1)
 
-    async def run_task(self, task: Task, tasks_sum: int):
+    async def run_task(self, task: Task, tasks_sum: int, algo_name: str):
         global FINISH_CNT, LOOPS, LOOP_FINISH_CNT, ERROR
 
         # recoard task start time
@@ -62,13 +62,13 @@ class CustomClient:
             response_data['response_time'] = time.time() - start        # recoard task end time
 
             logging.info(f"DIFF: {response_data['pred_task_wait_time'] - response_data['real_task_wait_time']}")
-            ERROR.append(response_data['pred_task_wait_time'] - response_data['real_task_wait_time'])
+            ERROR[algo_name].append(response_data['pred_task_wait_time'] - response_data['real_task_wait_time'])
             return response_data
 
-    async def run_tasks(self, tasks_sum: int):
+    async def run_tasks(self, tasks_sum: int, algo_name: str):
         index = 0
         for task in self.tasks:
-            self.tasks_corotine_list.append(asyncio.create_task(self.run_task(task, tasks_sum)))
+            self.tasks_corotine_list.append(asyncio.create_task(self.run_task(task, tasks_sum, algo_name)))
             print(f"\rSend Task {index + 1}")
             await asyncio.sleep(self.task_interval)
             index += 1
@@ -140,7 +140,7 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
     return tasks
 
 async def main(tasks_sum: List[int]):
-    global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE, TASKS_SUM
+    global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE, TASKS_SUM, ERROR
 
     for loop in range(LOOPS):
 
@@ -169,7 +169,7 @@ async def main(tasks_sum: List[int]):
                 
                 start_time = time.time()
 
-                await client.run_tasks(sum(TASKS_SUM))
+                await client.run_tasks(sum(TASKS_SUM), algo_name)
                 await asyncio.sleep(client.loop_interval)    
                 LOOP_FINISH_CNT = 0
 
@@ -204,21 +204,22 @@ async def main(tasks_sum: List[int]):
         canvas = BarChartCanvas(**data)
         # canvas = LinearChartCanvas(**data)
         
-        canvas.save(pic_path / f'l{LOOPS}_fig_random_v_t{loop}')
+        canvas.save(pic_path / f'l{LOOPS}_{loop}_fig_random')
 
         error_graph(ERROR, loop, pic_path)
-
+        
+        ERROR = {key: [] for key in ALGO_NAMES}
         await client.session.close()
         
 
 
 
 TASK_NUMBER_RANGE = (100000, 500000)
-TASKS_SUM = [10, 20, 30]
-# TASKS_SUM = [1000]
+# TASKS_SUM = [sum for sum in range(10, 400, 100)]
+TASKS_SUM = [4, 5]
 TASK_INTERVAL = 0.2
-LOOPS = 5 
-LOOP_INTERVAL = 5
+LOOPS = 1 
+LOOP_INTERVAL = 2
 MANAGER_AGENT_IP = "192.168.0.100"
 MANAGER_AGENT_PORT = 8199
 URL = f"http://{MANAGER_AGENT_IP}:{MANAGER_AGENT_PORT}"
@@ -227,17 +228,20 @@ FINISH_CNT = 0
 LOOP_FINISH_CNT = 0
 ALGO_NAMES = ['shortest', 'round-robin', 'leatest', 'lowest-score']
 
-ERROR = []
+ERROR = {key: [] for key in ALGO_NAMES}
 
 
-def error_graph(error_list, loop, _pic_path):
+def error_graph(error_dict: dict, loop, _pic_path):
+    src_array = np.array(list(error_dict.values()))
+    y_lists = src_array.T.tolist()
+
     # ERROR BarChart
     data= {
         "x_list": [
-            [n for n in range(len(error_list))], 
+            ALGO_NAMES
         ],
         "y_lists": [
-            [ error_list ],
+            y_lists
         ],
         "titles": [
             "Difference of time for real and pred",
@@ -248,16 +252,15 @@ def error_graph(error_list, loop, _pic_path):
         "ylabels": [
             "Seconds", 
         ],
-        "legends": [
-            "Difference of time",
-        ],
-        "figsize": (18, 12),
+        "legends": ALGO_NAMES,
+        "figsize": (5 * len(y_lists), 4 * len(y_lists)),
         "smooth": False,
         "window_size": 1,
     }
 
+
     canvas = LinearChartCanvas(**data)
-    canvas.save(_pic_path / f'diff__{loop}')
+    canvas.save(_pic_path / f'{LOOPS}_diff_{loop}')
 
 
 if __name__ == "__main__":

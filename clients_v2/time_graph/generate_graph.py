@@ -89,6 +89,7 @@ class LinearChartCanvas:
         smooth = kwargs.get("smooth", False)  # 是否平滑
         window_size = kwargs.get("window_size", 10)  # 平滑窗口大小
         self.params: list[dict] = []
+        
 
         if len(x_list) != len(y_lists) or len(x_list) != len(titles) or len(x_list) != len(xlabels) or len(x_list) != len(ylabels):
             raise Exception("Length of x list and y list is not same")
@@ -103,6 +104,8 @@ class LinearChartCanvas:
                 "ylabel": ylabels[i],
             })
 
+        print(x_list)
+        print(y_lists)
 
         # Figure 对象
         self.ax: list[Axes]
@@ -145,26 +148,42 @@ class LinearChartCanvas:
 
 
 def linearcharttest():
-    # 假设有一些数据
-    x_list = [np.arange(0, 1000)]
-    y_lists = [np.random.normal(loc=0, scale=1, size=1000).cumsum()]
-    titles = ["Response Time Comparison"]
-    xlabels = ["Tasks Index"]
-    ylabels = ["Response Time"]
-    legends = ["Sample Line"]
+    data= {
+        "x_list": [
+            ['A', 'B', 'C', 'D', 'E'], 
+        ],
+        "y_lists": [
+            [
+                # 一张图
+                [40, 20, 10, 30, 20, 14], 
+                [50, 40, 20, 10, 20, 14],
+                [50, 40, 20, 10, 20, 13],
+                [60, 30, 10, 20, 20, 22],
+                [50, 40, 20, 10, 20, 10],
+            ],
+        ],
+        "titles": [
+            "Chart1"
+        ],
+        "xlabels": [
+            "Category1"
+        ],
+        "ylabels": [
+            "Value1"
+        ],
+        "legends": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E"
+        ],
+        "smooth": False,
+        "window_size": 10
+    }
 
     # 创建图表并设置平滑参数
-    chart = LinearChartCanvas(
-        x_list=x_list, 
-        y_lists=[y_lists], 
-        titles=titles, 
-        xlabels=xlabels, 
-        ylabels=ylabels, 
-        legends=legends, 
-        smooth=True, 
-        window_size=20  # 平滑窗口大小
-    )
-
+    chart = LinearChartCanvas(**data)
     # 显示图表
     chart.show()
 
@@ -172,6 +191,7 @@ def linearcharttest():
 def barcharttest():
     data= {
         "x_list": [
+            ['A', 'B', 'C', 'D'], 
             ['A', 'B', 'C', 'D'], 
         ],
         "y_lists": [
@@ -182,16 +202,23 @@ def barcharttest():
                 [50, 40, 20, 10],
                 [60, 30, 10, 20],
             ],
+            [
+                # 一张图
+                [40, 20, 10, 30], 
+                [10, 20, 30, 10],
+                [50, 40, 20, 10],
+                [60, 30, 10, 20],
+            ],
             # ...
         ],
         "titles": [
-            "Chart1",
+            "Chart1", "Chart2",
         ],
         "xlabels": [
-            "Category1",
+            "Category1", "Category2",
         ],
         "ylabels": [
-            "Value1", 
+            "Value1",  "Value2",
         ],
         "legends": [
             "A",
@@ -208,5 +235,5 @@ def barcharttest():
 
 
 if __name__ == "__main__":
-    # linearcharttest()
-    barcharttest()
+    linearcharttest()
+    # barcharttest()
