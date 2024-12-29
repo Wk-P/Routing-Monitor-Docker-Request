@@ -2,207 +2,249 @@ import aiohttp
 from aiohttp import web
 import time
 from datetime import datetime
-from xgboost import Booster
+import traceback
+import asyncio
+from asyncio import Queue
+import logging
 from pathlib import Path
-import numpy as np
+import random
+from xgboost import Booster
 import xgboost
 
 
-# request queue enable
-is_request_queue_enable = False
+# xgboost model
+process_model_path = str(Path.cwd() / "xgb_number_time.json")
+xgboost_proc_model = Booster()
+xgboost_proc_model.load_model(process_model_path)
 
 
-class WorkerNodeInfo():
-    def __init__(self):
-        self.ips = [
-            "192.168.0.150",
-            "192.168.0.151",
-            "192.168.0.152",
-        ]
-        # self.ips = [
-        #     "192.168.0.150",
-        # ]
-        self.cnt_group = {
-            "192.168.0.150": {
-                'received': 0,
-                'processing': 0,
-                'finished': 0
-            },
-            "192.168.0.151": {
-                'received': 0,
-                'processing': 0,
-                'finished': 0
-            },
-            "192.168.0.152": {
-                'received': 0,
-                'processing': 0,
-                'finished': 0
-            },
-        }
+# LOG file
+log_path = Path.cwd() / 'log' / f"{__file__}.log"
+print("Log Path:", log_path)
+logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
 
-        self.port = 8080
+# tasks waiting queue
+# for all tasks waiting timer
+class Task:
+    def __init__(self, **kwargs):
+        # request data
+        self.request_data: dict = kwargs.get('request_data')
+        self.headers: dict = kwargs.get('headers')
+        self.worker: Worker = None
+        self.target_url = None
+        self.pred_processed_time = self.predict_processed_time()
+        self.serving_worker_number = None
+        self.wait_time = float(0)
+        # record how long time until receive response
+        self.until_response_time = 0
+
+        # resource usage
+        self.hdd_usage = 0
+        self.mem_usage = 0
+
+
+    def predict_processed_time(self):
+        data = xgboost.DMatrix([[self.request_data.get('number')]])
+        prediction = xgboost_proc_model.predict(data)
+        return float(prediction[0])
+
+class Worker:
+    def __init__(self, **kwargs):
+        self.ip = kwargs.get('ip')
+        self.port = kwargs.get('port')
+        self.url = f'http://{self.ip}:{self.port}'
+        self.lock = asyncio.Lock()
+        
+        self.update_interval = kwargs.get('update_interval')
+        self.wait_time = float(0)
+
+        self.current_task = None
+
+        # every status tasks sum on worker
+        self.processing_cnt = 0
+        self.received_cnt = 0
+        self.finished_cnt = 0
+
+        # tasks queue on manager ( to calculate not to control )
+        self.tasks_queue = Queue()
+
+        # resource usage
+        self.hdd_usage = 0
+        self.mem_usage = 0
+
+        self.max_hdd_usage = 0
+        self.max_mem_usage = 0
+
+        # session for worker connector
         self.session = None
-        self.current_index = 0
 
     async def start_session(self):
-        self.session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(
-            limit=None), timeout=aiohttp.ClientTimeout(total=None))
+        self.session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=0), timeout=aiohttp.ClientTimeout(total=None))
+
+    async def close_session(self):
+        await self.session.close()
+
+    # update timer with 
+    async def update_wait_time(self):
+        while True:
+            await asyncio.sleep(self.update_interval)
+            self.wait_time -= self.update_interval
+            if self.wait_time < 0:
+                self.wait_time = 0
 
 
-def url_choose():
-    global info_obj
-    ip = info_obj.ips[info_obj.current_index]
-    info_obj.current_index = (info_obj.current_index + 1) % len(info_obj.ips)
-    return ip
+UPDATE_INTERVAL = 0.001
+
+WORKERS = [
+    Worker(ip='192.168.0.150', port=8080, update_interval=UPDATE_INTERVAL),
+    Worker(ip='192.168.0.151', port=8080, update_interval=UPDATE_INTERVAL),
+    Worker(ip='192.168.0.152', port=8080, update_interval=UPDATE_INTERVAL),
+]
+
+ROUND_ROUBIN_WORKER_INDEX = 0
+
+async def start_sessions():
+    global WORKERS
+    for worker in WORKERS:
+        await worker.start_session()
 
 
-def request_predict(request_number, tasks_number, model: Booster):
-    X = np.array(
-        [[request_number, tasks_number]]
-    )
-    X = xgboost.DMatrix(X)
-    prediction = model.predict(X)
-    prediction = float(prediction[0])
-    return prediction
+# multi IP addresses
+def choose_url_algorithm(name=None):
+    global WORKERS, ROUND_ROUBIN_WORKER_INDEX
+    if not name or name == 'round-robin': # round robin
+        worker_index = ROUND_ROUBIN_WORKER_INDEX
+        ROUND_ROUBIN_WORKER_INDEX = (ROUND_ROUBIN_WORKER_INDEX + 1) % len(WORKERS)
+        return WORKERS[worker_index]
+    else:
+        pass
 
 
-async def request_for_psutil(ip, port):
-    global psutil_session
 
-    def ip_to_url(ip, port):
-        return f"http://{ip}:{port}"
+async def handle_new_task(request_data: dict, headers: dict):
+    global WORKERS
+    new_task = Task(request_data=request_data, headers=headers)
+    
+    # set new_task params
+    # ...
+    # ...
+    # predict process time
+    
+    # algorithm 
+    chosen_worker = choose_url_algorithm()
 
-    headers = {"task-type": "PS"}
+    new_task.worker = chosen_worker
+    new_task.target_url = chosen_worker.url
+    new_task.serving_worker_number = WORKERS.index(chosen_worker)
+    
+    new_task.wait_time = chosen_worker.wait_time
+    
+    chosen_worker.current_task = new_task
 
-    data = {"ip": ip, "url": ip_to_url(ip, port)}
+    # add waiting time
+    # 将预测处理时间加入 wait_time
+    async with chosen_worker.lock:
+        chosen_worker.wait_time += new_task.pred_processed_time
+        chosen_worker.processing_cnt += 1
 
-    async with psutil_session.post(url=data['url'], headers=headers) as response:
-        data = await response.json()
-        return data
+    # put into worker queue
+    await chosen_worker.tasks_queue.put(new_task)
 
+    return chosen_worker, new_task
 
+# handle request main function
 async def request_handler(request: web.Request):
-    global info_obj
-    global received_cnt
-    global finished_cnt
-    global waiting_queue_list
-    global xgboost_model
-    global psutil_session
-
-    index = received_cnt
-    manager_received_timestamp = time.time()
-
-    # update processing
-    processing_cnt = received_cnt - finished_cnt
-
-    # index
-    print("index: ", index)
-
-    # received time
-    print("received time: ", time.time())
-    print("received index: ", received_cnt)
-    received_cnt += 1
-
-    # request for host resouces
-    resources_status = list()
-    for ip in info_obj.ips:
-        resources_status.append(await request_for_psutil(ip, info_obj.port))
-
-    print(resources_status)
-
-    # url choose and create url
-    ip = url_choose()
-
-    info_obj.cnt_group[ip]['received'] += 1
-    info_obj.cnt_group[ip]['processing'] = info_obj.cnt_group[ip]['received'] - \
-        info_obj.cnt_group[ip]['finished']
-
-    url = f"http://{ip}:{info_obj.port}"
-    headers = request.headers
-    request_data = await request.json()
-
-    # add all waiting time
-    # thread security
-
-    for ip in info_obj.ips:
-        _processing_cnt = info_obj.cnt_group[ip]['processing']
-        prediction = request_predict(
-            int(request_data['number']), _processing_cnt, xgboost_model)
-
-    print(f"trans-forward to {ip}")
-
     try:
-        async with info_obj.session.post(url=url, json=request_data, headers=headers) as response:
+        # received time
+        manager_received_timestamp = time.time()
+        logging.info(f"received time: {manager_received_timestamp}\n")
+
+        # generate task and put into manager tasks queue
+        request_data = await request.json()
+        choosen_worker, new_task = await handle_new_task(request_data, request.headers)
+        
+        processing_cnt = choosen_worker.processing_cnt
+        # fetch queue first task and send
+        
+        print('-' * 40, end='\n')
+        print("Before", time.time(), f"Request number {new_task.request_data.get('number')}")
+        print(f"task prediction process time {new_task.pred_processed_time}")
+        print(f"worker node nummber:{new_task.serving_worker_number}")
+        print("processing_cnt:", choosen_worker.processing_cnt)
+        print("task wait time", new_task.wait_time)
+        print("total predict response time", new_task.wait_time + new_task.pred_processed_time)
+        total_response_time_prediction = new_task.wait_time + new_task.pred_processed_time
+
+        before_forward_time = time.time() - manager_received_timestamp
+
+        await choosen_worker.tasks_queue.get()
+
+        # send this task to worker node
+        async with choosen_worker.session.post(url=choosen_worker.url, json=new_task.request_data, headers=new_task.headers) as response:
             data: dict = await response.json()
-            response_received_timestamp = time.time()
-            process_in_manager_node = response_received_timestamp - manager_received_timestamp
+
+            # 记录任务结束时间
+
+            async with choosen_worker.lock:
+                choosen_worker.finished_cnt += 1
+                choosen_worker.processing_cnt -= 1
             if "error" in data.keys():
                 data["success"] = 0
             else:
                 data["success"] = 1
 
             # update response data
-            data["choosen_ip"] = ip
-            data["processed_and_waited_time_on_manager_node"] = process_in_manager_node
-            data['processed_time_on_worker_node'] = data.pop(
-                "real_process_time")
-            # waiting to be processed(transforward) and sended to worker node request
-            data['processing_tasks_on_manager_node'] = processing_cnt
-            data['manager_received_request_timestamp'] = manager_received_timestamp
-            data['request_ordered_index'] = index
-            data['response_received_timestamp_on_manager_node'] = response_received_timestamp
-            data['prediction'] = prediction
+            data["choosen_ip"] = choosen_worker.ip
+            data['processed_time'] = data.pop("real_process_time")
+            data['jobs_on_worker_node'] = processing_cnt
+            data['total_response_time_prediction'] = total_response_time_prediction
+            data['worker_wait_time'] =  data['start_process_time'] - manager_received_timestamp
+            data['before_forward_time'] = before_forward_time
 
-            finished_cnt += 1
-            index += 1
+            logging.info(f'{"-" * 40}\n')
+            logging.info(f'{data}\n')
+            logging.info(f"{'Before waiting jobs:':<50}{processing_cnt:<20}\n")
+            logging.info(f"{'worker wait time:':<50}{data['worker_wait_time']:<20}\n")
+            logging.info(f"{'Datetime:':<50}{datetime.ctime(datetime.now()) :<20}\n")
 
-            info_obj.cnt_group[ip]['finished'] -= 1
-
-            print("data: ", data)
-
+            print('-' * 40, end='\n')
+            print("After", time.time(), f"Request number {new_task.request_data.get('number')}")
+            print(f"worker node nummber:{new_task.serving_worker_number}")
+            print("processing_cnt:", choosen_worker.processing_cnt)
+            
             return web.json_response(data)
 
-    except Exception as e:
-        print("Error", e, data)
-        return web.json_response({"error": str(e), "data": data})
+    except Exception:
+        error_message = traceback.format_exc()
+        print(error_message)
+        return web.json_response({"error": error_message, "data": data}, status=500)
 
 
-async def start_psutil_session():
-    global psutil_session
-    psutil_session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(
-        limit=None), timeout=aiohttp.ClientTimeout(total=None))
-
+async def on_shutdown(app):
+    global WORKERS
+    for worker in WORKERS:
+        await worker.close_session()
 
 async def server_app_init():
-    global info_obj
-    global psutil_session
+    global WORKERS
+    for worker in WORKERS:
+        asyncio.create_task(worker.update_wait_time())
+
+    print("Workers' timer has started")
+
     app = web.Application()
     app.router.add_post("", request_handler)
-    app.on_startup.append(lambda app: info_obj.start_session())
-    app.on_startup.append(lambda psutil_session: start_psutil_session())
+    app.on_startup.append(lambda app: start_sessions())
+    app.on_cleanup.append(on_shutdown)
 
     return app
-
-
-info_obj = WorkerNodeInfo()
-received_cnt = 0
-finished_cnt = 0
-waiting_queue_list = list()
-psutil_session = None
-
-
-# model included
-model_path = str(Path.cwd() / "xgb_tasks_time.json")
-xgboost_model = Booster()
-xgboost_model.load_model(model_path)
-
 
 def server_run():
     try:
         app = server_app_init()
-        web.run_app(app, host='0.0.0.0', port=8081)
+        web.run_app(app, host='0.0.0.0', port=8100)
     except Exception as e:
-        print(f"[ {datetime.ctime(datetime.now())}]")
+        print(f"[ {datetime.ctime(datetime.now()) }]")
         print(e)
 
 

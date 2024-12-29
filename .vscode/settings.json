@@ -1,4 +1,7 @@
 {
     "python.analysis.typeCheckingMode": "off",
-    "python.analysis.autoImportCompletions": true
+    "python.analysis.autoImportCompletions": true,
+    "python.terminal.executeInFileDir": false,
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "python.envFile": "${workspaceFolder}/.env"
 }
