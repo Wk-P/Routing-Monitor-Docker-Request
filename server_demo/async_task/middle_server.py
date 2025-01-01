@@ -28,6 +28,7 @@ async def countdown_task(app, backend_id, interval=0.1):
                         app['wait_times'][backend_id] = 0
                     logging.info(f"后端 {backend_id} 最新等待时间 {app['wait_times'][backend_id]:.1f} 秒")
                 else:
+                    app['wait_times'][backend_id] = 0
                     logging.info(f"后端 {backend_id} 等待时间已归零")
             await asyncio.sleep(interval)
     except asyncio.CancelledError:
@@ -40,14 +41,14 @@ async def handle(request: web.Request):
     receive = time.time()
 
     try:
-        request_data = await request.json()
+        request_data: dict = await request.json()
         request_id = request_data.get('request_id', '未知')
 
         # 选择等待时间最少的后端服务器
         backend_id, backend_url = select_backend(request.app)
 
         # 随机生成处理时间
-        task_process_time = random.randint(5, 8)
+        task_process_time = request_data.get('process_time')
 
         # 更新等待时间
         async with request.app['locks'][backend_id]:
