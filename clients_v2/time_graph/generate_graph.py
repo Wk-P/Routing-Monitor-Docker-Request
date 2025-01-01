@@ -102,10 +102,9 @@ class LinearChartCanvas:
                 "title": titles[i],
                 "xlabel": xlabels[i],
                 "ylabel": ylabels[i],
+                "legend": legends[i],
             })
-
-        print(x_list)
-        print(y_lists)
+        print(self.params)
 
         # Figure 对象
         self.ax: list[Axes]
@@ -122,13 +121,16 @@ class LinearChartCanvas:
         # 绘制折线图
         if len(self.params) > 0:
             for i, param in enumerate(self.params):
+                # 每个y一维数组对应一条线
                 for j, y in enumerate(param['y_lists']):
+                    print(j)
+                    print(param['legend'])
                     if smooth:  # 如果选择平滑曲线
                         y_smooth = moving_average(y, window_size)
                         x_smooth = param['x'][:len(y_smooth)]
-                        self.ax[i].plot(x_smooth, y_smooth, label=legends[j] if legends else f'Line {j+1} (smoothed)')
+                        self.ax[i].plot(x_smooth, y_smooth, label=param['legend'][j] if param['legend'] else f'Line {j+1} (smoothed)')
                     else:
-                        self.ax[i].plot(param['x'], y, label=legends[j] if legends else f'Line {j+1}')
+                        self.ax[i].plot(param['x'], y, label=param['legend'][j] if param['legend'] else f'Line {j+1}')
                 
                 # 设置标签、标题和图例
                 self.ax[i].set_title(param['title'])
@@ -148,20 +150,24 @@ class LinearChartCanvas:
 
 
 def linearcharttest():
-    data= {
-        "x_list": [
-            ['A', 'B', 'C', 'D', 'E'], 
-        ],
-        "y_lists": [
+    y_lists = [
             [
                 # 一张图
-                [40, 20, 10, 30, 20, 14], 
-                [50, 40, 20, 10, 20, 14],
-                [50, 40, 20, 10, 20, 13],
-                [60, 30, 10, 20, 20, 22],
-                [50, 40, 20, 10, 20, 10],
+                [40, 20, 10, 30, 20], 
+                [50, 40, 20, 10, 20],
+                [50, 40, 20, 10, 20],
+                [60, 30, 10, 20, 20],
+                [60, 30, 10, 20, 20],
+                [50, 40, 20, 10, 20],
+                [50, 40, 20, 10, 20],
+                [50, 40, 20, 10, 20],
             ],
+        ]
+    data= {
+        "x_list": [
+            [t for t in range(5)], 
         ],
+        "y_lists": y_lists,
         "titles": [
             "Chart1"
         ],
@@ -172,11 +178,7 @@ def linearcharttest():
             "Value1"
         ],
         "legends": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E"
+            [index for index in range(len(y_list))] for y_list in y_lists
         ],
         "smooth": False,
         "window_size": 10
