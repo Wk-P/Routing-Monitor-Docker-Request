@@ -61,7 +61,7 @@ class CustomClient:
             print(f"\r{100 * FINISH_CNT/(tasks_sum * len(ALGO_NAMES) * LOOPS):.2f}% {100 * LOOP_FINISH_CNT/len(self.tasks):.2f}%")
             response_data['response_time'] = time.time() - start        # recoard task end time
 
-            logging.info(f"DIFF: {response_data['pred_task_wait_time'] - response_data['real_task_wait_time']}")
+            logging.info(f"{response_data['chosen_ip']} DIFF: {response_data['pred_task_wait_time'] - response_data['real_task_wait_time']}")
             ERROR[algo_name].append(response_data['pred_task_wait_time'] - response_data['real_task_wait_time'])
             return response_data
 
@@ -154,10 +154,10 @@ async def main(tasks_sum: List[int]):
             
 
             # poisson 1
-            tasks = gen_tasks_poisson_1(n=tasks_sum)
+            # tasks = gen_tasks_poisson_1(n=tasks_sum)
             
             # poisson 2
-            # tasks = gen_tasks_poisson_2(n=tasks_sum)
+            tasks = gen_tasks_poisson_2(n=tasks_sum)
 
             client.tasks = tasks
             
@@ -216,7 +216,9 @@ async def main(tasks_sum: List[int]):
 
 TASK_NUMBER_RANGE = (100000, 500000)
 # TASKS_SUM = [sum for sum in range(10, 400, 100)]
-TASKS_SUM = [4, 5]
+# TASKS_SUM = [5, 6]
+TASKS_SUM = [10, 20, 30]
+# TASKS_SUM = [n for n in range(50, 401, 50)]
 TASK_INTERVAL = 0.2
 LOOPS = 1 
 LOOP_INTERVAL = 2
@@ -232,16 +234,15 @@ ERROR = {key: [] for key in ALGO_NAMES}
 
 
 def error_graph(error_dict: dict, loop, _pic_path):
-    src_array = np.array(list(error_dict.values()))
-    y_lists = src_array.T.tolist()
+    y_lists = list(error_dict.values())
 
     # ERROR BarChart
     data= {
         "x_list": [
-            ALGO_NAMES
+            [index for index in range(len(y_lists[0]))]
         ],
         "y_lists": [
-            y_lists
+            y_lists,
         ],
         "titles": [
             "Difference of time for real and pred",
@@ -252,10 +253,12 @@ def error_graph(error_dict: dict, loop, _pic_path):
         "ylabels": [
             "Seconds", 
         ],
-        "legends": ALGO_NAMES,
+        "legends": [
+            ALGO_NAMES
+        ],
         "figsize": (5 * len(y_lists), 4 * len(y_lists)),
         "smooth": False,
-        "window_size": 1,
+        "window_size": 5,
     }
 
 
