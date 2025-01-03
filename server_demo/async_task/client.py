@@ -1,10 +1,13 @@
 # client.py
 
 import asyncio
+import traceback
 from aiohttp import ClientSession
 import random
 
 from numpy import average
+
+
 
 
 MIDDLE_SERVER_URL = 'http://localhost:8000/forward'
@@ -18,18 +21,19 @@ async def send_request(session: ClientSession, request_id):
         async with session.post(MIDDLE_SERVER_URL, json={'request_id': request_id, 'process_time': random.randint(3, 10)}) as resp:
             data: dict = await resp.json()
             status = data.get("status", "")
-            calculate_wait_time = data.get("calculate_wait_time", 0)
+            calculate_wait_time = data.get("pending_time_estimated", 0)
             real_wait_time = data.get("real_wait_time", 0)
 
             print(
                 f"请求 {request_id}: 状态: {status}, 计算等待时间: {calculate_wait_time} 秒，真实等待时间 {real_wait_time} 秒")
             diff_times[request_id] = calculate_wait_time - real_wait_time
     except Exception as e:
-        print(f"请求 {request_id} 失败: {e}")
+        err_msg = traceback.format_exc()
+        print(f"请求 {request_id} 失败: {err_msg}")
 
 
 async def main():
-    tasks_sum = 100
+    tasks_sum = 500
     tasks = list()
     request_id = 1
     async with ClientSession() as session:
