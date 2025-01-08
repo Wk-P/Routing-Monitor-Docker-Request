@@ -42,17 +42,18 @@ class CustomClient:
 
         self.tasks_corotine_list = list()
 
-        self.session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=0), timeout=aiohttp.ClientTimeout(total=None))
+        self.session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=0), timeout=aiohttp.ClientTimeout(None))
 
         self.responses: List[dict] = list()
 
         self.loops = kw.get("loops", 1)
 
-    async def run_task(self, task: Task, tasks_sum: int, algo_name: str):
+    async def run_task(self, task: Task, tasks_sum: int, algo_name: str, index: int):
         global FINISH_CNT, LOOPS, LOOP_FINISH_CNT, ERROR
 
         # recoard task start time
         start = time.time()
+        task.data['request_id'] = index
         async with self.session.post(url=task.url, json=task.data, headers=task.headers) as response:
             response_data = await response.json()
             FINISH_CNT += 1
@@ -61,14 +62,15 @@ class CustomClient:
             print(f"\r{100 * FINISH_CNT/(tasks_sum * len(ALGO_NAMES) * LOOPS):.2f}% {100 * LOOP_FINISH_CNT/len(self.tasks):.2f}%")
             response_data['response_time'] = time.time() - start        # recoard task end time
 
-            logging.info(f"{response_data['chosen_ip']} DIFF: {response_data['pred_task_wait_time'] - response_data['real_task_wait_time']}")
-            ERROR[algo_name].append(response_data['pred_task_wait_time'] - response_data['real_task_wait_time'])
+            logging.info(response_data)
+            # logging.info(f"{response_data['status']} DIFF: {response_data['calculate_wait_time'] - response_data['real_wait_time']}")
+            ERROR[algo_name].append(response_data['calculate_wait_time'] - response_data['real_wait_time'])
             return response_data
 
     async def run_tasks(self, tasks_sum: int, algo_name: str):
         index = 0
         for task in self.tasks:
-            self.tasks_corotine_list.append(asyncio.create_task(self.run_task(task, tasks_sum, algo_name)))
+            self.tasks_corotine_list.append(asyncio.create_task(self.run_task(task, tasks_sum, algo_name, index)))
             print(f"\rSend Task {index + 1}")
             await asyncio.sleep(self.task_interval)
             index += 1
@@ -152,7 +154,6 @@ async def main(tasks_sum: List[int]):
             # random
             # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
             
-
             # poisson 1
             # tasks = gen_tasks_poisson_1(n=tasks_sum)
             
@@ -165,7 +166,7 @@ async def main(tasks_sum: List[int]):
                 print(f"ALGO_NAME: {algo_name}")
 
                 start_time = time.time()
-                HEADERS['algo_name'] = algo_name
+                HEADERS['algorithm_name'] = algo_name
                 
                 start_time = time.time()
 
@@ -213,12 +214,12 @@ async def main(tasks_sum: List[int]):
         
 
 
-
 TASK_NUMBER_RANGE = (100000, 500000)
 # TASKS_SUM = [sum for sum in range(10, 400, 100)]
-# TASKS_SUM = [5, 6]
-TASKS_SUM = [10, 20, 30]
+# TASKS_SUM = [5, 6, 10]
+# TASKS_SUM = [10, 20, 30]
 # TASKS_SUM = [n for n in range(50, 401, 50)]
+TASKS_SUM = [100, 300, 500, 1000]
 TASK_INTERVAL = 0.2
 LOOPS = 1 
 LOOP_INTERVAL = 2
@@ -228,7 +229,8 @@ URL = f"http://{MANAGER_AGENT_IP}:{MANAGER_AGENT_PORT}"
 HEADERS = {"task-type": "C"}
 FINISH_CNT = 0
 LOOP_FINISH_CNT = 0
-ALGO_NAMES = ['shortest', 'round-robin', 'leatest', 'lowest-score']
+# ALGO_NAMES = ['shortest', 'round-robin', 'leatest', 'lowest-score']
+ALGO_NAMES = ['shortest', 'round-robin']
 
 ERROR = {key: [] for key in ALGO_NAMES}
 
