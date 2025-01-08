@@ -5,3 +5,4 @@
 /logs/*
 *.log
 *.pyc
+server_demo/async_task/figs/*.png
