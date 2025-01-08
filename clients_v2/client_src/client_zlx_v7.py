@@ -64,7 +64,12 @@ class CustomClient:
 
             logging.info(response_data)
             # logging.info(f"{response_data['status']} DIFF: {response_data['calculate_wait_time'] - response_data['real_wait_time']}")
-            ERROR[algo_name].append(response_data['calculate_wait_time'] - response_data['real_wait_time'])
+            calculate_wait_time = response_data['calculate_wait_time']
+            real_wait_time = response_data['real_wait_time']
+            error_time = calculate_wait_time - real_wait_time
+            ERROR['calculate_wait_time'].append(calculate_wait_time)
+            ERROR['real_wait_time'].append(real_wait_time)
+            ERROR['error_time'].append(error_time)
             return response_data
 
     async def run_tasks(self, tasks_sum: int, algo_name: str):
@@ -176,6 +181,10 @@ async def main(tasks_sum: List[int]):
 
                 time_results[algo_name].append(time.time() - start_time)
 
+                # Error graph tables
+                error_graph(ERROR, f"{loop}_{algo_name}_{tasks_sum}", pic_path)
+                ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
+
         print(time_results)
         # Canvas
         data = {
@@ -207,9 +216,6 @@ async def main(tasks_sum: List[int]):
         
         canvas.save(pic_path / f'l{LOOPS}_{loop}_fig_random')
 
-        error_graph(ERROR, loop, pic_path)
-        
-        ERROR = {key: [] for key in ALGO_NAMES}
         await client.session.close()
         
 
@@ -232,10 +238,10 @@ LOOP_FINISH_CNT = 0
 # ALGO_NAMES = ['shortest', 'round-robin', 'leatest', 'lowest-score']
 ALGO_NAMES = ['shortest', 'round-robin']
 
-ERROR = {key: [] for key in ALGO_NAMES}
+ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
 
 
-def error_graph(error_dict: dict, loop, _pic_path):
+def error_graph(error_dict: dict, suffix, _pic_path):
     y_lists = list(error_dict.values())
 
     # ERROR BarChart
@@ -256,7 +262,7 @@ def error_graph(error_dict: dict, loop, _pic_path):
             "Seconds", 
         ],
         "legends": [
-            ALGO_NAMES
+            list(error_dict.keys())
         ],
         "figsize": (5 * len(y_lists), 4 * len(y_lists)),
         "smooth": False,
@@ -265,7 +271,7 @@ def error_graph(error_dict: dict, loop, _pic_path):
 
 
     canvas = LinearChartCanvas(**data)
-    canvas.save(_pic_path / f'{LOOPS}_diff_{loop}')
+    canvas.save(_pic_path / f'{LOOPS}_diff_{suffix}')
 
 
 if __name__ == "__main__":
