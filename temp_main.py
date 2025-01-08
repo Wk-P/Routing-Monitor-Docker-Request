@@ -1,7 +1,7 @@
 # manager_node/main.py
 import asyncio
 from pathlib import Path
-from aiohttp import web, ClientSession
+from aiohttp import web, ClientSession, ClientTimeout
 from utils import setup_logger, load_xgboost_model
 import traceback
 import time
@@ -35,8 +35,17 @@ def setup_loggers():
 def select_worker(app, algorithm_name):
     global ROUND_ROBIN_INDEX
     if algorithm_name == 'shortest':
-        selected_worker = min(app['wait_times'], key=app['wait_times'].get)
-        print(selected_worker, WORKERS[selected_worker], app['wait_times'])
+        selected_worker = None
+        min_finish_time = float('inf')
+        now = time.time()
+
+        for worker_id, finish_time in app['finish_times'].items():
+            # calculate pending time (finish_time - now)
+            waiting_time = max(0, finish_time - now)
+            if waiting_time < min_finish_time:
+                min_finish_time = waiting_time
+                selected_worker = worker_id
+
         return selected_worker, WORKERS[selected_worker]
     elif algorithm_name == 'round-robin':
         selected_worker = ROUND_ROBIN_INDEX
@@ -47,21 +56,20 @@ def select_worker(app, algorithm_name):
 
 
 # timer task
-async def countdown_task(app, worker, interval):
+async def countdown_task(app, interval):
+    """Indecrease finish_times timestamp value"""
     try:
         while True:
-            async with app['locks'][worker]:
-                if app['wait_times'][worker] > 0:
-                    app['wait_times'][worker] -= interval
-                    if app['wait_times'][worker] < 0:
-                        app['wait_times'][worker] = 0
-                else:
-                    app['wait_times'][worker] = 0
-            if app['wait_times'][worker] > 0:
-                print(f"Worker {worker}, wait time: {app['wait_times'][worker]} s.")
-            await asyncio.sleep(interval)            
+            now = time.time()
+            async with asyncio.Lock():  # 确保线程安全
+                for worker_id, finish_time in app['finish_times'].items():
+                    # 如果 finish_time 已经过时，则重置为当前时间
+                    if finish_time <= now:
+                        app['finish_times'][worker_id] = now
+            await asyncio.sleep(interval)
     except asyncio.CancelledError:
-        stdout_logger.info(f"Backend {worker} countdown task canceled.")
+        print("Countdown task was canceled")
+
 
 
 # start
@@ -73,8 +81,9 @@ async def on_startup(app):
         for i in range(len(WORKERS))
     ]
     app['sessions'] = {
-        i: ClientSession() for i in range(len(WORKERS))
+        i: ClientSession(timeout=ClientTimeout(None)) for i in range(len(WORKERS))
     }
+    app['countdown_tasks'] = {i: asyncio.create_task(countdown_task(app, interval=0.1))}
 
     print("All countdown tasks and client sessions started.")
 
@@ -91,8 +100,11 @@ async def handle(request: web.Request):
         task_predict_process_time = predict_processed_time(request_data)
 
         async with request.app['locks'][worker_id]:
+            current_time = time.time()
+            app_finish_time = request.app['finish_times'][worker_id]
             task_wait_time = request.app['wait_times'][worker_id]
-            request.app['wait_times'][worker_id] += task_predict_process_time
+            new_finish_time = max(app_finish_time, current_time) + task_predict_process_time
+            request.app['finish_times'][worker_id] = new_finish_time
             stdout_logger.info(f"Reqeust {request_id} to backend {worker_id}, add wait time {task_predict_process_time} s, all wait time {request.app['wait_times'][worker_id]} s, task wait time {task_wait_time} s")
 
         # request to backend
