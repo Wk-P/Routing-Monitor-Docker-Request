@@ -1,7 +1,6 @@
 #  Test for poisson distribution to three algorithm
 
 
-from asyncio import windows_events
 import aiohttp
 import asyncio
 import random
@@ -12,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import logging
 import datetime
+import json
 
 # log file config
 PARENT_DIR = Path(__file__).parent.parent
@@ -66,7 +66,7 @@ class CustomClient:
             # logging.info(f"{response_data['status']} DIFF: {response_data['calculate_wait_time'] - response_data['real_wait_time']}")
             calculate_wait_time = response_data['calculate_wait_time']
             real_wait_time = response_data['real_wait_time']
-            error_time = calculate_wait_time - real_wait_time
+            error_time = abs(calculate_wait_time - real_wait_time)
             ERROR['calculate_wait_time'].append(calculate_wait_time)
             ERROR['real_wait_time'].append(real_wait_time)
             ERROR['error_time'].append(error_time)
@@ -160,10 +160,10 @@ async def main(tasks_sum: List[int]):
             # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
             
             # poisson 1
-            # tasks = gen_tasks_poisson_1(n=tasks_sum)
+            tasks = gen_tasks_poisson_1(n=tasks_sum)
             
             # poisson 2
-            tasks = gen_tasks_poisson_2(n=tasks_sum)
+            # tasks = gen_tasks_poisson_2(n=tasks_sum)
 
             client.tasks = tasks
             
@@ -213,8 +213,13 @@ async def main(tasks_sum: List[int]):
         }
         canvas = BarChartCanvas(**data)
         # canvas = LinearChartCanvas(**data)
+
         
         canvas.save(pic_path / f'l{LOOPS}_{loop}_fig_random')
+
+        # save data to json file
+        with open(Path(pic_path) / f'data{loop}.json', 'w') as json_file:
+            json.dump(data, json_file, indent=4)
 
         await client.session.close()
         
@@ -223,11 +228,12 @@ async def main(tasks_sum: List[int]):
 TASK_NUMBER_RANGE = (100000, 500000)
 # TASKS_SUM = [sum for sum in range(10, 400, 100)]
 # TASKS_SUM = [5, 6, 10]
-# TASKS_SUM = [10, 20, 30]
+# TASKS_SUM = [30, 50, 100]
+TASKS_SUM = [200, 400]
 # TASKS_SUM = [n for n in range(50, 401, 50)]
-TASKS_SUM = [100, 300, 500, 1000]
-TASK_INTERVAL = 0.2
-LOOPS = 1 
+# TASKS_SUM = [100, 300, 500, 1000, 1500]
+TASK_INTERVAL = 0.02
+LOOPS = 2
 LOOP_INTERVAL = 2
 MANAGER_AGENT_IP = "192.168.0.100"
 MANAGER_AGENT_PORT = 8199
@@ -236,7 +242,7 @@ HEADERS = {"task-type": "C"}
 FINISH_CNT = 0
 LOOP_FINISH_CNT = 0
 # ALGO_NAMES = ['shortest', 'round-robin', 'leatest', 'lowest-score']
-ALGO_NAMES = ['shortest', 'round-robin']
+ALGO_NAMES = ['shortest', 'round-robin', 'min-entropy']
 
 ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
 
@@ -268,7 +274,6 @@ def error_graph(error_dict: dict, suffix, _pic_path):
         "smooth": False,
         "window_size": 5,
     }
-
 
     canvas = LinearChartCanvas(**data)
     canvas.save(_pic_path / f'{LOOPS}_diff_{suffix}')
