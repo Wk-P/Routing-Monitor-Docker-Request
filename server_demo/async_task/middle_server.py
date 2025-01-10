@@ -80,7 +80,10 @@ async def handle(request: web.Request):
         response = {
             "status": backend_response.get("status", "未知"),
             "calculate_wait_time": pending_time,
-            "real_wait_time": task_start_time - receive_time
+            "real_wait_time": task_start_time - receive_time,
+            "start": backend_response.get('start', 0),
+            "backend_id": backend_id,
+            "error": pending_time - (task_start_time - receive_time),
         }
         return web.json_response(response)
 

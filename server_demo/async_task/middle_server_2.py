@@ -50,7 +50,7 @@ async def handle(request: web.Request):
 
         # 1. 选择后端
         backend_id, backend_url = select_backend(request.app)
-        now = time.time()
+        now: float = time.time()
         async with request.app['locks'][backend_id]:
             ft = request.app['finish_times'][backend_id]
             pending_time_estimated = max(0, ft - now)

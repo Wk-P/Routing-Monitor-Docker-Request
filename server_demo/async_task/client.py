@@ -67,7 +67,7 @@ def table_make(data_set: dict, filename):
 
 if __name__ == '__main__':
     try:
-        loops = 20
+        loops = 1
         setup(loops)
 
         for loop in range(loops):

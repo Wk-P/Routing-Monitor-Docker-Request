@@ -1,6 +1,5 @@
 #  Test for poisson distribution to three algorithm
 
-
 import aiohttp
 import asyncio
 import random
@@ -24,7 +23,9 @@ logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
 
 
 pic_path = (PARENT_DIR / 'figs' / f'{datetime.datetime.ctime(datetime.datetime.now()).replace(':', '').replace(' ', '_')}')
-
+if not Path.exists(pic_path):
+    Path(pic_path).mkdir(parents=True, exist_ok=True)
+    print("Built Json and pictures path.")
 
 class Task:
     def __init__(self, **kw):
@@ -63,13 +64,15 @@ class CustomClient:
             response_data['response_time'] = time.time() - start        # recoard task end time
 
             logging.info(response_data)
-            # logging.info(f"{response_data['status']} DIFF: {response_data['calculate_wait_time'] - response_data['real_wait_time']}")
-            calculate_wait_time = response_data['calculate_wait_time']
-            real_wait_time = response_data['real_wait_time']
-            error_time = abs(calculate_wait_time - real_wait_time)
-            ERROR['calculate_wait_time'].append(calculate_wait_time)
-            ERROR['real_wait_time'].append(real_wait_time)
-            ERROR['error_time'].append(error_time)
+            
+            if algo_name == 'shortest':
+                logging.info(f"{response_data['status']} DIFF: {response_data['calculate_wait_time'] - response_data['real_wait_time']}")
+                calculate_wait_time = response_data['calculate_wait_time']
+                real_wait_time = response_data['real_wait_time']
+                error_time = abs(calculate_wait_time - real_wait_time)
+                ERROR['calculate_wait_time'].append(calculate_wait_time)
+                ERROR['real_wait_time'].append(real_wait_time)
+                ERROR['error_time'].append(error_time)
             return response_data
 
     async def run_tasks(self, tasks_sum: int, algo_name: str):
@@ -147,7 +150,7 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
     return tasks
 
 async def main(tasks_sum: List[int]):
-    global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE, TASKS_SUM, ERROR
+    global LOOPS, LOOP_INTERVAL, TASK_INTERVAL, FINISH_CNT, ALGO_NAMES, LOOP_FINISH_CNT, TASK_NUMBER_RANGE, TASKS_SUM, ERROR, POISSON_POLICY
 
     for loop in range(LOOPS):
 
@@ -159,11 +162,13 @@ async def main(tasks_sum: List[int]):
             # random
             # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
             
-            # poisson 1
-            tasks = gen_tasks_poisson_1(n=tasks_sum)
-            
-            # poisson 2
-            # tasks = gen_tasks_poisson_2(n=tasks_sum)
+            if POISSON_POLICY == 'poisson_1':
+                # poisson 1
+                # tasks = gen_tasks_poisson_1(n=tasks_sum)
+                pass
+            elif POISSON_POLICY == 'poisson_2':
+                # poisson 2 
+                tasks = gen_tasks_poisson_2(n=tasks_sum)
 
             client.tasks = tasks
             
@@ -182,8 +187,9 @@ async def main(tasks_sum: List[int]):
                 time_results[algo_name].append(time.time() - start_time)
 
                 # Error graph tables
-                error_graph(ERROR, f"{loop}_{algo_name}_{tasks_sum}", pic_path)
-                ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
+                if algo_name == 'shortest':
+                    error_graph(ERROR, f"{loop}_{algo_name}_{tasks_sum}", pic_path)
+                    ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
 
         print(time_results)
         # Canvas
@@ -215,7 +221,7 @@ async def main(tasks_sum: List[int]):
         # canvas = LinearChartCanvas(**data)
 
         
-        canvas.save(pic_path / f'l{LOOPS}_{loop}_fig_random')
+        canvas.save(pic_path / f'[{LOOPS}_{loop}]_fig_random')
 
         # save data to json file
         with open(Path(pic_path) / f'data{loop}.json', 'w') as json_file:
@@ -229,11 +235,11 @@ TASK_NUMBER_RANGE = (100000, 500000)
 # TASKS_SUM = [sum for sum in range(10, 400, 100)]
 # TASKS_SUM = [5, 6, 10]
 # TASKS_SUM = [30, 50, 100]
-TASKS_SUM = [200, 400]
+TASKS_SUM = [10, 50, 100, 500, 1000]
 # TASKS_SUM = [n for n in range(50, 401, 50)]
-# TASKS_SUM = [100, 300, 500, 1000, 1500]
-TASK_INTERVAL = 0.02
-LOOPS = 2
+# TASKS_SUM = [10, 30, 50, 100, 300, 500]
+TASK_INTERVAL = 0.5
+LOOPS = 1
 LOOP_INTERVAL = 2
 MANAGER_AGENT_IP = "192.168.0.100"
 MANAGER_AGENT_PORT = 8199
@@ -241,10 +247,37 @@ URL = f"http://{MANAGER_AGENT_IP}:{MANAGER_AGENT_PORT}"
 HEADERS = {"task-type": "C"}
 FINISH_CNT = 0
 LOOP_FINISH_CNT = 0
-# ALGO_NAMES = ['shortest', 'round-robin', 'leatest', 'lowest-score']
-ALGO_NAMES = ['shortest', 'round-robin', 'min-entropy']
+# ALGO_NAMES = ['shortest', 'round-robin', 'least', 'lowest-score']
+# ALGO_NAMES = ['shortest', 'round-robin', 'min-entropy', 'least-connect']
+ALGO_NAMES = ['round-robin', 'min-entropy', 'least-connect']
+POISSON_POLICY = "poisson_1"
 
 ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
+
+
+# config
+config = {
+    "POISSON_POLICY": POISSON_POLICY,
+    "TASK_NUMBER_RANGE": [100000, 500000],
+    "TASKS_SUM": [10, 50, 100, 500, 1000],
+    "TASK_INTERVAL": 0.5,
+    "LOOPS": 1,
+    "LOOP_INTERVAL": 2,
+    "MANAGER_AGENT_IP": "192.168.0.100",
+    "MANAGER_AGENT_PORT": 8199,
+    "URL": "http://192.168.0.100:8199",
+    "HEADERS": {
+        "task-type": "C"
+    },
+    "FINISH_CNT": 0,
+    "LOOP_FINISH_CNT": 0,
+    "ALGO_NAMES": [
+        "round-robin",
+        "min-entropy",
+        "least-connect"
+    ]
+}
+
 
 
 def error_graph(error_dict: dict, suffix, _pic_path):
@@ -280,6 +313,8 @@ def error_graph(error_dict: dict, suffix, _pic_path):
 
 
 if __name__ == "__main__":
+    with open(Path(pic_path) / "config.json", "w") as config_file:
+        json.dump(config, config_file, indent=4)
     asyncio.run(main(TASKS_SUM))
 
     pass
