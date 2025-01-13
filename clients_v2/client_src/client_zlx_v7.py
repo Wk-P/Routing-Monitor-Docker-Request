@@ -73,6 +73,8 @@ class CustomClient:
                 ERROR['calculate_wait_time'].append(calculate_wait_time)
                 ERROR['real_wait_time'].append(real_wait_time)
                 ERROR['error_time'].append(error_time)
+
+            # print(response_data)
             return response_data
 
     async def run_tasks(self, tasks_sum: int, algo_name: str):
@@ -144,7 +146,7 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
 
     # 使用泊松分布波动生成任务参数
     # generate task request number with poisson
-    num_args = [ int(np.random.poisson(lam=200000)) if num % 3 != 0 else int(np.random.poisson(lam=500000)) for num in range(n) ]
+    num_args = [ int(np.random.poisson(lam=15000)) if num % 3 != 0 else int(np.random.poisson(lam=100000)) for num in range(n) ]
     tasks = [Task(url=url, headers=headers, data={"number": arg}) for arg in num_args]
 
     return tasks
@@ -159,16 +161,17 @@ async def main(tasks_sum: List[int]):
         client = CustomClient(loops=LOOPS, loop_interval=LOOP_INTERVAL, task_interval=TASK_INTERVAL, single_url=URL)
 
         for tasks_sum in TASKS_SUM:
-            # random
-            # tasks = gen_tasks(is_random=False, num_args=[150000 if num % 3 != 0 else 450000 for num in range(tasks_sum)], n=tasks_sum)
             
             if POISSON_POLICY == 'poisson_1':
                 # poisson 1
-                # tasks = gen_tasks_poisson_1(n=tasks_sum)
+                tasks = gen_tasks_poisson_1(n=tasks_sum)
                 pass
             elif POISSON_POLICY == 'poisson_2':
                 # poisson 2 
                 tasks = gen_tasks_poisson_2(n=tasks_sum)
+            else:
+                # random
+                tasks = gen_tasks(is_random=False, num_args=[15000 if num % 3 != 0 else 400000 for num in range(tasks_sum)], n=tasks_sum)
 
             client.tasks = tasks
             
@@ -233,13 +236,12 @@ async def main(tasks_sum: List[int]):
 
 TASK_NUMBER_RANGE = (100000, 500000)
 # TASKS_SUM = [sum for sum in range(10, 400, 100)]
-# TASKS_SUM = [5, 6, 10]
+TASKS_SUM = [5, 6, 10]
 # TASKS_SUM = [30, 50, 100]
-TASKS_SUM = [10, 50, 100, 500, 1000]
 # TASKS_SUM = [n for n in range(50, 401, 50)]
 # TASKS_SUM = [10, 30, 50, 100, 300, 500]
-TASK_INTERVAL = 0.5
-LOOPS = 1
+TASK_INTERVAL = 0.05
+LOOPS = 3
 LOOP_INTERVAL = 2
 MANAGER_AGENT_IP = "192.168.0.100"
 MANAGER_AGENT_PORT = 8199
@@ -250,7 +252,7 @@ LOOP_FINISH_CNT = 0
 # ALGO_NAMES = ['shortest', 'round-robin', 'least', 'lowest-score']
 # ALGO_NAMES = ['shortest', 'round-robin', 'min-entropy', 'least-connect']
 ALGO_NAMES = ['round-robin', 'min-entropy', 'least-connect']
-POISSON_POLICY = "poisson_1"
+POISSON_POLICY = "poisson_2"
 
 ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
 
@@ -259,8 +261,8 @@ ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_tim
 config = {
     "POISSON_POLICY": POISSON_POLICY,
     "TASK_NUMBER_RANGE": [100000, 500000],
-    "TASKS_SUM": [10, 50, 100, 500, 1000],
-    "TASK_INTERVAL": 0.5,
+    "TASKS_SUM": [10, 50, 100, 500],
+    "TASK_INTERVAL": 0.01,
     "LOOPS": 1,
     "LOOP_INTERVAL": 2,
     "MANAGER_AGENT_IP": "192.168.0.100",

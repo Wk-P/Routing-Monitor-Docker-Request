@@ -1,0 +1,30 @@
+{
+    "POISSON_POLICY": "poisson_2",
+    "TASK_NUMBER_RANGE": [
+        100000,
+        500000
+    ],
+    "TASKS_SUM": [
+        10,
+        50,
+        100,
+        500,
+        1000
+    ],
+    "TASK_INTERVAL": 0.3,
+    "LOOPS": 1,
+    "LOOP_INTERVAL": 2,
+    "MANAGER_AGENT_IP": "192.168.0.100",
+    "MANAGER_AGENT_PORT": 8199,
+    "URL": "http://192.168.0.100:8199",
+    "HEADERS": {
+        "task-type": "C"
+    },
+    "FINISH_CNT": 0,
+    "LOOP_FINISH_CNT": 0,
+    "ALGO_NAMES": [
+        "round-robin",
+        "min-entropy",
+        "least-connect"
+    ]
+}
