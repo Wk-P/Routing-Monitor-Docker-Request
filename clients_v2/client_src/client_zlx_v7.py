@@ -146,7 +146,7 @@ def gen_tasks_poisson_2(n, *args, **kwargs):
 
     # 使用泊松分布波动生成任务参数
     # generate task request number with poisson
-    num_args = [ int(np.random.poisson(lam=15000)) if num % 3 != 0 else int(np.random.poisson(lam=100000)) for num in range(n) ]
+    num_args = [ int(np.random.poisson(lam=15000)) if num % 3 != 0 else int(np.random.poisson(lam=400000)) for num in range(n) ]
     tasks = [Task(url=url, headers=headers, data={"number": arg}) for arg in num_args]
 
     return tasks
@@ -195,6 +195,7 @@ async def main(tasks_sum: List[int]):
                     ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
 
         print(time_results)
+
         # Canvas
         data = {
             "x_list": [
@@ -236,7 +237,7 @@ async def main(tasks_sum: List[int]):
 
 TASK_NUMBER_RANGE = (100000, 500000)
 # TASKS_SUM = [sum for sum in range(10, 400, 100)]
-TASKS_SUM = [5, 6, 10]
+TASKS_SUM = [10, 20]
 # TASKS_SUM = [30, 50, 100]
 # TASKS_SUM = [n for n in range(50, 401, 50)]
 # TASKS_SUM = [10, 30, 50, 100, 300, 500]
@@ -252,7 +253,7 @@ LOOP_FINISH_CNT = 0
 # ALGO_NAMES = ['shortest', 'round-robin', 'least', 'lowest-score']
 # ALGO_NAMES = ['shortest', 'round-robin', 'min-entropy', 'least-connect']
 ALGO_NAMES = ['round-robin', 'min-entropy', 'least-connect']
-POISSON_POLICY = "poisson_2"
+POISSON_POLICY = "possion_2"
 
 ERROR = {key: [] for key in ["error_time", "calculate_wait_time", "real_wait_time"]}
 
