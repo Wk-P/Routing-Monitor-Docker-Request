@@ -1,0 +1,28 @@
+{
+    "x_list": [
+        [
+            500
+        ]
+    ],
+    "y_lists": [
+        [
+            [
+                386.7428894042969
+            ]
+        ]
+    ],
+    "titles": [
+        "Respons time comparison"
+    ],
+    "xlabels": [
+        "Loops Index"
+    ],
+    "ylabels": [
+        "Response Time"
+    ],
+    "smooth": false,
+    "window_size": 2,
+    "legends": [
+        "shortest"
+    ]
+}

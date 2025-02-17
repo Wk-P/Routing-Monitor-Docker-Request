@@ -1,0 +1,45 @@
+{
+    "x_list": [
+        [
+            10,
+            20
+        ]
+    ],
+    "y_lists": [
+        [
+            [
+                16.922181606292725,
+                29.279566049575806
+            ],
+            [
+                16.86692786216736,
+                29.338311672210693
+            ],
+            [
+                16.82782816886902,
+                29.33908748626709
+            ],
+            [
+                16.89991569519043,
+                29.329582691192627
+            ]
+        ]
+    ],
+    "titles": [
+        "Respons time comparison"
+    ],
+    "xlabels": [
+        "Loops Index"
+    ],
+    "ylabels": [
+        "Response Time"
+    ],
+    "smooth": false,
+    "window_size": 2,
+    "legends": [
+        "shortest",
+        "round-robin",
+        "min-entropy",
+        "least-connect"
+    ]
+}
