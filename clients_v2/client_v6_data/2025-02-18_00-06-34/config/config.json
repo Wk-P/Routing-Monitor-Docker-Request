@@ -1,0 +1,17 @@
+{
+    "request_sum": 150,
+    "request_count": 0,
+    "request_num_range": [
+        0,
+        500000
+    ],
+    "url": "http://192.168.0.100:8199",
+    "response_filename": "response.json",
+    "figs_filename": "error.png",
+    "config_filename": "config.json",
+    "shared_progress": {
+        "completed": 300
+    },
+    "filename": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\client_v6_data\\2025-02-18_00-06-34",
+    "algo_name": "leastest"
+}

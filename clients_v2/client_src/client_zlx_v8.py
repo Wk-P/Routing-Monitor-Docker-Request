@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import traceback
 from time import perf_counter, sleep, time
 
+response_time_table = {}
+
 
 async def process_updater(total_tasks, shared_progress, interval=0.5):
     while True:
@@ -30,18 +32,22 @@ async def send_request(**config):
     # request_count = config.get('request_count')
     # request_sum = config.get('request_sum')
     shared_progress: dict = config.get('shared_progress')
-    request_start_time = perf_counter()
+    request_start_time = config.get("request_start_time", perf_counter())
+
+    response_time_table[request_id] = request_start_time
 
     async with session.post(url=url, json={"request_id": request_id,"number": request_number, "request_start_time": request_start_time}) as response:
         response_data: dict = await response.json()
         # request_count += 1
         shared_progress['completed'] += 1
 
-    response_data['request_number'] = request_number
-    response_data['request_id'] = request_id
-
+    # response_data['request_number'] = request_number
+    # response_data['request_id'] = request_id
     
-    response_time = perf_counter() - request_start_time
+    print(response_data)
+
+    response_time = perf_counter() - response_time_table[response_data['request_id']]
+
     response_data['response_time'] = response_time
 
     print(response_data)
@@ -120,7 +126,8 @@ async def main(**program_config):
 
     for request_index in range(request_sum):
         request_id = request_index + 1
-        tasks.append(asyncio.create_task(send_request(session=session, url=url, shared_progress=shared_progress, request_num_range=request_num_range, request_id=request_id, request_sum=request_sum, request_count=request_count)))
+        request_start_time = perf_counter()
+        tasks.append(asyncio.create_task(send_request(session=session, url=url, shared_progress=shared_progress, request_num_range=request_num_range, request_id=request_id, request_sum=request_sum, request_count=request_count, request_start_time=request_start_time)))
         
         print(f"Send task {request_index}")
         await asyncio.sleep(0.1)
@@ -142,21 +149,24 @@ async def main(**program_config):
     # Prepare the response data
     responses = {
         # "request_id": [result.get('request_id') for result in results],
-        "request_number": [result.get('request_number') for result in results],
+        # "request_number": [float(result.get('request_number') / 100000) for result in results],
         
-        "predicted_processing_time": [result.get("predicted_processing_time") for result in results],
+        # "predicted_processing_time": [result.get("predicted_processing_time") for result in results],
         "real_processing_time": [result.get("real_process_time") for result in results],
         
-        # "predicted_waiting_time": [result.get("predicted_waiting_time") for result in results],
+        # "predicted_response_time": [float(result.get("predicted_processing_time") + result.get("predicted_waiting_time")) for result in results],
+        "predicted_waiting_time": [result.get("predicted_waiting_time") for result in results],
 
         "response_time": [result.get("response_time") for result in results],
+
+        # "manager_response_time": [result.get("manager_response_time") for result in results],
 
         "waiting_jobs": [result.get("waiting_jobs") for result in results],
         "real_waiting_time": [result.get("waiting_time") for result in results],
 
-        "user_cpu_time": [result.get("user_cpu_time") for result in results],
-        "system_cpu_time": [result.get("system_cpu_time") for result in results],
-        "cpu_spent_usage": [result.get('cpu_spent_usage') for result in results]
+        # "user_cpu_time": [result.get("user_cpu_time") for result in results],
+        # "system_cpu_time": [result.get("system_cpu_time") for result in results],
+        # "cpu_spent_usage": [result.get('cpu_spent_usage') for result in results]
     }
 
     # Write response JSON file
@@ -165,17 +175,20 @@ async def main(**program_config):
     # Prepare the trend data for plotting
     trend = {
         # "request_id": [result.get('request_id') for result in results],
-        "request_number": [float(result.get('request_number') / 100000) for result in results],
+        # "request_number": [float(result.get('request_number') / 100000) for result in results],
         
         # "predicted_processing_time": [result.get("predicted_processing_time") for result in results],
-        "real_processing_time": [result.get("real_process_time") for result in results],
+        # "real_processing_time": [result.get("real_process_time") for result in results],
         
-        # "predicted_waiting_time": [result.get("predicted_waiting_time") for result in results],
+        # "predicted_response_time": [float(result.get("predicted_processing_time") + result.get("predicted_waiting_time")) for result in results],
+        "predicted_waiting_time": [result.get("predicted_waiting_time") for result in results],
 
         # "response_time": [result.get("response_time") for result in results],
 
+        # "manager_response_time": [result.get("manager_response_time") for result in results],
+
         # "waiting_jobs": [result.get("waiting_jobs") for result in results],
-        # "real_waiting_time": [result.get("waiting_time") for result in results],
+        "real_waiting_time": [result.get("waiting_time") for result in results],
 
         # "user_cpu_time": [result.get("user_cpu_time") for result in results],
         # "system_cpu_time": [result.get("system_cpu_time") for result in results],
@@ -190,13 +203,13 @@ async def main(**program_config):
 
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
-    for loop in range(1, 2, 1):
+    for loop in range(1, 5, 1):
         program_config = {
-            "request_sum": loop * 50,
+            "request_sum": loop * 20,
             "request_count": 0,
             "request_num_range": (0, 500000),
             "url": "http://192.168.0.100:8199",
-            "filename": PARENT_DIR / "client_v3_data" / datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S"),
+            "filename": PARENT_DIR / "client_v4_data" / datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S"),
             "response_filename": "response.json",
             "figs_filename": "error.png",
             "config_filename": "config.json",

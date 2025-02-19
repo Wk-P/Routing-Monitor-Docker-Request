@@ -1,0 +1,16 @@
+{
+    "request_sum": 50,
+    "request_count": 0,
+    "request_num_range": [
+        0,
+        500000
+    ],
+    "url": "http://192.168.0.100:8199",
+    "filename": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\client_v3_data\\2025-02-17_14-33-07",
+    "response_filename": "response.json",
+    "figs_filename": "error.png",
+    "config_filename": "config.json",
+    "shared_progress": {
+        "completed": 0
+    }
+}
