@@ -264,7 +264,7 @@ if __name__ == "__main__":
                 "figs_filename": "error.png",
                 "config_filename": "config.json",
                 "shared_progress": {"completed": 0},
-                "filename": PARENT_DIR / "client_v7_data" / time_temp
+                "filename": PARENT_DIR / "random_request_number" / time_temp
             }
 
         for algo_name in algo_names:
