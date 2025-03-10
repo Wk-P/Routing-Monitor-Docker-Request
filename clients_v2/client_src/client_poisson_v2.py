@@ -13,6 +13,7 @@ algo_names = ['round-robin', 'proposed', 'least-connections']
 request_start_time_table = {}
 async_longest_response_time = {key: {} for key in algo_names}
 worker_to_manager_response_time_acc = {key: {} for key in algo_names}
+sum_of_manager_response_time = {key: {} for key in algo_names}
 send_interval = 0.01
 
 async def process_updater(total_tasks, shared_progress, interval=0.5):
@@ -75,6 +76,17 @@ async def send_request(**config):
                 async_longest_response_time[algo_name][worker_id] = async_response_time
             else:
                 async_longest_response_time[algo_name][worker_id] = async_response_time
+
+
+        """ version 0.0.2 (sum of manager response time) """
+        if algo_name not in async_longest_response_time:
+            sum_of_manager_response_time[algo_name] = {}
+            sum_of_manager_response_time[algo_name][worker_id] = response_data.get('no_waiting_response_time')
+        else:
+            if worker_id not in sum_of_manager_response_time[algo_name]:
+                sum_of_manager_response_time[algo_name][worker_id] = response_data.get('no_waiting_response_time')
+            else:
+                sum_of_manager_response_time[algo_name][worker_id] += response_data.get('no_waiting_response_time')
 
         return response_data
 
@@ -273,7 +285,7 @@ async def main(**program_config):
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
     loops = 3
-    single_loop_task = 20
+    single_loop_task = 10
 
     algo_total_response_time_table = {} 
 
@@ -287,7 +299,7 @@ if __name__ == "__main__":
                 "figs_filename": "error.png",
                 "config_filename": "config.json",
                 "shared_progress": {"completed": 0},
-                "filename": PARENT_DIR / "poisson_request_number" / "total_response_time_v1_5_4" / time_temp,
+                "filename": PARENT_DIR / "poisson_request_number" / "total_response_time_v1_5_5" / time_temp,
                 "send_interval": send_interval,
             }
 
@@ -314,7 +326,8 @@ if __name__ == "__main__":
             # save result into config.json
             result_info = {
                 "total_response_time": algo_total_response_time,
-                "single_response_time_acc": async_longest_response_time[algo_name]
+                "single_response_time_acc": async_longest_response_time[algo_name],
+                "sum_of_manager_response_time": sum_of_manager_response_time[algo_name]
             }
 
             if "results" not in program_config:
@@ -330,6 +343,7 @@ if __name__ == "__main__":
         # 清理历史
         for algo in algo_names:
             async_longest_response_time[algo].clear()
+            sum_of_manager_response_time[algo].clear()
 
 
         draw_bar(filename=program_config['filename'], data=algo_total_response_time_table, title=f"{len(algo_names)} total response difference")
