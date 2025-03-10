@@ -1,0 +1,17 @@
+{
+    "request_sum": 20,
+    "request_num_range": [
+        0,
+        500000
+    ],
+    "url": "http://192.168.0.100:8199",
+    "response_filename": "response.json",
+    "figs_filename": "error.png",
+    "config_filename": "config.json",
+    "shared_progress": {
+        "completed": 0
+    },
+    "filename": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\total_response_time_v3\\2025-02-25_17-38-09",
+    "algo_name": "least-connections",
+    "request_count": 0
+}

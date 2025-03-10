@@ -246,7 +246,7 @@ async def main(**program_config):
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
 
-    algo_names = ['round-robin', 'proposed', 'leastest']
+    algo_names = ['round-robin', 'proposed', 'least']
 
     loops = 5
     single_loop_task = 50

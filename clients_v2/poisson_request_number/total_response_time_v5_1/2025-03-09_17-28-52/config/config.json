@@ -1,0 +1,35 @@
+{
+    "request_sum": 60,
+    "request_num_range": [
+        0,
+        500000
+    ],
+    "url": "http://192.168.0.100:8199",
+    "response_filename": "response.json",
+    "figs_filename": "error.png",
+    "config_filename": "config.json",
+    "shared_progress": {
+        "completed": 60
+    },
+    "filename": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\total_response_time_v5_1\\2025-03-09_17-28-52",
+    "algo_name": "least-connections",
+    "request_count": 0,
+    "results": {
+        "round-robin": {
+            "total_response_time": 251.7717845000443,
+            "single_response_time_acc": {}
+        },
+        "proposed": {
+            "total_response_time": 131.18890710000414,
+            "single_response_time_acc": {}
+        },
+        "least-connections": {
+            "total_response_time": 252.33072190004168,
+            "single_response_time_acc": {
+                "2": 66.01235759997508,
+                "1": 66.96383449999848,
+                "0": 251.93049769999925
+            }
+        }
+    }
+}
