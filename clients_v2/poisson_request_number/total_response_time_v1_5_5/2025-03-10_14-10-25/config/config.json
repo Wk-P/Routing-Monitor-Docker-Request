@@ -9,7 +9,7 @@
     "figs_filename": "error.png",
     "config_filename": "config.json",
     "shared_progress": {
-        "completed": 0
+        "completed": 30
     },
     "filename": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\total_response_time_v1_5_5\\2025-03-10_14-10-25",
     "send_interval": 0.01,
@@ -40,6 +40,19 @@
                 "2": 42.730222267331555,
                 "1": 29.673799077310832,
                 "0": 49.065972874406725
+            }
+        },
+        "least-connections": {
+            "total_response_time": 126.30014069995377,
+            "single_response_time_acc": {
+                "1": 33.49204490002012,
+                "2": 33.53067120001651,
+                "0": 126.14975420001429
+            },
+            "sum_of_manager_response_time": {
+                "1": 53.02660318475682,
+                "2": 53.46233528770972,
+                "0": 8.530656451941468
             }
         }
     }
