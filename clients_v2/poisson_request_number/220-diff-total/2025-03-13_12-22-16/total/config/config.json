@@ -1,0 +1,63 @@
+{
+    "request_sum": 85,
+    "request_num_range": [
+        0,
+        500000
+    ],
+    "url": "http://192.168.0.100:8199",
+    "response_filename": "response.json",
+    "figs_filename": "error.png",
+    "config_filename": "config.json",
+    "shared_progress": {
+        "completed": 85
+    },
+    "filename": {
+        "default": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\220-diff-total\\2025-03-13_12-22-16",
+        "total_response_time": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\220-diff-total\\2025-03-13_12-22-16\\total",
+        "difference_total_predicted_processing_time_and_total_real_processing_time": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\220-diff-total\\2025-03-13_12-22-16\\diff"
+    },
+    "send_interval": 0.01,
+    "algo_name": "least-connections",
+    "request_count": 0,
+    "results": {
+        "round-robin": {
+            "total_response_time": 389.6900944999652,
+            "single_response_time_acc": {
+                "0": 97.92952440003864,
+                "1": 98.03722539998125,
+                "2": 389.2738510000054
+            },
+            "sum_of_manager_response_time": {
+                "0": 66.43379020690918,
+                "1": 66.43379020690918,
+                "2": 360.91630268096924
+            }
+        },
+        "proposed": {
+            "total_response_time": 200.87222820008174,
+            "single_response_time_acc": {
+                "2": 200.7780510999728,
+                "1": 192.79994140006602,
+                "0": 190.12449250009377
+            },
+            "sum_of_manager_response_time": {
+                "2": 169.53396940231323,
+                "1": 164.7886986732483,
+                "0": 159.46121501922607
+            }
+        },
+        "least-connections": {
+            "total_response_time": 387.020881799981,
+            "single_response_time_acc": {
+                "2": 98.46416319999844,
+                "1": 97.96627199999057,
+                "0": 386.53882230003364
+            },
+            "sum_of_manager_response_time": {
+                "2": 66.43379020690918,
+                "1": 66.43379020690918,
+                "0": 360.91630268096924
+            }
+        }
+    }
+}

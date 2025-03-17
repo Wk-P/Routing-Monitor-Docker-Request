@@ -1,0 +1,63 @@
+{
+    "request_sum": 5,
+    "request_num_range": [
+        0,
+        500000
+    ],
+    "url": "http://192.168.0.100:8199",
+    "response_filename": "response.json",
+    "figs_filename": "error.png",
+    "config_filename": "config.json",
+    "shared_progress": {
+        "completed": 5
+    },
+    "filename": {
+        "default": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\220-diff-total\\2025-03-13_10-10-18",
+        "total_response_time": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\220-diff-total\\2025-03-13_10-10-18\\total",
+        "difference_total_predicted_processing_time_and_total_real_processing_time": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\220-diff-total\\2025-03-13_10-10-18\\diff"
+    },
+    "send_interval": 0.01,
+    "algo_name": "least-connections",
+    "request_count": 0,
+    "results": {
+        "round-robin": {
+            "total_response_time": 26.979421600000933,
+            "single_response_time_acc": {
+                "1": 7.031005199998617,
+                "2": 3.574780900031328,
+                "0": 26.642939900048077
+            },
+            "sum_of_manager_response_time": {
+                "1": 4.745270729064941,
+                "2": 2.3726353645324707,
+                "0": 24.890779495239258
+            }
+        },
+        "proposed": {
+            "total_response_time": 17.234397900057957,
+            "single_response_time_acc": {
+                "1": 16.88216979999561,
+                "2": 7.053653700044379,
+                "0": 13.37560739996843
+            },
+            "sum_of_manager_response_time": {
+                "1": 14.8180251121521,
+                "2": 4.745270729064941,
+                "0": 12.445389747619629
+            }
+        },
+        "least-connections": {
+            "total_response_time": 26.803730799932964,
+            "single_response_time_acc": {
+                "1": 6.9564008000306785,
+                "2": 3.5697634000098333,
+                "0": 26.728592800092883
+            },
+            "sum_of_manager_response_time": {
+                "1": 4.745270729064941,
+                "2": 2.3726353645324707,
+                "0": 24.890779495239258
+            }
+        }
+    }
+}
