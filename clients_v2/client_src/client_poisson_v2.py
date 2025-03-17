@@ -1,3 +1,4 @@
+import time
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 import asyncio
 import json
@@ -39,18 +40,21 @@ async def send_request(**config):
     shared_progress: dict = config.get('shared_progress')
     algo_name = config.get('algo_name')
 
-    request_start_time = perf_counter()
+    request_start_time = time.time()
     request_start_time_table[request_id] = request_start_time
+
+    print(f"request number: {request_number}, reqeust {request_id} start timestamp: {request_start_time}\n")
 
     async with session.post(url=url, json={"algo_name": algo_name, "request_id": request_id, "number": request_number, "request_start_time": request_start_time}) as response:
         response_data: dict = await response.json()
+        response_receive_time = time.time()
         # request_count += 1
         shared_progress['completed'] += 1
         
-        print(response_data)
+        # print(response_data)
 
         """ send from same time and longest response time """
-        async_response_time = perf_counter() - request_start_time_table[request_id]
+        async_response_time = time.time() - request_start_time_table[request_id]
 
         # response_data['request_number'] = request_number
         # response_data['request_id'] = request_id
@@ -89,6 +93,7 @@ async def send_request(**config):
             else:
                 sum_of_manager_response_time[algo_name][worker_id] += response_data.get('predicted_processing_time')
 
+        print(f"In send process, request number : {response_data.get('request_number')}, receive response timestamp: {response_receive_time} ")
         return response_data
 
 def custom_serializer(obj):
@@ -175,7 +180,6 @@ def draw_bar(filename: Path, data: dict, title: str):
 
 # multi y-value
 def draw_bar2(filename: Path, data: list[dict], title: str):
-    print(data)
     filename = filename / 'figs'
     if not filename.exists():
         filename.mkdir(parents=True, exist_ok=True)
@@ -195,7 +199,16 @@ def draw_bar2(filename: Path, data: list[dict], title: str):
     # 绘制柱状图
     for i, item in enumerate(data):
         y_values = [item.get(x, 0) for x in x_labels]  # 提取所有 y_key 对应的值
-        plt.bar(x_indexes + (i - len(data) / 2) * width, y_values, width=width, label=f"Dataset {i}")
+        label_text = ""
+        if i == 0:
+            label_text = "Total response time of all requests"
+        elif i == 1:
+            label_text = "Sum of single request response time"
+        elif i == 2:
+            label_text = "Differenc"
+        else:
+            label_text = "Unknown data"
+        plt.bar(x_indexes + (i - len(data) / 2) * width, y_values, width=width, label=label_text)
 
     # difference bar
     if len(data) == 2:
@@ -333,7 +346,7 @@ async def main(**program_config):
 
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
-    loops = 2
+    loops = 1
     single_loop_task = 5
 
     algo_total_response_time_table = {} 
@@ -341,7 +354,7 @@ if __name__ == "__main__":
 
     for loop in range(1, loops + 1):
         time_temp = datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S")
-        folder_name = "221-diff-total"
+        folder_name = "222[test]-diff-total"
         default_path =  PARENT_DIR / "poisson_request_number" / folder_name / time_temp
         program_config = {
                 "request_sum": loop * single_loop_task,
@@ -398,7 +411,7 @@ if __name__ == "__main__":
                       async_longest_response_time[algo_name],
                       sum_of_manager_response_time[algo_name],
                   ], 
-                  title=f"{len(algo_names)} total response time compare between real cumulative process time and predicted cumulative process time"
+                  title=f"[{len(algo_names)}] Comparison of the sum of response times for single requests and the total response time for concurrent requests"
                 )
 
             print(f"Task count per worker: {len(results)} \n\n\n")

@@ -1,0 +1,22 @@
+{
+    "request_sum": 5,
+    "request_num_range": [
+        0,
+        500000
+    ],
+    "url": "http://192.168.0.100:8199",
+    "response_filename": "response.json",
+    "figs_filename": "error.png",
+    "config_filename": "config.json",
+    "shared_progress": {
+        "completed": 0
+    },
+    "filename": {
+        "default": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\222[test]-diff-total\\2025-03-17_13-39-48",
+        "total_response_time": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\222[test]-diff-total\\2025-03-17_13-39-48\\total",
+        "difference_total_predicted_processing_time_and_total_real_processing_time": "d:\\github\\Routing-Monitor-Docker-Request-\\clients_v2\\poisson_request_number\\222[test]-diff-total\\2025-03-17_13-39-48\\diff"
+    },
+    "send_interval": 0.01,
+    "algo_name": "round-robin",
+    "request_count": 0
+}
