@@ -30,20 +30,14 @@ async def process_updater(total_tasks, shared_progress, interval=0.5):
 
 async def send_request(**config):
     request_number = config.get('request_number')
-    # request_number = random.randint(a=config.get("request_num_range")[0], b=config.get('request_num_range')[1])
     request_id = config.get("request_id")
     url = config.get("url")
     session: ClientSession = config.get('session')
-    # request_count = config.get('request_count')
-    # request_sum = config.get('request_sum')
-    # request_start_time = config.get("request_start_time", perf_counter())
     shared_progress: dict = config.get('shared_progress')
     algo_name = config.get('algo_name')
 
     request_start_time = time.time()
     request_start_time_table[request_id] = request_start_time
-
-    print(f"request number: {request_number}, reqeust {request_id} start timestamp: {request_start_time}\n")
 
     async with session.post(url=url, json={"algo_name": algo_name, "request_id": request_id, "number": request_number, "request_start_time": request_start_time}) as response:
         response_data: dict = await response.json()
@@ -64,7 +58,7 @@ async def send_request(**config):
         # response_data['response_time'] = response_time
     
         try:
-            worker_id = response_data['selected_backend_id']
+            worker_id = response_data['selected_worker_id']
         except:
             print(response_data.get('error'))
             # print(traceback.format_exc())
@@ -93,7 +87,6 @@ async def send_request(**config):
             else:
                 sum_of_manager_response_time[algo_name][worker_id] += response_data.get('predicted_processing_time')
 
-        print(f"In send process, request number : {response_data.get('request_number')}, receive response timestamp: {response_receive_time} ")
         return response_data
 
 def custom_serializer(obj):
@@ -347,14 +340,14 @@ async def main(**program_config):
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
     loops = 1
-    single_loop_task = 5
+    single_loop_task = 10
 
     algo_total_response_time_table = {} 
 
 
     for loop in range(1, loops + 1):
         time_temp = datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S")
-        folder_name = "222[test]-diff-total"
+        folder_name = "222[test]"
         default_path =  PARENT_DIR / "poisson_request_number" / folder_name / time_temp
         program_config = {
                 "request_sum": loop * single_loop_task,
@@ -390,8 +383,6 @@ if __name__ == "__main__":
             algo_total_response_time_table[algo_name] = algo_total_response_time
 
             sleep(1)
-
-            print(f"\n[{algo_name}] All total response time: {algo_total_response_time}\n Single response time acc: {async_longest_response_time[algo_name]}s\n Sum_of_manager_response_time: {sum_of_manager_response_time[algo_name]}\n")
 
             # save result into config.json
             result_info = {
