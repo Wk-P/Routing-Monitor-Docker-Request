@@ -11,10 +11,10 @@ import numpy as np
 import uuid
 import typing
 
-from clients_v2.client_src.utils.tools import draw
+from utils.tools import draw, write_json_file
 
 # algo_names = ['round-robin', 'proposed', 'least-connections']
-algo_names = ['round-robin']
+algo_names = ['proposed']
 request_start_time_table = {}
 async_longest_response_time = {key: {} for key in algo_names}
 worker_to_manager_response_time_acc = {key: {} for key in algo_names}
@@ -48,15 +48,36 @@ def write_into_json(results: typing.List[typing.Dict[typing.AnyStr, typing.Any]]
     with open(DATA_PATH / 'data.json', 'w') as f:
         json.dump(existing_data, f, indent=4)
 
-def parse_results(results: typing.List[typing.Dict[typing.AnyStr, typing.Any]]):
-    global FIG_PATH
-    x_labels = [key for key in results[0].keys() if key not in ('selected_worker_id', 'request_number', 'result', 'cpu_spent_usage', 'contention_time', 'system_cpu_time', 'request_id')]
+def parse_results(results: typing.List[typing.Dict[typing.AnyStr, typing.Any]], **kw):
+    algo_name = kw.get('algo_name', None)
+    if not algo_name:
+        return 
+    save_path = kw.get('default_path', None)
+    if None in (save_path, algo_name):
+        return
+
+    excludes = (
+        'selected_worker_id', 
+        'request_number', 
+        'result', 
+        'cpu_spent_usage', 
+        'contention_time', 
+        'system_cpu_time', 
+        'request_id', 
+        'user_cpu_time', 
+        'start_process_time', 
+        'waiting_on_worker', 
+        'real_process_time', 
+        'predicted_processing_time',
+    )
+
+    x_labels = [key for key in results[0].keys() if key not in excludes]
     data_for_plot = []
-    save_path = FIG_PATH
+    
     
     for field in x_labels:
         try:
-            values = [float(r[field]) for r in results]
+            values = [float(row[field]) for row in results]
             data_for_plot.append({
                 'label': field,
                 'values': values
@@ -64,12 +85,15 @@ def parse_results(results: typing.List[typing.Dict[typing.AnyStr, typing.Any]]):
         except (ValueError, TypeError):
             continue  
 
-    x_ticks = [r['request_number'] for r in results]
+    x_ticks = [results.index(row) for row in results]
 
     draw(
         x_labels=x_ticks,
         data=data_for_plot,
-        save_path=save_path,
+        save_path=save_path / algo_name,
+        xLabel=f'Request index',
+        yLabel=f'Time ( second )',
+        title=f"real_waiting_time and predicted_waiting_time comparison"
     )
 
 async def process_updater(total_tasks, shared_progress, interval=0.5):
@@ -165,10 +189,18 @@ async def main(**program_config):
     send_interval = program_config.get('send_interval', 0.01)
     request_count = program_config.get('request_count', 0)
     url = program_config.get("url")
-    filename: dict = program_config.get("filename")
     shared_progress = program_config.get('shared_progress')
     algo_name = program_config.get('algo_name', None)
+    filename = program_config.get('filename', None)
+    
+    if filename:
+        default_path = filename['default']
+    else:
+        default_path = Path(__file__).parent / 'default'
 
+        default_path.mkdir(parents=True, exist_ok=True)
+    
+    
     updater_task = asyncio.create_task(process_updater(request_sum, shared_progress, interval=0.5))
 
     tasks = []
@@ -196,8 +228,8 @@ async def main(**program_config):
     results: list[dict[str, float]] = await asyncio.gather(*tasks, return_exceptions=True)
 
     # stdout_results(results)
-    parse_results(results)
-    # write_into_json(results)
+    parse_results(results, default_path=default_path, algo_name=algo_name)
+    write_into_json(results)
 
     await updater_task
 
@@ -209,14 +241,14 @@ async def main(**program_config):
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
     loops = 1
-    single_loop_task = 10
+    single_loop_task = 15
 
     algo_total_response_time_table = {}
 
 
     for loop in range(1, loops + 1):
         time_temp = datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S")
-        folder_name = "222[test]"
+        folder_name = "225[test]_v2"
         default_path =  PARENT_DIR / "poisson_request_number" / folder_name / time_temp
         request_sum = loop * single_loop_task
         program_config = {
@@ -238,6 +270,8 @@ if __name__ == "__main__":
             }
 
         print("New loop start")
+        
+        write_json_file(filepath=default_path, filename='config.json', data=program_config, mode='a')
 
         for algo_name in algo_names:
             algo_total_response_time_start = perf_counter()
@@ -269,3 +303,4 @@ if __name__ == "__main__":
 
             print(f"Task count per worker: {len(results)} \n\n\n")
             print(program_config)
+            write_into_json([program_config['results'][algo_name]])

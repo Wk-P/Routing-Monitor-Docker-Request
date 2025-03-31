@@ -98,7 +98,7 @@ async def main(**program_config):
                         url=url, 
                         shared_progress=shared_progress, 
                         request_id=request_id, 
-                        request_sum=request_sum, 
+                        request_sum=request_sum,
                         request_count=request_count, 
                         algo_name=algo_name,
                         request_number=request_num_list[request_index]
@@ -129,8 +129,8 @@ async def main(**program_config):
 
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
-    loops = 5
-    single_loop_task = 30
+    loops = 2
+    single_loop_task = 15
 
     algo_total_response_time_table = {} 
 

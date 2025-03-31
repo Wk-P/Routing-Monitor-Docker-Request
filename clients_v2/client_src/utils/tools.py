@@ -10,12 +10,19 @@ def draw(**kw):
     data = kw.get('data', [])
     save_path: str | Path = kw.get('save_path')
 
+    save_path.mkdir(parents=True, exist_ok=True)
+
+    xLabel = kw.get('xLabel', 'Labels')
+    yLabel = kw.get("yLabel", 'Values')
+
     if save_path == None:
         return
     else:
         if isinstance(save_path, str):
             save_path = Path(save_path)
         save_path = save_path / 'result.png'
+        
+    print(f"Save picture as path: {save_path}")
 
     if not data or not x_labels:
         print("Data or x_labels is missing")
@@ -44,8 +51,8 @@ def draw(**kw):
         plt.bar(x + i * bar_width, values, width=bar_width, label=label)
 
     
-    plt.xlabel('Requests')
-    plt.ylabel('Value')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
     plt.title(title)
     plt.xticks(x + bar_width * (num_groups - 1) / 2, x_labels)
     plt.legend()
