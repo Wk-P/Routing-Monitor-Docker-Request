@@ -6,7 +6,8 @@
 *.log
 *.pyc
 server_demo/async_task/figs/*.png
-clients_v2/*
+clients_v2/**/
+clients_v2/fig*/
 !clients_v2/client_src/
 *.zip
 *.7z
