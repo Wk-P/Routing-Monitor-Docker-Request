@@ -116,10 +116,11 @@ async def main(loop):
     draw_plot(filepath=WORK_DIR / f'{loop}_results', filename=f"comparison", data=parsed_all_results, title='requests sum and avg response time', XLabel="N requests", YLabel="Avg resposne time (secondes)")
 
 
-async def run_main(loop):
+async def run_main():
+    loop = 2000
     for l in range(1, loop+1):
         await main(l)
 
 
 if __name__ == "__main__":
-    asyncio.run(run_main(5))
+    asyncio.run(run_main())
