@@ -117,7 +117,7 @@ async def main(loop):
 
 
 async def run_main():
-    loop = 2000
+    loop = 50
     for l in range(1, loop+1):
         await main(l)
 
