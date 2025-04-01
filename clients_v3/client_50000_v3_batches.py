@@ -34,7 +34,7 @@ def draw_plot(filepath: Path, filename: str, data: dict, title: str, XLabel: str
     else:
         filename = f"{filename}"   
 
-    file_path = filepath / f"{filename}.png"
+    full_path = filepath / f"{filename}.png"
 
     x = list(data.keys())
     y = list(data.values())
@@ -49,7 +49,7 @@ def draw_plot(filepath: Path, filename: str, data: dict, title: str, XLabel: str
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(str(file_path))
+    plt.savefig(str(full_path))
     plt.close()
 
 
@@ -79,7 +79,7 @@ async def send_request(session: ClientSession, **kw):
             }
     
 
-async def main():
+async def main(loop):
     url = 'http://192.168.0.100:8199'
     batches = [ i for i in range(1, 100)]
 
@@ -104,7 +104,7 @@ async def main():
             all_results.append(parsed_result)
 
 
-    write_json_file(filepath=WORK_DIR / 'results', filename=f'{nr}_results', mode='a', data=all_results)
+    write_json_file(filepath=WORK_DIR / f'{loop}_results', filename=f'{nr}_results', mode='a', data=all_results)
 
     parsed_all_results = {}
 
@@ -113,7 +113,13 @@ async def main():
             result['request_sum']: result['avg_response_time']
         })
 
-    draw_plot(filepath=WORK_DIR / 'results', filename=f"comparison", data=parsed_all_results, title='requests sum and avg response time', XLabel="N requests", YLabel="Avg resposne time (secondes)")
+    draw_plot(filepath=WORK_DIR / f'{loop}_results', filename=f"comparison", data=parsed_all_results, title='requests sum and avg response time', XLabel="N requests", YLabel="Avg resposne time (secondes)")
+
+
+async def run_main(loop):
+    for l in range(1, loop+1):
+        await main(l)
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(run_main(5))
