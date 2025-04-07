@@ -11,7 +11,6 @@ from utils.tools import draw_plot
 
 algo_name = 'proposed'
 max_concurrency = 100
-duration_hours = 12
 send_interval = 0.02
 semaphore = asyncio.Semaphore(max_concurrency)
 
@@ -101,9 +100,9 @@ async def main_batch(**program_config):
 
 
 async def main():
-    PARENT_DIR = Path(__file__).parent.parent
+    PARENT_DIR = Path(__file__).parent.parent / "duration_results"
     start_time = datetime.now()
-    total_duration = timedelta(minutes=20)      
+    total_duration = timedelta(minutes=10)      
     record_interval = timedelta(minutes=5) 
     
     next_record_time = start_time + record_interval
@@ -125,7 +124,7 @@ async def main():
         try:
             current_path = PARENT_DIR / folder_name / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             request_sum =  np.random.randint(10, 100)
-            request_num_list = [ np.random.randint(0, 500000) for _ in range(request_sum) ]
+            request_num_list = [ 50000 for _ in range(request_sum) ]
             
             program_config = {
                 "request_sum": request_sum,
