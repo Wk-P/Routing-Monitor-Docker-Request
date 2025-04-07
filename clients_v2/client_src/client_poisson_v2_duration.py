@@ -102,8 +102,8 @@ async def main_batch(**program_config):
 async def main():
     PARENT_DIR = Path(__file__).parent.parent / "duration_results"
     start_time = datetime.now()
-    total_duration = timedelta(minutes=10)      
-    record_interval = timedelta(minutes=5) 
+    total_duration = timedelta(seconds=50)      
+    record_interval = timedelta(seconds=10) 
     
     next_record_time = start_time + record_interval
     end_time = start_time + total_duration

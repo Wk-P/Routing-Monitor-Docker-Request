@@ -129,15 +129,15 @@ async def main(**program_config):
 
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
-    loops = 2
-    single_loop_task = 15
+    loops = 3
+    single_loop_task = 10
 
     algo_total_response_time_table = {} 
 
 
     for loop in range(1, loops + 1):
         time_temp = datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S")
-        folder_name = "222[test]_v4"
+        folder_name = "255[result]_v1"
         default_path =  PARENT_DIR / "poisson_request_number" / folder_name / time_temp
         request_sum = loop * single_loop_task
         request_num_list = [ np.random.randint(0, 500000) for _ in range(request_sum) ]

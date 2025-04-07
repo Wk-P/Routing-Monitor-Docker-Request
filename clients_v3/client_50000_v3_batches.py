@@ -117,7 +117,7 @@ def generate_request_id():
 
 async def main(loop, folder_name: Path):
     url = 'http://192.168.0.100:8199'
-    batches = [ i for i in range(1, 30)]
+    batches = [ i for i in range(1, 90)]
 
     all_results = []
 
@@ -194,7 +194,7 @@ async def main(loop, folder_name: Path):
     return dispatches_data
 
 async def run_main():
-    loop = 30
+    loop = 5
     folder_name = WORK_DIR / 'results' / datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
     all_dispatched_data = {}
     for l in range(1, loop+1):
