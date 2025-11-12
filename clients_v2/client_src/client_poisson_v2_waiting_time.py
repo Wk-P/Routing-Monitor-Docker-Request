@@ -16,7 +16,7 @@ request_start_time_table = {}
 async_longest_response_time = {key: {} for key in algo_names}
 worker_to_manager_response_time_acc = {key: {} for key in algo_names}
 sum_of_manager_response_time = {key: {} for key in algo_names}
-send_interval = 0.01
+send_interval = 0.02
 
 async def process_updater(total_tasks, shared_progress, interval=0.5):
     while True:
@@ -46,6 +46,7 @@ async def send_request(**config):
 
         try:
             worker_id = response_data['selected_worker_id']
+            print(f"Task processed by {worker_id}")
         except Exception as e:
             print(response_data.get('error'))
             print(traceback.format_exc())
@@ -80,7 +81,7 @@ async def main(**program_config):
     shared_progress = program_config.get('shared_progress')
     algo_name = program_config.get('algo_name', None)
 
-    updater_task = asyncio.create_task(process_updater(request_sum, shared_progress, interval=0.5))
+    # updater_task = asyncio.create_task(process_updater(request_sum, shared_progress, interval=0.5))
 
     tasks = []
     
@@ -102,13 +103,13 @@ async def main(**program_config):
                         request_count=request_count, 
                         algo_name=algo_name,
                         request_number=request_num_list[request_index]
-                        )))
+                    )))
         
         # print(f"Send task {request_index}")
         await asyncio.sleep(send_interval)
 
     results: list[dict[str, float]] = await asyncio.gather(*tasks, return_exceptions=True)
-    await updater_task
+    # await updater_task
 
     if algo_name == "proposed":
         # # Prepare the trend data for plotting
@@ -129,7 +130,7 @@ async def main(**program_config):
 
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
-    loops = 3
+    loops = 8
     single_loop_task = 10
 
     algo_total_response_time_table = {} 
@@ -137,9 +138,10 @@ if __name__ == "__main__":
 
     for loop in range(1, loops + 1):
         time_temp = datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S")
-        folder_name = "255[result]_v1"
+        folder_name = "[result]_v2.0.0"
         default_path =  PARENT_DIR / "poisson_request_number" / folder_name / time_temp
         request_sum = loop * single_loop_task
+        # request_sum = np.random.randint(10, 200)
         request_num_list = [ np.random.randint(0, 500000) for _ in range(request_sum) ]
         program_config = {
                 "request_sum": request_sum,
@@ -201,15 +203,15 @@ if __name__ == "__main__":
             program_config["results"][algo_name] = result_info
 
 
-            # 清理历史
+            # history clear
             request_start_time_table.clear()
         
-        # 清理历史
+        # history clear
         for algo in algo_names:
             async_longest_response_time[algo].clear()
             sum_of_manager_response_time[algo].clear()
         
-        # 清理历史
+        # history clear
         algo_total_response_time_table.clear()
         
 

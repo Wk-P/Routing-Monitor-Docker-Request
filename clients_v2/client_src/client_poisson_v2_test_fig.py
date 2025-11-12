@@ -19,7 +19,7 @@ request_start_time_table = {}
 async_longest_response_time = {key: {} for key in algo_names}
 worker_to_manager_response_time_acc = {key: {} for key in algo_names}
 sum_of_manager_response_time = {key: {} for key in algo_names}
-send_interval = 0.01
+send_interval = 0.02
 
 DATA_PATH = Path(__file__).parent / 'data'
 FIG_PATH = Path(__file__).parent / 'temp_figs'
@@ -168,6 +168,7 @@ async def send_request(**config):
                 else:
                     sum_of_manager_response_time[algo_name][worker_id] += response_data.get('predicted_processing_time')
             
+            print(response_data)
             return response_data
         except ContentTypeError as e:
             print(f"⚠️ ContentTypeError: {e}")
@@ -240,16 +241,16 @@ async def main(**program_config):
 
 if __name__ == "__main__":
     PARENT_DIR = Path(__file__).parent.parent
-    loops = 1
-    single_loop_task = 15
+    loops = 3
+    single_loop_task = 80
 
     algo_total_response_time_table = {}
 
 
     for loop in range(1, loops + 1):
         time_temp = datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S")
-        folder_name = "225[test]_v2"
-        default_path =  PARENT_DIR / "poisson_request_number" / folder_name / time_temp
+        folder_name = "[test_fig]_v2"
+        default_path =  PARENT_DIR / "test_fig_loop" / folder_name / time_temp
         request_sum = loop * single_loop_task
         program_config = {
                 "request_sum": request_sum,

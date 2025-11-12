@@ -13,13 +13,13 @@ import typing
 
 from clients_v2.client_src.utils.tools import draw
 
-# algo_names = ['round-robin', 'proposed', 'least-connections']
-algo_names = ['round-robin']
+algo_names = ['round-robin', 'proposed', 'least-connections']
+# algo_names = ['round-robin']
 request_start_time_table = {}
 async_longest_response_time = {key: {} for key in algo_names}
 worker_to_manager_response_time_acc = {key: {} for key in algo_names}
 sum_of_manager_response_time = {key: {} for key in algo_names}
-send_interval = 0.01
+send_interval = 0.02
 
 DATA_PATH = Path(__file__).parent / 'data'
 FIG_PATH = Path(__file__).parent / 'temp_figs'

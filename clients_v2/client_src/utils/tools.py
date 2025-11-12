@@ -11,6 +11,7 @@ def draw(**kw):
     save_path: str | Path = kw.get('save_path')
 
     save_path.mkdir(parents=True, exist_ok=True)
+    fig_name: str = kw.get('file_name', "result.png")
 
     xLabel = kw.get('xLabel', 'Labels')
     yLabel = kw.get("yLabel", 'Values')
@@ -20,7 +21,7 @@ def draw(**kw):
     else:
         if isinstance(save_path, str):
             save_path = Path(save_path)
-        save_path = save_path / 'result.png'
+        save_path = save_path / fig_name
         
     print(f"Save picture as path: {save_path}")
 
@@ -58,7 +59,6 @@ def draw(**kw):
     plt.legend()
     plt.tight_layout()
     plt.savefig(save_path)
-    plt.show()
 
 def draw_plot(filepath: Path, filename: str, data: dict, title: str):
     if not filepath.exists():
@@ -69,7 +69,7 @@ def draw_plot(filepath: Path, filename: str, data: dict, title: str):
     plt.figure(figsize=(16, 9))
     
     for y_key, y in data.items():
-        plt.plot(range(len(y)), y, marker="o", label=y_key)
+        plt.plot(range(len(y)), y, marker="", label=y_key)
 
     plt.title(title)
     plt.xlabel("Index")
@@ -189,7 +189,11 @@ def write_json_file(filepath: Path, filename: str, data: dict, mode: str):
 
     return full_path
 
-if __name__ == "__main__":
+
+# ====================
+# test
+# ====================
+def test_draw():
     draw(
         title='Performance Metrics Comparison',
         x_labels=['500541', '199995', '200215', '500309', '199871'],
@@ -200,3 +204,6 @@ if __name__ == "__main__":
         ],
         save_path=Path(__file__).absolute().parent
     )
+
+if __name__ == "__main__":
+    test_draw()

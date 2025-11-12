@@ -102,8 +102,8 @@ async def main_batch(**program_config):
 async def main():
     PARENT_DIR = Path(__file__).parent.parent / "duration_results"
     start_time = datetime.now()
-    total_duration = timedelta(seconds=50)      
-    record_interval = timedelta(seconds=10) 
+    total_duration = timedelta(minutes=10)      
+    record_interval = timedelta(minutes=5)
     
     next_record_time = start_time + record_interval
     end_time = start_time + total_duration
@@ -124,7 +124,7 @@ async def main():
         try:
             current_path = PARENT_DIR / folder_name / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             request_sum =  np.random.randint(10, 100)
-            request_num_list = [ 50000 for _ in range(request_sum) ]
+            request_num_list = [ np.random.randint(0, 500000) for _ in range(request_sum) ]
             
             program_config = {
                 "request_sum": request_sum,
@@ -192,6 +192,16 @@ async def main():
 
     write_json_auto(filepath=last_path, filename="record", data=last_parsed_result)
     write_json_auto(filepath=last_path, filename='all_record', data=draw_parsed_result)
+
+    draw_plot(
+        filepath=current_path,
+        filename="summary.png",
+        data={
+            "predicted_waiting_time": draw_parsed_result.get("predicted_waiting_time", []),
+            "real_waiting_time": draw_parsed_result.get("real_all_waiting_time", [])
+        },
+        title=f"20min Performance Record {datetime.now().strftime('%H:%M')}"
+    )
     
     print(f"Simulation finished after {total_duration} hours.")
 

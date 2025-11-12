@@ -1,4 +1,3 @@
-import re
 import time
 import asyncio
 import json
@@ -11,7 +10,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 WORK_DIR = Path(__file__).parent
-
 
 class Result:
     def __init__(self, **data):
@@ -98,7 +96,24 @@ async def send_request(session: ClientSession, **kw):
         resp: ClientResponse
         try:
             response: dict = await resp.json()
-            print(response)
+            print("\n================================")
+            print(f"predicted_processing_time: {response['predicted_processing_time']}")
+            print(f"real_all_waiting_time: {response['real_all_waiting_time']}")
+            print(f"predicted_waiting_time: {response['predicted_waiting_time']}")
+            print(f"predicted_waiting_time_correction: {response['predicted_waiting_time_correction']}")
+            print(f"selected_worker_id: {response['selected_worker_id']}")
+            """
+            {'request_number': 274957, 
+            'result': 24034, 'start_process_time': 1748882005.2876265, 
+            'waiting_on_worker': 0.0020666122436523438, 
+            'real_all_waiting_time': 43.11247968673706, 
+            'real_process_time': 5.343389272689819, 
+            'user_cpu_time': 4.2900000000000205, 'system_cpu_time': 0.0, 
+            'contention_time': 1.0533892726897989, 'cpu_spent_usage': 0.8028612143094843, 
+            'request_id': '1748881962135_63179b93d30d4267bbd63f75073f242a', 
+            'selected_worker_id': 'worker-01', 'predicted_processing_time': 5.466498374938965, 
+            'predicted_waiting_time': 49.57154640555382, 'predicted_waiting_time_correction': 6.460783809423447}
+            """
             return Result( 
                 status_code="OK",
                 responese_time=time.perf_counter() - start_time,
@@ -117,7 +132,7 @@ def generate_request_id():
 
 async def main(loop, folder_name: Path):
     url = 'http://192.168.0.100:8199'
-    batches = [ i for i in range(1, 90)]
+    batches = [ 10 for _ in range(1, 10)]
 
     all_results = []
 
@@ -130,7 +145,8 @@ async def main(loop, folder_name: Path):
 
             batch_tasks = [
                 asyncio.create_task(send_request(session, url=url, json={
-                    "number": 50000,
+                    # "number": np.random.randint(0, 500000),
+                    "number": 200000,
                     "request_id": generate_request_id(),
                     "algo_name": "proposed"
                 }))
@@ -194,10 +210,10 @@ async def main(loop, folder_name: Path):
     return dispatches_data
 
 async def run_main():
-    loop = 5
+    loop = 1
     folder_name = WORK_DIR / 'results' / datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
     all_dispatched_data = {}
-    for l in range(1, loop+1):
+    for l in range(1, loop + 1):
         dispatched_data = await main(l, folder_name)
         if all_dispatched_data == {}:
             all_dispatched_data = dispatched_data
